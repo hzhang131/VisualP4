@@ -1,0 +1,38 @@
+.code-block-div {
+    position: fixed;
+    top: 5%;
+    right: 0;
+    width: 35%;
+    height: 90%;
+    background-color: #f1f1f1;
+    overflow: auto;
+  }
+
+.CodeMirror {
+    border: 1px solid #eee;
+    height: auto;
+}
+
+.code-action-div {
+    position: fixed;
+    top: 95%;
+    right: 0;
+    width: 35%;
+    height: 15%;
+    background-color: #ababab;
+    overflow: auto;
+    text-align:center;
+    vertical-align: middle;
+  }
+
+.file-selector-div {
+    position: fixed;
+    top: 0%;
+    right: 0;
+    width: 35%;
+    height: 5%;
+    background-color: #19a2e3;
+    overflow: auto;
+    text-align:center;
+    vertical-align: middle;
+  }
