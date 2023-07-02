@@ -6,6 +6,7 @@
     height: 90%;
     background-color: #f1f1f1;
     overflow: auto;
+    z-index: 5;
   }
 
 .CodeMirror {
@@ -17,22 +18,141 @@
     position: fixed;
     top: 95%;
     right: 0;
-    width: 35%;
+    width: 100%;
     height: 15%;
     background-color: #ababab;
-    overflow: auto;
-    text-align:center;
-    vertical-align: middle;
+    float: left;
+    justify-content: center;
+    z-index: 5;
   }
 
 .file-selector-div {
     position: fixed;
     top: 0%;
     right: 0;
-    width: 35%;
+    width: 100%;
     height: 5%;
     background-color: #19a2e3;
     overflow: auto;
     text-align:center;
     vertical-align: middle;
   }
+
+#icons {
+    float: left;
+}
+
+.module-element {
+  position: relative;
+  font-family: 'Courier New', Courier, monospace;
+  margin-bottom: 2px;
+  display: flex;
+  flex-direction: row;
+}
+
+.btn {
+  background-color: transparent;
+  border: none;
+  opacity: 1;
+  transition: 0.3s;
+}
+
+.btn:hover {
+  opacity: 0.8;
+  cursor: pointer;
+}
+
+/*************************************************/
+.dropdown {
+  position: relative;
+  display:inline-block;
+}
+
+
+.dropdown button {
+  background-color: #f9f9f9;
+  border: none;
+  color: black;
+  padding: 10px 15px;
+  font-size: 16px;
+  z-index: 1;
+  cursor: pointer;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #fff;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 2;
+  border-radius: 5px;
+  overflow: hidden;
+  top: 100%;
+}
+
+.dropdown-content-item{
+  background-color: #aaa;
+  z-index: 1;
+}
+
+
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+.dropdown-item {
+  color: black;
+  padding: 10px 15px;
+  text-decoration: none;
+  display: block;
+  transition: background-color 0.3s ease;
+  margin-right: 10px;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.dropdown-item:hover {
+  background-color: #f1f1f1;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.dropdown-container {
+  display: flex;
+  flex-direction:row;
+  vertical-align: middle;
+}
+
+.selector-box {
+  background-color: #f4f4f4;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.condition-box {
+  background-color: #f4f4f4;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.title {
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+button {
+  margin: 5px 0;
+  padding: 8px 16px;
+  border: none;
+  background-color: #1f2551;
+  color: #fff;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  opacity: 0.5;
+}
+
+.selector-button {
+  width: 100%;
+}
