@@ -1,0 +1,14 @@
+[
+    {
+      "bit": 9,
+      "name": "egressSpec_t"
+    },
+    {
+      "bit": 48,
+      "name": "macAddr_t"
+    },
+    {
+      "bit": 32,
+      "name": "ip4Addr_t"
+    }
+]

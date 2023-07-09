@@ -1,0 +1,15 @@
+[
+  {"name": "metadata",
+    "content": []},
+  {"name": "headers",
+    "content": [
+    {
+      "type": "ethernet_t",
+      "name": "ethernet"
+    },
+    {
+      "type": "ipv4_t",
+      "name": "ipv4"
+    }
+  ]}
+]

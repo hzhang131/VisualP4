@@ -1,5 +1,5 @@
 /* Helper functions. */
-function UpdateConditionBoxLocation(){
+function UpdateConditionBoxLocation(zoom_level){
   var side_by_side_divs = document.querySelectorAll('div[class^="side-by-side-div"]');
   var current_index = 0;
   for (current_index = 0; current_index < side_by_side_divs.length; current_index++){
@@ -29,17 +29,65 @@ function UpdateConditionBoxLocation(){
     
         var width = side_by_side_divs[current_index].offsetWidth;
         var height = side_by_side_divs[current_index].offsetHeight;
-    
+        
+        console.log(width, height, centerX, centerY);
         var left = centerX - (width / 2); // Calculate the left position
         var top = centerY - (height / 2); // Calculate the top position
         side_by_side_divs[current_index].style.top = top + "px";
         side_by_side_divs[current_index].style.left = left + "px";
+        if (zoom_level){
+          side_by_side_divs[current_index].style.transform = "scale(" + + ")";
+        }
     }
   }
 }
 
-function UpdateConditionBoxZoom(x_diff, y_diff, zoom_lvl){
-   return;
+function CheckStalePathBox(){
+  var side_by_side_divs = document.querySelectorAll('div[class^="side-by-side-div"]');
+  var current_index = 0;
+  for (current_index = 0; current_index < side_by_side_divs.length; current_index++){
+    var child_divs_keyword_list = ["target", "head", "field3", "field4"];
+    var child_div_classname = side_by_side_divs[current_index].className;
+    var child_div_classname_chunks = child_div_classname.split('-');
+
+    if (!child_divs_keyword_list.includes(child_div_classname_chunks[child_div_classname_chunks.length - 1])){
+        // This indicates that this block is the block that we are looking for.
+        // Get id, grab path, and update location.
+        // slice name to match svg class.
+    
+        var svg_elements = document.querySelectorAll(`svg[class^="connection"]`);
+        var svg_index = -1;
+        for (svg_index = 0; svg_index < svg_elements.length; svg_index++){
+            if (svg_elements[svg_index].className.baseVal.replaceAll(' ', '-') == child_div_classname_chunks.slice(4).join('-')){
+               // Found the svg element that we want to take information from... Break from the loop.
+               break;
+            }
+        }
+        
+        if (svg_index == svg_elements.length) {
+          // Stale path box, remove the side by side div.
+          side_by_side_divs[current_index].remove();
+          continue;
+        }
+        var path_box = svg_elements[svg_index].querySelector('path.main-path');
+        var path_pos_data = path_box.getBoundingClientRect();
+
+        var centerX = path_pos_data.left + (path_pos_data.width / 2); // Calculate the x-coordinate of the center
+        var centerY = path_pos_data.top + (path_pos_data.height / 2); // Calculate the y-coordinate of the center
+    
+        var width = side_by_side_divs[current_index].offsetWidth;
+        var height = side_by_side_divs[current_index].offsetHeight;
+        
+        console.log(width, height, centerX, centerY);
+        var left = centerX - (width / 2); // Calculate the left position
+        var top = centerY - (height / 2); // Calculate the top position
+        side_by_side_divs[current_index].style.top = top + "px";
+        side_by_side_divs[current_index].style.left = left + "px";
+        if (zoom_level){
+          side_by_side_divs[current_index].style.transform = "scale(" + + ")";
+        }
+    }
+  }
 }
 
 
@@ -368,6 +416,7 @@ class Drawflow {
           this.removeReouteConnectionSelected();
           this.connection_selected = null;
         }
+        CheckStalePathBox();
       break;    
 
       default:
@@ -409,8 +458,8 @@ class Drawflow {
       y = this.canvas_y + (-(this.pos_y - e_pos_y))
       this.dispatch('translate', { x: x, y: y});
       this.precanvas.style.transform = "translate("+x+"px, "+y+"px) scale("+this.zoom+")";
-      UpdateConditionBoxLocation();
-      UpdateConditionBoxZoom(x, y, this.zoom);
+      UpdateConditionBoxLocation(this.zoom);
+      // UpdateConditionBoxZoom(x, y, this.zoom);
     }
     if(this.drag) {
       e.preventDefault();
@@ -430,7 +479,7 @@ class Drawflow {
       /* To make programming more simple, I am fetching ***EVERY PATH FROM THE HTML FILE***. 
          Of course, there might be many more better solutions. However, it is NOT on the highest priority for now!
       */
-      UpdateConditionBoxLocation();
+      UpdateConditionBoxLocation(this.zoom);
     }
 
     if(this.drag_point) {
@@ -654,7 +703,7 @@ class Drawflow {
                                           </div>                                      
                                     </div>`;
           
-          
+          console.log("Check condition hehe!")
           // Position the condition box right above the deletebox. */
           conditionbox.style.top = e.clientY * ( this.precanvas.clientHeight / (this.precanvas.clientHeight * this.zoom)) - ((this.precanvas.getBoundingClientRect().y + 40) *  ( this.precanvas.clientHeight / (this.precanvas.clientHeight * this.zoom)) ) + "px" ;
           conditionbox.style.left = e.clientX * ( this.precanvas.clientWidth / (this.precanvas.clientWidth * this.zoom)) - ((this.precanvas.getBoundingClientRect().x - 20)*  ( this.precanvas.clientWidth / (this.precanvas.clientWidth * this.zoom)) ) + "px";

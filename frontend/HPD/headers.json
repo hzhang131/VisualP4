@@ -1,0 +1,73 @@
+[
+    {
+      "name": "ethernet_t",
+      "fields": [
+        {
+          "name": "dstAddr",
+          "type": "macAddr_t"
+        },
+        {
+          "name": "srcAddr",
+          "type": "macAddr_t"
+        },
+        {
+          "name": "etherType",
+          "type": "bit<16>"
+        }
+      ]
+    },
+    {
+      "name": "ipv4_t",
+      "fields": [
+        {
+          "name": "version",
+          "type": "bit<4>"
+        },
+        {
+          "name": "ihl",
+          "type": "bit<4>"
+        },
+        {
+          "name": "diffserv",
+          "type": "bit<8>"
+        },
+        {
+          "name": "totalLen",
+          "type": "bit<16>"
+        },
+        {
+          "name": "identification",
+          "type": "bit<16>"
+        },
+        {
+          "name": "flags",
+          "type": "bit<3>"
+        },
+        {
+          "name": "fragOffset",
+          "type": "bit<13>"
+        },
+        {
+          "name": "ttl",
+          "type": "bit<8>"
+        },
+        {
+          "name": "protocol",
+          "type": "bit<8>"
+        },
+        {
+          "name": "hdrChecksum",
+          "type": "bit<16>"
+        },
+        {
+          "name": "srcAddr",
+          "type": "ip4Addr_t"
+        },
+        {
+          "name": "dstAddr",
+          "type": "ip4Addr_t"
+        }
+      ]
+    }
+  ]
+  

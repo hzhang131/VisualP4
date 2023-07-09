@@ -17,7 +17,16 @@
 <body style="background-color:#7CDEDC;">
   <script src="main.js"></script>
     <div id="drawflow"></div>
+  <div class="headers-page">
+    <div class="headers-page-item" id = "vars"> </div>
+    <div class="headers-page-item" id = "typedefs"> </div>
+    <div class="headers-page-item" id = "headers"> </div>
+    <div class="headers-page-item" id = "structs"> </div>
+  </div>
   <div class="file-selector-div">
+    <div class="buttons">
+      <button style="float:left; vertical-align: center;" onclick = "HeaderDisplaySetting()"> Headers </button>
+    </div>
     <div class="buttons">
       <button style="float:right; vertical-align: center;" onclick = "CodeDisplaySetting()"> Code </button>
     </div>

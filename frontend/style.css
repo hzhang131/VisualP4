@@ -156,3 +156,118 @@ button:hover {
 .selector-button {
   width: 100%;
 }
+
+.headers-page {
+  display: block;
+  background-color: #EEA47F;
+  position: absolute;
+  z-index: 10;
+  top: 5%;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+  opacity: 0;
+  height: 0;
+  overflow: auto;
+  justify-content: center;
+  align-items: center;
+}
+
+.headers-page.show {
+  display: block;
+  transform: translateX(0%);
+  opacity: 1;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+}
+
+.headers-page-item {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  max-width: 500px; /* Adjust the maximum width as needed */
+  margin: 10px;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  font-family: "Courier New", Courier, monospace;
+  color: #333;
+  transition: transform 0.3s ease;
+}
+
+.headers-page-item:hover {
+  transform: scale(1.05);
+}
+
+/* Optional: Additional styling for the headers-page-item divs */
+.headers-page-item h2 {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.headers-page-item p {
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+.data-container {
+  display: inline-block;
+  font-family: "Courier New", Courier, monospace;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 0 10px 20px 0;
+  transition: box-shadow 0.3s ease;
+  cursor: pointer;
+  background-color: #F7F7F7;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 250px; /* Adjust the width to your preference */
+}
+
+.data-container:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.data-container .data-name {
+  font-size: 16px;
+  font-weight: bold;
+  padding: 8px 12px;
+  background-color: #D0DAE5;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.data-container .data-fields {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+.data-container:hover .data-fields {
+  max-height: 1000px; /* Adjust to a larger value if needed */
+}
+
+.data-container .data-field {
+  display: flex;
+  align-items: center;
+  margin-bottom: 5px;
+  color: #555;
+}
+
+.data-container .data-field span:first-child {
+  color: #A0A0A0;
+}
+
+.data-container .data-field span:last-child {
+  margin-left: 5px;
+}
+
+.data-container::after {
+  content: "";
+  display: block;
+  height: 1px;
+  background-color: #ddd;
+  margin-top: 10px;
+}

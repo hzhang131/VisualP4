@@ -1,0 +1,8 @@
+[
+    {
+      "const": 1,
+      "type": "bit<16>",
+      "name": "TYPE_IPV4",
+      "value": "0x800"
+    }
+]
