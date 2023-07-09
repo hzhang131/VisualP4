@@ -688,17 +688,11 @@ class Drawflow {
                                           <div class="dropdown" id = "${connection_id}-category">
                                             <button class="dropdown-item" >Menu &#9662;</button>
                                             <div class="dropdown-content"  id = "${connection_id}-category">
-                                                <button class="dropdown-content-item" onclick = 'dropdownContentItemConnectionHandler("${connection_id}", "switch-head", "hdr.ethernet.etherType: ")' style = "z-index: 2;">hdr.ethernet.etherType</button>
-                                                <button class="dropdown-content-item" onclick = 'dropdownContentItemConnectionHandler("${connection_id}", "switch-head", "hdr.ethernet.dstAddr: ")' style = "z-index: 2;">hdr.ethernet.dstAddr</button>
-                                                <button class="dropdown-content-item" onclick = 'dropdownContentItemConnectionHandler("${connection_id}", "switch-head", "hdr.ethernet.srcAddr: ")' style = "z-index: 2;">hdr.ethernet.srcAddr</button>
                                             </div>
                                           </div>
                                           <div class="dropdown" id = "${connection_id}-target">
                                             <button class="dropdown-item" >Target &#9662;</button>
                                             <div class="dropdown-content"  id = "${connection_id}-target">
-                                                <button class="dropdown-content-item" onclick = 'dropdownContentItemConnectionHandler("${connection_id}", "switch-target", "TYPE_IPV4")' style = "z-index: 2;">TYPE_IPV4</button>
-                                                <button class="dropdown-content-item" onclick = 'dropdownContentItemConnectionHandler("${connection_id}", "switch-target", "TYPE_IPV6")' style = "z-index: 2;">TYPE_IPV6</button>
-                                                <button class="dropdown-content-item" onclick = 'dropdownContentItemConnectionHandler("${connection_id}", "switch-target", "default")' style = "z-index: 2;">default</button>
                                             </div>
                                           </div>                                      
                                     </div>`;

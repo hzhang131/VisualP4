@@ -11,7 +11,7 @@ let fileCount = 0;
 let global_node_dict = [];
 let global_flow_editor = null;
 let global_slider = null;
-let display_code = true;
+let display_code = false;
 let display_headers_page = false;
 /* This thing is Javascript's equivalent of a defaultdict. */
 let highest_node_sequence = new Proxy(
@@ -22,29 +22,28 @@ let highest_node_sequence = new Proxy(
 );
 
 let ACTION_STYLE_OVERRIDE = [
-  "width: 300px;",
+  "min-width: 400px;",
   "min-height: 100px;",
   "border-radius: 10px;",
-  "background: #DB3A34; align-items: baseline;",
+  "background: #DB3A34; align-items: baseline;"
 ];
 let STATE_STYLE_OVERRIDE = [
-  "width: 300px;",
+  "min-width: 400px;",
   "min-height: 100px;",
   "border-radius: 10px;",
-  "background: #DDCAD9; align-items: baseline;",
+  "background: #DDCAD9; align-items: baseline;"
 ];
 let TABLE_STYLE_OVERRIDE = [
-  "width: 300px;",
+  "min-width: 400px;",
   "min-height: 100px;",
   "border-radius: 10px;",
-  "background: #6A5B6E; align-items: baseline;",
+  "background: #6A5B6E; align-items: baseline;"
 ];
 let STYLE_OVERRIDE = {
   action: ACTION_STYLE_OVERRIDE,
   state: STATE_STYLE_OVERRIDE,
   table: TABLE_STYLE_OVERRIDE,
 };
-var INIT_HEADER_PAGE_DATA = {};
 let ACTION_HTMLCONTENT_FIELDS = function (node_id) {
   return `<div class = "module-element">
                                     <p style="justify-content: center; float:left; margin: auto;"> Action </p>
@@ -100,8 +99,6 @@ let STATE_STATEMENT = function (node_id, sequence_id) {
                                         <div class="dropdown" id = "target-${node_id}-${sequence_id}">
                                             <button class="dropdown-item">Target &#9662;</button>
                                             <div class="dropdown-content">
-                                                <button class="dropdown-content-item" onclick="dropdownContentItemHandler('${node_id}', '${sequence_id}', 'target', 'hdr.ethernet')">hdr.ethernet</button>
-                                                <button class="dropdown-content-item" onclick="dropdownContentItemHandler('${node_id}', '${sequence_id}', 'target', 'hdr.ipv4')">hdr.ipv4</button>
                                             </div>               
                                         </div>
                                         <button class="btn" onclick="dropdownDivRemove('${node_id}', '${sequence_id}')"> 
@@ -127,9 +124,16 @@ let INJECT_FUNCS = {
   "headers": InjectHeaders,
 };
 
+let state_extraction_targets = null;
+let state_condition_targets = null;
+let raw_condition_html = null;
+
 /******************************** Main Logic and functions *****************************/
 window.addEventListener("DOMContentLoaded", function () {
   //This section loads up the code editor(s).
+  let INIT_HEADER_PAGE_DATA = {};
+  INIT_HEADER_PAGE_DATA["ABC"] = "abc";
+  console.log(INIT_HEADER_PAGE_DATA);
   var codeTextArea = document.getElementById("code");
   height = window.innerHeight;
   var minLines = Math.trunc((height * 0.8) / 15) + 3;
@@ -164,7 +168,16 @@ window.addEventListener("DOMContentLoaded", function () {
   main_drawflow.style.height = 96 + "%";
   // I don't really know how to fix this, but here is a hardcoded height value
   // so that main_drawflow doesn't cover everything else we want.
-  HeaderPageData();
+  HeaderPageData(INIT_HEADER_PAGE_DATA)
+  .then((INIT_HEADER_PAGE_DATA) => {
+    console.log("INIT_HEADER_PAGE_DATA object:", INIT_HEADER_PAGE_DATA);
+    // Call other functions passing INIT_HEADER_PAGE_DATA as needed
+    state_extraction_targets = inferStateExtractionTarget(INIT_HEADER_PAGE_DATA);
+    state_condition_targets = inferStateConditionTarget(INIT_HEADER_PAGE_DATA);
+  })
+  .catch((error) => {
+    console.error("Error:", error);
+  });
 });
 
 function reportWindowSize() {
@@ -419,41 +432,49 @@ function HeaderDisplaySetting() {
   display_headers_page = !display_headers_page;
 }
 
-function HeaderPageData() {
+function HeaderPageData(INIT_HEADER_PAGE_DATA) {
   // Reads the initial header data stored in './HPD/'
   const directoryPath = "./HPD/";
-  fetch(directoryPath)
-    .then((response) => response.text())
-    .then((fileList) => {
-      const files = fileList.split("\n");
-      console.log(files);
-      files.forEach((file) => {
-        if (file.includes(".json")) {
-          const regex = /<a[^>]+>([^<]+)<\/a>/;
-          const match = file.match(regex);
-          const filePath = directoryPath + match[1];
-          fetch(filePath)
-            .then((response) => response.json())
-            .then((jsonData) => {
-              // Use the JSON data from the file
-              console.log(match[1].slice(0, -5));
-              INJECT_FUNCS[match[1].slice(0, -5)](
-                document.querySelector(
-                  `.headers-page-item#${match[1].slice(0, -5)}`
-                ),
-                jsonData
-              );
-            })
-            .catch((error) => {
-              console.error("Error reading file:", error);
-            });
-        }
+  var INIT_HEADER_PAGE_DATA = {};
+
+  return new Promise((resolve, reject) => {
+    fetch(directoryPath)
+      .then((response) => response.text())
+      .then((fileList) => {
+        const files = fileList.split("\n");
+        console.log(files);
+        const fetchPromises = files.map((file) => {
+          if (file.includes(".json")) {
+            const regex = /<a[^>]+>([^<]+)<\/a>/;
+            const match = file.match(regex);
+            const filePath = directoryPath + match[1];
+            return fetch(filePath)
+              .then((response) => response.json())
+              .then((jsonData) => {
+                console.log(match[1].slice(0, -5));
+                INJECT_FUNCS[match[1].slice(0, -5)](
+                  document.querySelector(`.headers-page-item#${match[1].slice(0, -5)}`),
+                  jsonData
+                );
+                INIT_HEADER_PAGE_DATA[match[1].slice(0, -5)] = jsonData;
+                console.log("JSON data stored in INIT_HEADER_PAGE_DATA:", match[1].slice(0, -5));
+              })
+              .catch((error) => {
+                console.error("Error reading file:", error);
+              });
+          }
+        });
+        return Promise.all(fetchPromises);
+      })
+      .then(() => {
+        resolve(INIT_HEADER_PAGE_DATA);
+      })
+      .catch((error) => {
+        reject(error);
       });
-    })
-    .catch((error) => {
-      console.error("Error reading directory:", error);
-    });
+  });
 }
+
 
 function InjectVars(html_block, vars) {
   var tempHTML = "";
@@ -589,7 +610,7 @@ function UpdateConditionBoxLocation(zoom_level) {
       // slice name to match svg class.
 
       var svg_elements = document.querySelectorAll(`svg[class^="connection"]`);
-      var svg_index = -1;
+      var sg_index = -1;
       for (svg_index = 0; svg_index < svg_elements.length; svg_index++) {
         if (
           svg_elements[svg_index].className.baseVal.replaceAll(" ", "-") ==
@@ -622,14 +643,116 @@ function UpdateConditionBoxLocation(zoom_level) {
   }
 }
 
+function inferStateExtractionTarget(INIT_HEADER_PAGE_DATA){
+  var extraction_targets = [];
+  /* Infers the extract target for State modules, then inject into the dropdown menu */ 
+  for (let i = 0; i < INIT_HEADER_PAGE_DATA["structs"].length; i++){
+      if (INIT_HEADER_PAGE_DATA["structs"][i]["name"] == "headers"){
+          state_target_header_info = INIT_HEADER_PAGE_DATA["structs"][i];
+          break;
+      }
+  }
+  /* Generate possible options */
+  for (let i = 0; i < state_target_header_info["content"].length; i++){
+      var type = state_target_header_info["content"][i]["type"];
+      var name = state_target_header_info["content"][i]["name"];
+      /* dive into all options under header `type` */ 
+      for (let j = 0; j < INIT_HEADER_PAGE_DATA["headers"].length; j++){
+          if (type == INIT_HEADER_PAGE_DATA["headers"][j]["name"]) {
+            for (let k = 0; k < INIT_HEADER_PAGE_DATA["headers"][j]["fields"].length; k++){
+                /* TODO: change it later!!!!! We should not hardcode hdr to extraction targets.*/
+                extraction_targets.push(`hdr.${name}.${INIT_HEADER_PAGE_DATA["headers"][j]["fields"][k]["name"]}`);
+            }
+          }
+      }
+  }
+
+  return extraction_targets;
+}
+
+function inferStateConditionTarget(INIT_HEADER_PAGE_DATA){
+    var condition_targets = ["default"];
+    /* Infers the extract target for State modules, then inject into the dropdown menu */ 
+    for (let i = 0; i < INIT_HEADER_PAGE_DATA["vars"].length; i++){
+        condition_targets.push(INIT_HEADER_PAGE_DATA["vars"][i]["name"]);
+    }
+    return condition_targets;
+}
+
+
+function resolveExtractionTargets() {
+  return new Promise((resolve) => {
+    const checkVariableType = setInterval(() => {
+      if (Array.isArray(state_extraction_targets) && Array.isArray(state_condition_targets)) {
+        clearInterval(checkVariableType);
+        resolve();
+      }
+    }, 100);
+  });
+}
+
+function resolveConditionHTML() {
+  return new Promise((resolve, reject) => {
+    const checkVariableType = setInterval(() => {
+      const dropdownElements = document.querySelectorAll('.condition-selector .dropdown');
+      console.log(dropdownElements);
+      if (dropdownElements.length) {
+        raw_condition_html = dropdownElements;
+        clearInterval(checkVariableType);
+        resolve();
+      }
+    }, 100);
+
+    // Reject the promise after a certain time
+    setTimeout(() => {
+      clearInterval(checkVariableType);
+      reject();
+    }, 100); // Set a timeout value for the rejection (e.g., 5 seconds)
+  })
+  .catch(() => {
+    // Do nothing if the promise is rejected
+  });
+}
+
+async function injectLinkTargets(){
+  await resolveExtractionTargets();
+  await resolveConditionHTML();
+  if (raw_condition_html && state_extraction_targets){
+    console.log("condition met", raw_condition_html);
+    /* Menu */
+    raw_condition_html[0].querySelector(".dropdown-content");
+    temp_menu_html = "";
+    /* Target */
+    raw_condition_html[1].querySelector(".dropdown-content");
+    temp_target_html = "";
+    /* Extract ID */
+    var connection_id = raw_condition_html[0].querySelector(".dropdown-content").id;
+    /* Inject menu functions. */
+    for (let i = 0; i < state_extraction_targets.length; i++){
+      temp_menu_html += `<button class="dropdown-content-item" onclick = 'dropdownContentItemConnectionHandler("${connection_id.slice(0, -9)}", "switch-head", "${state_extraction_targets[i]}: ")' style = "z-index: 2;">${state_extraction_targets[i]}</button>\n`;
+    }
+    /* Inject Conditions */
+    for (let i = 0; i < state_condition_targets.length; i++){
+      temp_target_html += `<button class="dropdown-content-item" onclick = 'dropdownContentItemConnectionHandler("${connection_id.slice(0, -9)}", "switch-target", "${state_condition_targets[i]}")' style = "z-index: 2;">${state_condition_targets[i]}</button>\n`;
+    }
+    
+    raw_condition_html[0].querySelector(".dropdown-content").innerHTML = temp_menu_html;
+    raw_condition_html[1].querySelector(".dropdown-content").innerHTML = temp_target_html;
+
+  } else {
+    console.log("not done yet");
+  }
+}
+
 window.addEventListener("resize", reportWindowSize);
 window.addEventListener("keydown", captureCode);
+window.addEventListener("contextmenu", injectLinkTargets);
 
 /***********************************Misc functions****************************/
 function addActionModuleStatements(node_id) {
   console.log("line 207");
 }
-function addStateModuleStatements(node_id) {
+async function addStateModuleStatements(node_id) {
   /***Get number of current statements ***/
   matches = document.getElementById(node_id);
   node_display_content = matches.childNodes[1];
@@ -645,6 +768,17 @@ function addStateModuleStatements(node_id) {
   );
   newDiv.innerHTML =
     STATEMENTS["state"](node_id, highest_node_sequence[node_id]) + "<br>";
+  /* inject `state_extract_targets` into corresponding fields. */
+  await resolveExtractionTargets();
+  dropdownDivs = newDiv.getElementsByClassName("dropdown-content");
+  console.log(dropdownDivs);
+  const target_div = dropdownDivs[1];
+  var tempHTML = ""
+  for (let i = 0; i < state_extraction_targets.length; i++){
+    tempHTML += `<button class="dropdown-content-item" onclick="dropdownContentItemHandler('${node_id}', '${highest_node_sequence[node_id]}', 'target', '${state_extraction_targets[i]}')">${state_extraction_targets[i]}</button>\n`;
+  }
+  target_div.innerHTML = tempHTML;
+  
   /* increments node_sequence to prevent collisions. */
   highest_node_sequence[node_id] += 1;
   /* Append the new div as a child of the parent div. */

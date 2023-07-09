@@ -87,7 +87,6 @@
   box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
   z-index: 2;
   border-radius: 5px;
-  overflow: hidden;
   top: 100%;
 }
 
@@ -99,6 +98,8 @@
 
 .dropdown:hover .dropdown-content {
   display: block;
+  max-height: 200px; /* Set the desired max height */
+  overflow-y: auto; /* Add vertical scrollbar when necessary */
 }
 
 .dropdown-item {
