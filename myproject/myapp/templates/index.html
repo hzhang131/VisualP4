@@ -1,0 +1,48 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>VisualP4 IDE</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.2/codemirror.min.css">
+  <link rel="stylesheet" href="{% static 'style.css' %}">
+  <link rel="stylesheet" href="{% static 'custom.css' %}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jerosoler/Drawflow/dist/drawflow.min.css">
+  <script src="{% static 'drawflow.js' %}"></script>
+  <script src="{% static 'metadata.js' %}"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.2/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.2/mode/javascript/javascript.min.js"></script>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body style="background-color:#7CDEDC;">
+  <script src="{% static 'main.js' %}"></script>
+    <div id="drawflow"></div>
+  <div class="headers-page">
+    <div class="headers-page-item" id="vars"> </div>
+    <div class="headers-page-item" id="typedefs"> </div>
+    <div class="headers-page-item" id="headers"> </div>
+    <div class="headers-page-item" id="structs"> </div>
+  </div>
+  <div class="file-selector-div">
+    <div class="buttons">
+      <button style="float:left; vertical-align: center;" onclick="HeaderDisplaySetting()"> Headers </button>
+    </div>
+    <div class="buttons">
+      <button style="float:right; vertical-align: center;" onclick="CodeDisplaySetting()"> Code </button>
+    </div>
+  </div>
+  <div class="code-block-div"> 
+    <textarea id="code" rows="40"></textarea>
+  </div>
+  <div class="code-action-div">
+    <button id="icons" onclick="createNewModule()">
+      <i class="fa-solid fa-plus"></i>
+    </button>
+    <div id="icons" class="slidecontainer">
+      <input type="range" min="0.5" max="1.6" value="1" step="0.1" class="slider" id="myRange">
+    </div>
+  </div>
+</body>
+</html>
