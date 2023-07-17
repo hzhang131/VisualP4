@@ -183,10 +183,8 @@ button:hover {
 }
 
 .headers-page-item {
-  display: flex;
-  flex-direction: row;
-  width: 100%;
-  max-width: 500px; /* Adjust the maximum width as needed */
+  display: table;
+  width: 95%;
   margin: 10px;
   padding: 20px;
   border-radius: 8px;
@@ -194,11 +192,12 @@ button:hover {
   font-family: "Courier New", Courier, monospace;
   color: #333;
   transition: transform 0.3s ease;
+  overflow-x:scroll
 }
 
-.headers-page-item:hover {
+/* .headers-page-item:hover {
   transform: scale(1.05);
-}
+} */
 
 /* Optional: Additional styling for the headers-page-item divs */
 .headers-page-item h2 {
@@ -222,7 +221,7 @@ button:hover {
   cursor: pointer;
   background-color: #F7F7F7;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  width: 250px; /* Adjust the width to your preference */
+  width: 275px; 
 }
 
 .data-container:hover {
@@ -238,6 +237,7 @@ button:hover {
   border-top-right-radius: 8px;
   margin-bottom: 10px;
   color: #333;
+  min-width: 250px;
 }
 
 .data-container .data-fields {
@@ -272,3 +272,23 @@ button:hover {
   background-color: #ddd;
   margin-top: 10px;
 }
+
+.add-icon {
+  position: relative;
+  min-width: 30px;
+  height: 30px;
+  background-color: #79606c;
+  border-radius: 5px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 30px;
+  margin-right: 5px;
+  float: right;
+  padding: 5px;
+}
+
+.add-icon:hover{
+  opacity: 0.7;
+}
+
