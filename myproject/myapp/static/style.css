@@ -1,45 +1,45 @@
 .code-block-div {
-    position: fixed;
-    top: 5%;
-    right: 0;
-    width: 35%;
-    height: 90%;
-    background-color: #f1f1f1;
-    overflow: auto;
-    z-index: 5;
-  }
+  position: fixed;
+  top: 5%;
+  right: 0;
+  width: 35%;
+  height: 90%;
+  background-color: #f1f1f1;
+  overflow: auto;
+  z-index: 5;
+}
 
 .CodeMirror {
-    border: 1px solid #eee;
-    height: auto;
+  border: 1px solid #eee;
+  height: auto;
 }
 
 .code-action-div {
-    position: fixed;
-    top: 95%;
-    right: 0;
-    width: 100%;
-    height: 15%;
-    background-color: #ababab;
-    float: left;
-    justify-content: center;
-    z-index: 5;
-  }
+  position: fixed;
+  top: 95%;
+  right: 0;
+  width: 100%;
+  height: 15%;
+  background-color: #ababab;
+  float: left;
+  justify-content: center;
+  z-index: 5;
+}
 
 .file-selector-div {
-    position: fixed;
-    top: 0%;
-    right: 0;
-    width: 100%;
-    height: 5%;
-    background-color: #19a2e3;
-    overflow: auto;
-    text-align:center;
-    vertical-align: middle;
-  }
+  position: fixed;
+  top: 0%;
+  right: 0;
+  width: 100%;
+  height: 5%;
+  background-color: #19a2e3;
+  overflow: auto;
+  text-align: center;
+  vertical-align: middle;
+}
 
 #icons {
-    float: left;
+  float: left;
 }
 
 .module-element {
@@ -65,7 +65,7 @@
 /*************************************************/
 .dropdown {
   position: relative;
-  display:inline-block;
+  display: inline-block;
 }
 
 
@@ -84,13 +84,13 @@
   position: absolute;
   background-color: #fff;
   min-width: 160px;
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
   z-index: 2;
   border-radius: 5px;
   top: 100%;
 }
 
-.dropdown-content-item{
+.dropdown-content-item {
   background-color: #aaa;
   z-index: 1;
 }
@@ -98,8 +98,10 @@
 
 .dropdown:hover .dropdown-content {
   display: block;
-  max-height: 200px; /* Set the desired max height */
-  overflow-y: auto; /* Add vertical scrollbar when necessary */
+  max-height: 200px;
+  /* Set the desired max height */
+  overflow-y: auto;
+  /* Add vertical scrollbar when necessary */
 }
 
 .dropdown-item {
@@ -119,7 +121,7 @@
 
 .dropdown-container {
   display: flex;
-  flex-direction:row;
+  flex-direction: row;
   vertical-align: middle;
 }
 
@@ -192,12 +194,8 @@ button:hover {
   font-family: "Courier New", Courier, monospace;
   color: #333;
   transition: transform 0.3s ease;
-  overflow-x:scroll
+  overflow-x: scroll
 }
-
-/* .headers-page-item:hover {
-  transform: scale(1.05);
-} */
 
 /* Optional: Additional styling for the headers-page-item divs */
 .headers-page-item h2 {
@@ -212,7 +210,7 @@ button:hover {
 }
 
 .data-container {
-  display: inline-block;
+  display: inline-grid;
   font-family: "Courier New", Courier, monospace;
   border-radius: 8px;
   padding: 20px;
@@ -221,7 +219,7 @@ button:hover {
   cursor: pointer;
   background-color: #F7F7F7;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  width: 275px; 
+  width: 275px;
 }
 
 .data-container:hover {
@@ -247,7 +245,8 @@ button:hover {
 }
 
 .data-container:hover .data-fields {
-  max-height: 1000px; /* Adjust to a larger value if needed */
+  max-height: 1000px;
+  /* Adjust to a larger value if needed */
 }
 
 .data-container .data-field {
@@ -288,7 +287,11 @@ button:hover {
   padding: 5px;
 }
 
-.add-icon:hover{
+.add-icon:hover {
   opacity: 0.7;
 }
 
+.data-item {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}

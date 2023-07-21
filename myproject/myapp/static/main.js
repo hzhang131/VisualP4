@@ -178,15 +178,15 @@ window.addEventListener("DOMContentLoaded", function () {
   // I don't really know how to fix this, but here is a hardcoded height value
   // so that main_drawflow doesn't cover everything else we want.
   HeaderPageData(INIT_HEADER_PAGE_DATA)
-  .then((INIT_HEADER_PAGE_DATA) => {
-    console.log("INIT_HEADER_PAGE_DATA object:", INIT_HEADER_PAGE_DATA);
-    // Call other functions passing INIT_HEADER_PAGE_DATA as needed
-    state_extraction_targets = inferStateExtractionTarget(INIT_HEADER_PAGE_DATA);
-    state_condition_targets = inferStateConditionTarget(INIT_HEADER_PAGE_DATA);
-  })
-  .catch((error) => {
-    console.error("Error:", error);
-  });
+    .then((INIT_HEADER_PAGE_DATA) => {
+      console.log("INIT_HEADER_PAGE_DATA object:", INIT_HEADER_PAGE_DATA);
+      // Call other functions passing INIT_HEADER_PAGE_DATA as needed
+      state_extraction_targets = inferStateExtractionTarget(INIT_HEADER_PAGE_DATA);
+      state_condition_targets = inferStateConditionTarget(INIT_HEADER_PAGE_DATA);
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+    });
 });
 
 function reportWindowSize() {
@@ -452,7 +452,7 @@ function HeaderPageData(INIT_HEADER_PAGE_DATA) {
       .then((fileList) => {
         console.log(fileList);
         const files = JSON.parse(fileList)["files"];
-        for (let i = 0; i < files.length; i++){
+        for (let i = 0; i < files.length; i++) {
           var file_name = Object.keys(files[i])[0];
           var raw_json = files[i][file_name];
           var jsonData = JSON.parse(raw_json);
@@ -487,7 +487,7 @@ function InjectVars(html_block, vars) {
                   </div>`;
   for (let i = 0; i < vars.length; i++) {
     var item = vars[i];
-    if (item.const){
+    if (item.const) {
       tempHTML += `
       <div class="data-container" id = "${highest_headers_page_variable_sequence}">
         <div class="data-name">
@@ -498,7 +498,9 @@ function InjectVars(html_block, vars) {
         <div class="data-item" id = "${highest_subfield_sequence_under_headers_page_variables[highest_headers_page_variable_sequence]}">
           <span style = "color: #DC3545">const</span>
           <span style = "color: #007BFF">${item.type} </span>
-          <span>${item.value}</span>
+          <span>${item.value}</span> 
+          <button class="btn" style="float:right; padding:0px; margin-right: 10px; position: relative;" onclick = "deleteDataItem(${highest_headers_page_variable_sequence}, ${highest_subfield_sequence_under_headers_page_variables[highest_headers_page_variable_sequence]})"> <i class="fa-solid fa-circle-xmark fa-lg" style="color: #1f2551;"></i> </button>
+          <button class="btn" style="float:right; padding:0px; margin-right: 5px; position: relative;" onclick = "editDataItem(${highest_headers_page_variable_sequence}, ${highest_subfield_sequence_under_headers_page_variables[highest_headers_page_variable_sequence]})"> <i class="fa-solid fa-pen-to-square fa-lg" style="color: #1f2551;"></i> </button>
         </div>
       </div>
     `;
@@ -513,6 +515,8 @@ function InjectVars(html_block, vars) {
         <div class="data-item"  id = "${highest_subfield_sequence_under_headers_page_variables[highest_headers_page_variable_sequence]}">
           <span style = "color: #007BFF">${item.type} </span>
           <span>${item.value}</span>
+          <button class="btn" style="float:right; padding:0px; margin-right: 10px; position: relative;" onclick = "deleteDataItem(${highest_headers_page_variable_sequence}, ${highest_subfield_sequence_under_headers_page_variables[highest_headers_page_variable_sequence]})"> <i class="fa-solid fa-circle-xmark fa-lg" style="color: #1f2551;"></i> </button>
+          <button class="btn" style="float:right; padding:0px; margin-right: 5px; position: relative;" onclick = "editDataItem(${highest_headers_page_variable_sequence}, ${highest_subfield_sequence_under_headers_page_variables[highest_headers_page_variable_sequence]})"> <i class="fa-solid fa-pen-to-square fa-lg" style="color: #1f2551;"></i> </button>
         </div>
       </div>
     `;
@@ -520,7 +524,7 @@ function InjectVars(html_block, vars) {
     highest_subfield_sequence_under_headers_page_variables[highest_headers_page_variable_sequence] += 1;
     highest_headers_page_variable_sequence += 1;
   }
-  
+
   html_block.innerHTML = tempHTML;
   highest_headers_page_variable_sequence += 1;
 }
@@ -533,7 +537,7 @@ function InjectHeaders(html_block, headers) {
                   </div>`;
   for (let i = 0; i < headers.length; i++) {
     var item = headers[i];
-  
+
     tempHTML += `
       <div class="data-container" id = "${highest_headers_page_variable_sequence}">
         <div class="data-name">
@@ -546,9 +550,9 @@ function InjectHeaders(html_block, headers) {
     `;
     highest_headers_page_variable_sequence += 1;
   }
-  
+
   html_block.innerHTML = tempHTML;
-  
+
   function generateFieldsHTML(fields) {
     var fieldsHTML = '';
     for (let i = 0; i < fields.length; i++) {
@@ -557,12 +561,14 @@ function InjectHeaders(html_block, headers) {
         <div class="data-item" id = "${highest_subfield_sequence_under_headers_page_variables[highest_headers_page_variable_sequence]}">
           <span style = "color: #007BFF">${field.type}</span>
           <span>${field.name}</span>
+          <button class="btn" style="float:right; padding:0px; margin-right: 10px; position: relative;" onclick = "deleteDataItem(${highest_headers_page_variable_sequence}, ${highest_subfield_sequence_under_headers_page_variables[highest_headers_page_variable_sequence]})"> <i class="fa-solid fa-circle-xmark fa-lg" style="color: #1f2551;"></i> </button>
+          <button class="btn" style="float:right; padding:0px; margin-right: 5px; position: relative;" onclick = "editDataItem(${highest_headers_page_variable_sequence}, ${highest_subfield_sequence_under_headers_page_variables[highest_headers_page_variable_sequence]})"> <i class="fa-solid fa-pen-to-square fa-lg" style="color: #1f2551;"></i> </button>
         </div>
       `;
       highest_subfield_sequence_under_headers_page_variables[highest_headers_page_variable_sequence] += 1;
     }
     return fieldsHTML;
-  }  
+  }
   highest_headers_page_variable_sequence += 1;
 }
 
@@ -586,9 +592,9 @@ function InjectStructs(html_block, structs) {
     `;
     highest_headers_page_variable_sequence += 1;
   }
-  
+
   html_block.innerHTML = tempHTML;
-  
+
   function generateContentHTML(content) {
     var contentHTML = "";
     for (let i = 0; i < content.length; i++) {
@@ -597,13 +603,15 @@ function InjectStructs(html_block, structs) {
           <div class="data-item" id = "${highest_subfield_sequence_under_headers_page_variables[highest_headers_page_variable_sequence]}">
             <span style = "color: #007BFF">${subItem.type}</span>
             <span>${subItem.name}</span>
+            <button class="btn" style="float:right; padding:0px; margin-right: 10px; position: relative;" onclick = "deleteDataItem(${highest_headers_page_variable_sequence}, ${highest_subfield_sequence_under_headers_page_variables[highest_headers_page_variable_sequence]})"> <i class="fa-solid fa-circle-xmark fa-lg" style="color: #1f2551;"></i> </button>
+            <button class="btn" style="float:right; padding:0px; margin-right: 5px; position: relative;" onclick = "editDataItem(${highest_headers_page_variable_sequence}, ${highest_subfield_sequence_under_headers_page_variables[highest_headers_page_variable_sequence]})"> <i class="fa-solid fa-pen-to-square fa-lg" style="color: #1f2551;"></i> </button>
           </div>
       `;
       highest_subfield_sequence_under_headers_page_variables[highest_headers_page_variable_sequence] += 1;
     }
     return contentHTML;
   }
-  
+
 }
 
 function InjectTypedefs(html_block, typedefs) {
@@ -623,14 +631,16 @@ function InjectTypedefs(html_block, typedefs) {
       </div>
       <div class="data-item" id = "${highest_subfield_sequence_under_headers_page_variables[highest_headers_page_variable_sequence]}">
         <span style = "color: #007BFF">bit<${elem.bit}></span>
+        <button class="btn" style="float:right; padding:0px; margin-right: 10px; position: relative;" onclick = "deleteDataItem(${highest_headers_page_variable_sequence}, ${highest_subfield_sequence_under_headers_page_variables[highest_headers_page_variable_sequence]})"> <i class="fa-solid fa-circle-xmark fa-lg" style="color: #1f2551;"></i> </button>
+        <button class="btn" style="float:right; padding:0px; margin-right: 5px; position: relative;" onclick = "editDataItem(${highest_headers_page_variable_sequence}, ${highest_subfield_sequence_under_headers_page_variables[highest_headers_page_variable_sequence]})"> <i class="fa-solid fa-pen-to-square fa-lg" style="color: #1f2551;"></i> </button>
       </div>
     </div>
   `;
     highest_subfield_sequence_under_headers_page_variables[highest_headers_page_variable_sequence] += 1;
     highest_headers_page_variable_sequence += 1;
-  } 
+  }
   html_block.innerHTML = tempHTML;
-  
+
 }
 
 function addHeaderPageItem(type) {
@@ -646,7 +656,7 @@ function addHeaderPageItem(type) {
                                                 <button class="btn" style="float:right; padding:0px; margin-right: 2px; top: -3px; position: relative;"> <i class="fa-solid fa-circle-plus fa-lg" style="color: #1f2551;" onclick="changeDataContainerState('add', '${highest_headers_page_variable_sequence}', 'headers', '${random_name_for_testing_only}', 'Subfield Placeholder')"></i> </button>
                                             </div>
                                           `;
-                    break;
+      break;
     case "typedefs": selector.innerHTML += `
                                             <div class="data-container" id = "${highest_headers_page_variable_sequence}">
                                               <div class="data-name">
@@ -655,7 +665,7 @@ function addHeaderPageItem(type) {
                                                   <button class="btn" style="float:right; padding:0px; margin-right: 2px; top: -3px; position: relative;"> <i class="fa-solid fa-circle-plus fa-lg" style="color: #1f2551;" onclick="changeDataContainerState('add', '${highest_headers_page_variable_sequence}', 'typedefs', '${random_name_for_testing_only}', 'Subfield Placeholder')"></i> </button>
                                               </div>
                                             `;
-                    break;
+      break;
     case "structs": selector.innerHTML += ` 
                                             <div class="data-container" id = "${highest_headers_page_variable_sequence}">
                                             <div class="data-name">
@@ -664,7 +674,7 @@ function addHeaderPageItem(type) {
                                                 <button class="btn" style="float:right; padding:0px; margin-right: 2px; top: -3px; position: relative;"> <i class="fa-solid fa-circle-plus fa-lg" style="color: #1f2551;" onclick="changeDataContainerState('add', '${highest_headers_page_variable_sequence}', 'structs', '${random_name_for_testing_only}', 'Subfield Placeholder')"></i> </button>
                                             </div>
                                           `;
-                    break;
+      break;
     case "vars": selector.innerHTML += ` 
                                           <div class="data-container" id = "${highest_headers_page_variable_sequence}">
                                           <div class="data-name">
@@ -673,7 +683,7 @@ function addHeaderPageItem(type) {
                                               <button class="btn" style="float:right; padding:0px; margin-right: 2px; top: -3px; position: relative;"> <i class="fa-solid fa-circle-plus fa-lg" style="color: #1f2551;" onclick="changeDataContainerState('add', '${highest_headers_page_variable_sequence}', 'vars', '${random_name_for_testing_only}', 'Subfield Placeholder')"></i> </button>
                                           </div>
                                         `;
-                                      break;
+      break;
   }
   changeDataContainerState("add", highest_headers_page_variable_sequence, type, random_name_for_testing_only);
   highest_headers_page_variable_sequence += 1;
@@ -738,94 +748,94 @@ function UpdateConditionBoxLocation(zoom_level) {
   }
 }
 
-function inferStateExtractionTarget(INIT_HEADER_PAGE_DATA){
+function inferStateExtractionTarget(INIT_HEADER_PAGE_DATA) {
   var extraction_targets = [];
-  /* Infers the extract target for State modules, then inject into the dropdown menu */ 
-  for (let i = 0; i < INIT_HEADER_PAGE_DATA["structs"].length; i++){
-      if (INIT_HEADER_PAGE_DATA["structs"][i]["name"] == "headers"){
-          state_target_header_info = INIT_HEADER_PAGE_DATA["structs"][i];
-          break;
-      }
+  /* Infers the extract target for State modules, then inject into the dropdown menu */
+  for (let i = 0; i < INIT_HEADER_PAGE_DATA["structs"].length; i++) {
+    if (INIT_HEADER_PAGE_DATA["structs"][i]["name"] == "headers") {
+      state_target_header_info = INIT_HEADER_PAGE_DATA["structs"][i];
+      break;
+    }
   }
   /* Generate possible options */
-  for (let i = 0; i < state_target_header_info["content"].length; i++){
-      var type = state_target_header_info["content"][i]["type"];
-      var name = state_target_header_info["content"][i]["name"];
-      /* dive into all options under header `type` */ 
-      for (let j = 0; j < INIT_HEADER_PAGE_DATA["headers"].length; j++){
-          if (type == INIT_HEADER_PAGE_DATA["headers"][j]["name"]) {
-            for (let k = 0; k < INIT_HEADER_PAGE_DATA["headers"][j]["fields"].length; k++){
-                /* TODO: change it later!!!!! We should not hardcode hdr to extraction targets.*/
-                extraction_targets.push(`hdr.${name}.${INIT_HEADER_PAGE_DATA["headers"][j]["fields"][k]["name"]}`);
-            }
-          }
+  for (let i = 0; i < state_target_header_info["content"].length; i++) {
+    var type = state_target_header_info["content"][i]["type"];
+    var name = state_target_header_info["content"][i]["name"];
+    /* dive into all options under header `type` */
+    for (let j = 0; j < INIT_HEADER_PAGE_DATA["headers"].length; j++) {
+      if (type == INIT_HEADER_PAGE_DATA["headers"][j]["name"]) {
+        for (let k = 0; k < INIT_HEADER_PAGE_DATA["headers"][j]["fields"].length; k++) {
+          /* TODO: change it later!!!!! We should not hardcode hdr to extraction targets.*/
+          extraction_targets.push(`hdr.${name}.${INIT_HEADER_PAGE_DATA["headers"][j]["fields"][k]["name"]}`);
+        }
       }
+    }
   }
 
   return extraction_targets;
 }
 
 /* Hotflix, will clean up after I have time... This is pretty much exactly the same code as the above. */
-function updateStateExtractionTarget(){
+function updateStateExtractionTarget() {
   var extraction_targets = [];
-  /* Infers the extract target for State modules, then inject into the dropdown menu */ 
-  for (let i = 0; i < global_init_header_page_data["structs"].length; i++){
-      if (global_init_header_page_data["structs"][i]["name"] == "headers"){
-          state_target_header_info = global_init_header_page_data["structs"][i];
-          break;
-      }
+  /* Infers the extract target for State modules, then inject into the dropdown menu */
+  for (let i = 0; i < global_init_header_page_data["structs"].length; i++) {
+    if (global_init_header_page_data["structs"][i]["name"] == "headers") {
+      state_target_header_info = global_init_header_page_data["structs"][i];
+      break;
+    }
   }
   /* Generate possible options */
-  for (let i = 0; i < state_target_header_info["content"].length; i++){
-      var type = state_target_header_info["content"][i]["type"];
-      var name = state_target_header_info["content"][i]["name"];
-      /* dive into all options under header `type` */ 
-      for (let j = 0; j < global_init_header_page_data["headers"].length; j++){
-          if (type == global_init_header_page_data["headers"][j]["name"]) {
-            for (let k = 0; k < global_init_header_page_data["headers"][j]["fields"].length; k++){
-                /* TODO: change it later!!!!! We should not hardcode hdr to extraction targets.*/
-                extraction_targets.push(`hdr.${name}.${global_init_header_page_data["headers"][j]["fields"][k]["name"]}`);
-            }
-          }
+  for (let i = 0; i < state_target_header_info["content"].length; i++) {
+    var type = state_target_header_info["content"][i]["type"];
+    var name = state_target_header_info["content"][i]["name"];
+    /* dive into all options under header `type` */
+    for (let j = 0; j < global_init_header_page_data["headers"].length; j++) {
+      if (type == global_init_header_page_data["headers"][j]["name"]) {
+        for (let k = 0; k < global_init_header_page_data["headers"][j]["fields"].length; k++) {
+          /* TODO: change it later!!!!! We should not hardcode hdr to extraction targets.*/
+          extraction_targets.push(`hdr.${name}.${global_init_header_page_data["headers"][j]["fields"][k]["name"]}`);
+        }
       }
+    }
   }
 
   return extraction_targets;
 }
 
-function generateNewStateExtractionDropdown(){
+function generateNewStateExtractionDropdown() {
   dropdownDivs = newDiv.getElementsByClassName("dropdown-content");
   console.log(dropdownDivs);
-  for (let i = 1; i < dropdownDivs.length; i++){
+  for (let i = 1; i < dropdownDivs.length; i++) {
     const target_div = dropdownDivs[i];
     var tempHTML = ""
-    for (let i = 0; i < state_extraction_targets.length; i++){
+    for (let i = 0; i < state_extraction_targets.length; i++) {
       tempHTML += `<button class="dropdown-content-item" onclick="dropdownContentItemHandler('${node_id}', '${highest_node_sequence[node_id]}', 'target', '${state_extraction_targets[i]}')">${state_extraction_targets[i]}</button>\n`;
     }
     target_div.innerHTML = tempHTML;
   }
 }
 
-function inferStateConditionTarget(INIT_HEADER_PAGE_DATA){
-    var condition_targets = ["default"];
-    /* Infers the extract target for State modules, then inject into the dropdown menu */ 
-    for (let i = 0; i < INIT_HEADER_PAGE_DATA["vars"].length; i++){
-        condition_targets.push(INIT_HEADER_PAGE_DATA["vars"][i]["name"]);
-    }
-    return condition_targets;
-}
-
-/* Hotflix, will clean up after I have time... This is pretty much exactly the same code as the above. */
-function updateStateConditionTarget(){
+function inferStateConditionTarget(INIT_HEADER_PAGE_DATA) {
   var condition_targets = ["default"];
-  /* Infers the extract target for State modules, then inject into the dropdown menu */ 
-  for (let i = 0; i < global_init_header_page_data["vars"].length; i++){
-      condition_targets.push(global_init_header_page_data["vars"][i]["name"]);
+  /* Infers the extract target for State modules, then inject into the dropdown menu */
+  for (let i = 0; i < INIT_HEADER_PAGE_DATA["vars"].length; i++) {
+    condition_targets.push(INIT_HEADER_PAGE_DATA["vars"][i]["name"]);
   }
   return condition_targets;
 }
 
-function generateNewStateConditionDropdown(){
+/* Hotflix, will clean up after I have time... This is pretty much exactly the same code as the above. */
+function updateStateConditionTarget() {
+  var condition_targets = ["default"];
+  /* Infers the extract target for State modules, then inject into the dropdown menu */
+  for (let i = 0; i < global_init_header_page_data["vars"].length; i++) {
+    condition_targets.push(global_init_header_page_data["vars"][i]["name"]);
+  }
+  return condition_targets;
+}
+
+function generateNewStateConditionDropdown() {
   /* Lets test whether the main dropdowns work... */
 }
 
@@ -859,15 +869,15 @@ function resolveConditionHTML() {
       reject();
     }, 100); // Set a timeout value for the rejection (e.g., 5 seconds)
   })
-  .catch(() => {
-    // Do nothing if the promise is rejected
-  });
+    .catch(() => {
+      // Do nothing if the promise is rejected
+    });
 }
 
-async function injectLinkTargets(){
+async function injectLinkTargets() {
   await resolveExtractionTargets();
   await resolveConditionHTML();
-  if (raw_condition_html && state_extraction_targets){
+  if (raw_condition_html && state_extraction_targets) {
     console.log("condition met", raw_condition_html);
     /* Menu */
     raw_condition_html[0].querySelector(".dropdown-content");
@@ -878,14 +888,14 @@ async function injectLinkTargets(){
     /* Extract ID */
     var connection_id = raw_condition_html[0].querySelector(".dropdown-content").id;
     /* Inject menu functions. */
-    for (let i = 0; i < state_extraction_targets.length; i++){
+    for (let i = 0; i < state_extraction_targets.length; i++) {
       temp_menu_html += `<button class="dropdown-content-item" onclick = 'dropdownContentItemConnectionHandler("${connection_id.slice(0, -9)}", "switch-head", "${state_extraction_targets[i]}: ")' style = "z-index: 2;">${state_extraction_targets[i]}</button>\n`;
     }
     /* Inject Conditions */
-    for (let i = 0; i < state_condition_targets.length; i++){
+    for (let i = 0; i < state_condition_targets.length; i++) {
       temp_target_html += `<button class="dropdown-content-item" onclick = 'dropdownContentItemConnectionHandler("${connection_id.slice(0, -9)}", "switch-target", "${state_condition_targets[i]}")' style = "z-index: 2;">${state_condition_targets[i]}</button>\n`;
     }
-    
+
     raw_condition_html[0].querySelector(".dropdown-content").innerHTML = temp_menu_html;
     raw_condition_html[1].querySelector(".dropdown-content").innerHTML = temp_target_html;
 
@@ -895,61 +905,113 @@ async function injectLinkTargets(){
 }
 
 
-function changeDataContainerState(action, sequence_id, type, name=null, subfield=null){
+function changeDataContainerState(action, sequence_id, type, name = null, subfield = null) {
   /* Planning to take in subfield as a string, exact format has not been decided yet... */
   switch (action) {
-    case "add": 
-                console.log("This thing is giving me headaches...", sequence_id);
-                var element = document.querySelector(`.data-container[id="${sequence_id}"]`);
-                element.innerHTML += `<div class="data-item"  id = "${highest_subfield_sequence_under_headers_page_variables[sequence_id]}">
-                                        <span style = "color: #007BFF"> ${Math.random().toString(36).slice(2, 7)} </span>
-                                        <span> ${Math.random().toString(36).slice(2, 7)} </span>
+    case "add":
+      console.log("This thing is giving me headaches...", sequence_id);
+      var element = document.querySelector(`.data-container[id="${sequence_id}"]`);
+      element.innerHTML += `<div class="data-item"  id = "${highest_subfield_sequence_under_headers_page_variables[sequence_id]}">
+                                        <span style = "color: #007BFF"> temp-${sequence_id}-${highest_subfield_sequence_under_headers_page_variables[sequence_id]} </span>
+                                        <span> </span>
+                                        <button class="btn" style="float:right; padding:0px; margin-right: 10px; position: relative;" onclick = "deleteDataItem(${sequence_id}, ${highest_subfield_sequence_under_headers_page_variables[sequence_id]})"> <i class="fa-solid fa-circle-xmark fa-lg" style="color: #1f2551;"></i> </button>
+                                        <button class="btn" style="float:right; padding:0px; margin-right: 5px; position: relative;" onclick = "editDataItem(${highest_headers_page_variable_sequence}, ${highest_subfield_sequence_under_headers_page_variables[highest_headers_page_variable_sequence]})"> <i class="fa-solid fa-pen-to-square fa-lg" style="color: #1f2551;"></i> </button>
                                       </div>`
-                /* Add extraction targets to dropdown menus */
-                if (name) {
-                  /* If name is not defined, that indicates changeDataContainerState is called from initial html injection. */
-                  syncDropdownContent("add", type, sequence_id, name, subfield);
-                }
-                highest_subfield_sequence_under_headers_page_variables[sequence_id] += 1;
-                break;
+      /* Add extraction targets to dropdown menus */
+      if (name) {
+        /* If name is not defined, that indicates changeDataContainerState is called from initial html injection. */
+        syncDropdownContent("add", type, sequence_id, name, subfield);
+      }
+      highest_subfield_sequence_under_headers_page_variables[sequence_id] += 1;
+      break;
     case "delete": var element = document.querySelector(`.data-container[id="${sequence_id}"]`);
-                   element.remove();
-                   /* Remove extraction targets to dropdown menus */
-                   syncDropdownContent("remove", type, sequence_id, name);
-                   break;
+      element.remove();
+      /* Remove extraction targets to dropdown menus */
+      syncDropdownContent("remove", type, sequence_id, name);
+      break;
     default: break;
   }
 }
 
-function syncDropdownContent(mode, type, sequence_id, name = null, subfield=null){
-    /* Modify extraction targets and condition targets. */
-    switch (mode) {
-      case "add": if (subfield) {
-                    /* To be completed whenever subfield additions are completed. */
-                    /* 1. Search for names, if they already have been inserted before. */
-                    /* 2. Do insertion. */
-                    /* Not activated for now because everything is a mess. */
-                  } else {
-                    console.log("Add entry to global_init_header_page_data");
-                    global_init_header_page_data[type].push({"name": name});
-                  }
-                  break;
-      case "remove":  console.log("in remove.")
-                      for (let doc in global_init_header_page_data[type]) {
-                        console.log(global_init_header_page_data[type][doc]["name"], name)
-                        if (global_init_header_page_data[type][doc]["name"] == name){
-                          global_init_header_page_data[type].splice(doc);
-                          break;
-                        }
-                      }
-                      break;
-      default: break;
+function syncDropdownContent(mode, type, sequence_id, name = null, subfield = null) {
+  /* Modify extraction targets and condition targets. */
+  switch (mode) {
+    case "add": if (subfield) {
+      /* To be completed whenever subfield additions are completed. */
+      /* 1. Search for names, if they already have been inserted before. */
+      /* 2. Do insertion. */
+      /* Not activated for now because everything is a mess. */
+    } else {
+      global_init_header_page_data[type].push({ "name": name });
     }
-    /* Regenerate existing dropdown menus, if there is any out there. */
-    state_extraction_targets = updateStateExtractionTarget();
-    state_condition_targets = updateStateConditionTarget();
+      break;
+    case "remove":
+      for (let doc in global_init_header_page_data[type]) {
+        console.log(global_init_header_page_data[type][doc]["name"], name)
+        if (global_init_header_page_data[type][doc]["name"] == name) {
+          global_init_header_page_data[type].splice(doc);
+          break;
+        }
+      }
+      break;
+    default: break;
+  }
+  /* Regenerate existing dropdown menus, if there is any out there. */
+  state_extraction_targets = updateStateExtractionTarget();
+  state_condition_targets = updateStateConditionTarget();
 
 
+}
+
+function deleteDataItem(sequence_id, subfield_sequence) {
+  var seq_div = document.querySelector(`.data-container[id="${sequence_id}"]`);
+  var subfield_div = seq_div.querySelector(`.data-item[id="${subfield_sequence}"]`);
+  subfield_div.remove();
+}
+
+function editDataItem(sequence_id, subfield_sequence) {
+  var seq_div = document.querySelector(`.data-container[id="${sequence_id}"]`);
+  var subfield_div = seq_div.querySelector(`.data-item[id="${subfield_sequence}"]`);
+  // Extract all textual components into a formatted string and display that string in a text box.
+  var divs_under_subfield = subfield_div.children;
+  divs_under_subfield[divs_under_subfield.length - 1].children[0].setAttribute('class', 'fa-solid fa-check fa-lg');
+  divs_under_subfield[divs_under_subfield.length - 1].setAttribute('onclick', `reformulateDataItem(${sequence_id}, ${subfield_sequence})`);
+  var string = "";
+  while (divs_under_subfield.length > 2) {
+    string += divs_under_subfield[0].innerHTML;
+    string += " ";
+    divs_under_subfield[0].remove();
+  }
+  var cached_html = subfield_div.innerHTML;
+  var text_bar = `<input id = "i-${sequence_id}-${subfield_sequence}" type="text" value="${string}">\n`;
+  subfield_div.innerHTML = text_bar + cached_html;
+}
+
+function reformulateDataItem(sequence_id, subfield_sequence) {
+  var seq_div = document.querySelector(`.data-container[id="${sequence_id}"]`);
+  var subfield_div = seq_div.querySelector(`.data-item[id="${subfield_sequence}"]`);
+  var input_element = document.querySelector(`input#i-${sequence_id}-${subfield_sequence}`);
+  var divs_under_subfield = subfield_div.children;
+  input_value = input_element.value;
+  input_fields = input_value.replace(/\s+/g, ' ').trim().split(" ");
+  returned_div = null;
+  switch (input_fields.length) {
+    case 1: returned_div = `<span style = "color: #007BFF">${input_fields[0]} </span>\n`
+      break;
+    case 2: returned_div = `<span style = "color: #007BFF">${input_fields[0]} </span>
+             <span>${input_fields[1]}</span>\n`
+      break;
+    case 3: returned_div = `<span style = "color: #DC3545">${input_fields[0]}</span>
+             <span style = "color: #007BFF">${input_fields[1]} </span>
+             <span>${input_fields[2]}</span>\n`
+      break;
+    default: break;
+  }
+  divs_under_subfield[0].remove();
+  var cached_html = subfield_div.innerHTML;
+  subfield_div.innerHTML = returned_div + cached_html;
+  divs_under_subfield[divs_under_subfield.length - 1].children[0].setAttribute('class', 'fa-solid fa-pen-to-square fa-lg');
+  divs_under_subfield[divs_under_subfield.length - 1].setAttribute('onclick', `editDataItem(${sequence_id}, ${subfield_sequence})`);
 }
 
 window.addEventListener("resize", reportWindowSize);
@@ -982,11 +1044,11 @@ async function addStateModuleStatements(node_id) {
   console.log(dropdownDivs);
   const target_div = dropdownDivs[1];
   var tempHTML = ""
-  for (let i = 0; i < state_extraction_targets.length; i++){
+  for (let i = 0; i < state_extraction_targets.length; i++) {
     tempHTML += `<button class="dropdown-content-item" onclick="dropdownContentItemHandler('${node_id}', '${highest_node_sequence[node_id]}', 'target', '${state_extraction_targets[i]}')">${state_extraction_targets[i]}</button>\n`;
   }
   target_div.innerHTML = tempHTML;
-  
+
   /* increments node_sequence to prevent collisions. */
   highest_node_sequence[node_id] += 1;
   /* Append the new div as a child of the parent div. */
