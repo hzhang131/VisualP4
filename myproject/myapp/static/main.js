@@ -6,6 +6,7 @@ let height = 0;
 let global_editor = [null];
 let global_editor_values = [null];
 let global_init_header_page_data = null;
+let global_init_action_page_data = null;
 let current_input = null;
 let current_selected_window = 0;
 let fileCount = 0;
@@ -14,6 +15,7 @@ let global_flow_editor = null;
 let global_slider = null;
 let display_code = false;
 let display_headers_page = false;
+let display_actions_page = false;
 let types = ["vars", "structs", "typedefs", "headers"];
 window.header_name_dict = [];
 /* This thing is Javascript's equivalent of a defaultdict. */
@@ -128,7 +130,7 @@ let STATEMENTS = {
   table: TABLE_STATEMENT,
 };
 
-let INJECT_FUNCS = {
+let INJECT_HEADER_FUNCS = {
   "vars": InjectVars,
   "typedefs": InjectTypedefs,
   "structs": InjectStructs,
@@ -148,7 +150,7 @@ window.addEventListener("DOMContentLoaded", function () {
   var codeTextArea = document.getElementById("code");
   height = window.innerHeight;
   var minLines = Math.trunc((height * 0.8) / 15) + 3;
-  var startingValue = "/**\nWelcome to the VisualP4 IDE!\nDevelopment Version: 2023.08.06\n**/";
+  var startingValue = "/**\nWelcome to the VisualP4 IDE!\nDevelopment Version: 2023.08.12\n**/";
   for (var i = 0; i < minLines; i++) {
     startingValue += "\n";
   }
@@ -189,6 +191,8 @@ window.addEventListener("DOMContentLoaded", function () {
     .catch((error) => {
       console.error("Error:", error);
     });
+
+
 });
 
 function reportWindowSize() {
@@ -443,6 +447,58 @@ function HeaderDisplaySetting() {
   display_headers_page = !display_headers_page;
 }
 
+function ActionDisplaySetting() {
+  const actionsPage = document.querySelector(".actions-page");
+  // User can toggle a headers page with this
+  if (display_actions_page) {
+    actionsPage.classList.add("show");
+  } else {
+    actionsPage.classList.remove("show");
+  }
+  display_actions_page = !display_actions_page;
+}
+
+function ActionPageData(INIT_HEADER_PAGE_DATA) {
+  // Reads the initial header data stored in './APD/'
+  const directoryPath = "./HPD/";
+  var INIT_ACTION_PAGE_DATA = {};
+
+  return new Promise((resolve, reject) => {
+    fetch(directoryPath)
+      .then((response) => response.text())
+      .then((fileList) => {
+        console.log(fileList);
+        const files = JSON.parse(fileList)["files"];
+        for (let i = 0; i < files.length; i++) {
+          var file_name = Object.keys(files[i])[0];
+          var raw_json = files[i][file_name];
+          var jsonData = JSON.parse(raw_json);
+          INJECT_FUNCS[file_name.slice(0, -5)](
+            document.querySelector(`.headers-page-item#${file_name.slice(0, -5)}`),
+            jsonData
+          );
+          INIT_ACTION_PAGE_DATA[file_name.slice(0, -5)] = jsonData;
+          console.log("JSON data stored in INIT_ACTION_PAGE_DATA:", file_name.slice(0, -5));
+        }
+      })
+      .then(() => {
+        resolve(INIT_ACTION_PAGE_DATA);
+        global_init_action_page_data = INIT_ACTION_PAGE_DATA;
+        for (let index in types) {
+          var type = types[index];
+          for (let doc in global_init_action_page_data[type]) {
+            var name = global_init_action_page_data[type][doc]["name"];
+            window.header_name_dict[name] = doc;
+          }
+        }
+      })
+      .catch((error) => {
+        reject(error);
+      });
+  });
+}
+
+
 function HeaderPageData(INIT_HEADER_PAGE_DATA) {
   // Reads the initial header data stored in './HPD/'
   const directoryPath = "./HPD/";
@@ -458,7 +514,7 @@ function HeaderPageData(INIT_HEADER_PAGE_DATA) {
           var file_name = Object.keys(files[i])[0];
           var raw_json = files[i][file_name];
           var jsonData = JSON.parse(raw_json);
-          INJECT_FUNCS[file_name.slice(0, -5)](
+          INJECT_HEADER_FUNCS[file_name.slice(0, -5)](
             document.querySelector(`.headers-page-item#${file_name.slice(0, -5)}`),
             jsonData
           );
@@ -483,6 +539,9 @@ function HeaderPageData(INIT_HEADER_PAGE_DATA) {
   });
 }
 
+function InjectAction() {
+  /* TODO: Fill in this part ASAP!*/
+}
 /**
  *           Cache these things, might be useful later.
  *           <button class="btn" style="float:right; padding:0px; margin-right: 2px; top: -3px; position: relative;" onclick="changeDataContainerState('delete', '')"> <i class="fa-solid fa-circle-xmark fa-lg" style="color: #1f2551;"></i> </button>
@@ -827,19 +886,6 @@ function updateStateExtractionTarget() {
   return extraction_targets;
 }
 
-function generateNewStateExtractionDropdown() {
-  dropdownDivs = newDiv.getElementsByClassName("dropdown-content");
-  console.log(dropdownDivs);
-  for (let i = 1; i < dropdownDivs.length; i++) {
-    const target_div = dropdownDivs[i];
-    var tempHTML = ""
-    for (let i = 0; i < state_extraction_targets.length; i++) {
-      tempHTML += `<button class="dropdown-content-item" onclick="dropdownContentItemHandler('${node_id}', '${highest_node_sequence[node_id]}', 'target', '${state_extraction_targets[i]}')">${state_extraction_targets[i]}</button>\n`;
-    }
-    target_div.innerHTML = tempHTML;
-  }
-}
-
 function inferStateConditionTarget(INIT_HEADER_PAGE_DATA) {
   var condition_targets = ["default"];
   /* Infers the extract target for State modules, then inject into the dropdown menu */
@@ -858,11 +904,6 @@ function updateStateConditionTarget() {
   }
   return condition_targets;
 }
-
-function generateNewStateConditionDropdown() {
-  /* Lets test whether the main dropdowns work... */
-}
-
 
 function resolveExtractionTargets() {
   return new Promise((resolve) => {
@@ -898,34 +939,53 @@ function resolveConditionHTML() {
     });
 }
 
-async function injectLinkTargets() {
+async function injectLinkTargets_async() {
   await resolveExtractionTargets();
   await resolveConditionHTML();
-  if (raw_condition_html && state_extraction_targets) {
-    console.log("condition met", raw_condition_html);
-    /* Menu */
-    raw_condition_html[0].querySelector(".dropdown-content");
-    temp_menu_html = "";
-    /* Target */
-    raw_condition_html[1].querySelector(".dropdown-content");
-    temp_target_html = "";
-    /* Extract ID */
-    var connection_id = raw_condition_html[0].querySelector(".dropdown-content").id;
-    /* Inject menu functions. */
-    for (let i = 0; i < state_extraction_targets.length; i++) {
-      temp_menu_html += `<button class="dropdown-content-item" onclick = 'dropdownContentItemConnectionHandler("${connection_id.slice(0, -9)}", "switch-head", "${state_extraction_targets[i]}: ")' style = "z-index: 2;">${state_extraction_targets[i]}</button>\n`;
-    }
-    /* Inject Conditions */
-    for (let i = 0; i < state_condition_targets.length; i++) {
-      temp_target_html += `<button class="dropdown-content-item" onclick = 'dropdownContentItemConnectionHandler("${connection_id.slice(0, -9)}", "switch-target", "${state_condition_targets[i]}")' style = "z-index: 2;">${state_condition_targets[i]}</button>\n`;
-    }
 
-    raw_condition_html[0].querySelector(".dropdown-content").innerHTML = temp_menu_html;
-    raw_condition_html[1].querySelector(".dropdown-content").innerHTML = temp_target_html;
+  injectLinkTargets_sync();
+}
+
+function injectLinkTargets_sync(init = true) {
+  console.log("inside injectLinkTargets", raw_condition_html, state_extraction_targets);
+
+  if (state_condition_targets && state_extraction_targets) {
+    /* Extract Link Target Menus */
+    if (init) {
+      temp_menu_html = "";
+      temp_target_html = "";
+      /* Extract ID */
+      var connection_id = raw_condition_html[0].querySelector(".dropdown-content").id;
+      /* Inject menu functions. */
+      for (let i = 0; i < state_extraction_targets.length; i++) {
+        temp_menu_html += `<button class="dropdown-content-item" onclick = 'dropdownContentItemConnectionHandler("${connection_id.slice(0, -9)}", "switch-head", "${state_extraction_targets[i]}: ")' style = "z-index: 2;">${state_extraction_targets[i]}</button>\n`;
+      }
+      /* Inject Conditions */
+      for (let i = 0; i < state_condition_targets.length; i++) {
+        temp_target_html += `<button class="dropdown-content-item" onclick = 'dropdownContentItemConnectionHandler("${connection_id.slice(0, -9)}", "switch-target", "${state_condition_targets[i]}")' style = "z-index: 2;">${state_condition_targets[i]}</button>\n`;
+      }
+
+      raw_condition_html[0].querySelector(".dropdown-content").innerHTML = temp_menu_html;
+      raw_condition_html[1].querySelector(".dropdown-content").innerHTML = temp_target_html;
+    } else {
+      dropdownElements = document.querySelectorAll('div.dropdown[id^="target-node-"]');
+      for (let i = 0; i < dropdownElements.length; i++) {
+        dropdownElement = dropdownElements[i];
+        id = dropdownElement.id;
+        node_id = id.split("-")[2];
+        field_id = 0;
+        dropdownElementContent = dropdownElement.querySelector(".dropdown-content");
+        tempHTML = "";
+        for (let i = 0; i < state_extraction_targets.length; i++) {
+          tempHTML += `<button class="dropdown-content-item" onclick = 'dropdownContentItemConnectionHandler("node-${node_id}", "0", "target", "${state_extraction_targets[i]}: ")' style = "z-index: 2;">${state_extraction_targets[i]}</button>\n`;
+        }
+        dropdownElementContent.innerHTML = tempHTML;
+      }
+    }
 
   } else {
     // Update value in global_init_header_page_data
-    console.log(global_init_header_page_data);
+    console.log("hits `else` in injectLinkTargets_sync");
   }
 }
 
@@ -1186,6 +1246,7 @@ function reformulateDataItem(sequence_id, subfield_sequence, name, type, args = 
   input_value = input_element.value;
   input_fields = input_value.replace(/\s+/g, ' ').trim().split(" ");
   returned_div = null;
+  unique_identifier = null;
   console.log(old_fields, input_fields);
   switch (input_fields.length) {
     case 1: returned_div = `<span style = "color: #007BFF">${input_fields[0]} </span>\n`
@@ -1219,6 +1280,7 @@ function reformulateDataItem(sequence_id, subfield_sequence, name, type, args = 
           global_init_header_page_data["typedefs"][doc]["bit"] = parseInt(new_value);
         }
       }
+      unique_identifier = old_fields[0];
       break;
     case 2:
       /* TODO: fix this thing to be subfields. */
@@ -1264,6 +1326,7 @@ function reformulateDataItem(sequence_id, subfield_sequence, name, type, args = 
           }
         }
       }
+      unique_identifier = old_fields[1];
       break;
     case 3:
       /* vars only */
@@ -1278,14 +1341,14 @@ function reformulateDataItem(sequence_id, subfield_sequence, name, type, args = 
           global_init_header_page_data["vars"][doc]["const"] = 1;
         }
       }
+      unique_identifier = old_fields[1];
   }
 
-  /* replace all existing dropdown menu items, if there is any out there. */
-  /* Notice, find fields in headers that are of struct field type name. */
-  /* TODO: replace all button occurrences */
   /* Regenerate existing dropdown menus, if there is any out there. */
   state_extraction_targets = updateStateExtractionTarget();
   state_condition_targets = updateStateConditionTarget();
+
+  injectLinkTargets_sync(init = false);
 }
 
 function reformulateDataName(sequence_id, type = null, name = null, subfield = null) {
@@ -1318,22 +1381,23 @@ function nukeButtonsByInnerText(pattern) {
   }
 }
 
-function replaceButtonsByInnerText(pattern, new_display_name) {
+function replaceButtonsByInnerText(pattern, sequence_id, subfield_id, input_fields) {
   const buttons = document.querySelectorAll("button.dropdown-content-item");
+  reformulated_text = input_fields[0] + " " + input_fields[1];
   for (let i = 0; i < buttons.length; i++) {
     if (buttons[i].innerText.includes(pattern)) {
-      console.log("TODO: line 1170", buttons[i].innerText);
+      buttons[i].remove();
     }
   }
 }
 
-function addButtonsByInnerText(new_display_name) {
-
+function addButtonsByInnerText(new_display_name, sequence_id) {
+  const buttons = document.querySelectorAll("button.dropdown-content-item");
 }
 
 window.addEventListener("resize", reportWindowSize);
 window.addEventListener("keydown", captureCode);
-window.addEventListener("contextmenu", injectLinkTargets);
+window.addEventListener("contextmenu", injectLinkTargets_async);
 
 /***********************************Misc functions****************************/
 function addActionModuleStatements(node_id) {

@@ -175,6 +175,94 @@ button:hover {
   align-items: center;
 }
 
+.actions-page {
+  display: block;
+  background-color: #e1b8bd;
+  position: absolute;
+  z-index: 10;
+  top: 5%;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+  opacity: 0;
+  height: 0;
+  overflow: auto;
+  justify-content: center;
+  align-items: center;
+}
+
+.actions-page.show {
+  display: block;
+  transform: translateX(0%);
+  opacity: 1;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+}
+
+/* Actions Page Search Bar Container */
+.actions-page-search-bar {
+  width: 320px;
+  height: 40px;
+  background-color: #fff;
+  /* White background color for the input field */
+  position: relative;
+  border-radius: 20px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  /* Subtle shadow for depth */
+  overflow: hidden;
+  top: 2%;
+  left: 40%
+    /* To ensure any child elements do not overflow the container */
+}
+
+/* Search Input */
+.actions-page-search-bar input[type="text"] {
+  width: 320px;
+  /* Set to full width of its parent */
+  height: 40px;
+  /* Set to full height of its parent */
+  border: none;
+  background-color: transparent;
+  padding: 0 40px;
+  /* Padding on both sides to make room for the search icon and to center the text */
+  margin: 0;
+  /* Reset margin */
+  box-sizing: border-box;
+  /* Ensure padding and border are included in the element's total width and height */
+  font-size: 16px;
+  border-radius: 20px;
+  outline: none;
+  text-align: center;
+  /* Center the text in the input */
+  transition: box-shadow 0.3s ease;
+}
+
+/* Search Icon */
+.actions-page-search-bar .fa-search {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #888;
+  font-size: 18px;
+  pointer-events: none;
+}
+
+.actions-page-items {
+  border-top: 2px solid rgba(0, 0, 0, 0.15);
+  /* semi-transparent line */
+  margin-top: 45px;
+  /* Pushes the whole .actions-page-items down, including its border */
+  padding-top: 10px;
+  /* Provides space above the content inside the .actions-page-items, pushing content further down from the border */
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  /* Create 3 equal columns */
+  gap: 20px;
+  /* Gap of 20 pixels between grid items */
+  align-items: flex-start;
+}
+
 .headers-page.show {
   display: block;
   transform: translateX(0%);
@@ -294,4 +382,27 @@ button:hover {
 .data-item {
   margin-top: 5px;
   margin-bottom: 5px;
+}
+
+.buttons button {
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  background: linear-gradient(to bottom, #91c3e0, #609cb2);
+  border: 1px solid #60b4dd;
+  padding: 10px 25px;
+  /* Increased padding for wider tab */
+  box-shadow: 0px 3px 2px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  font-size: 1em;
+  margin-top: 5px;
+  /* Some space at the top for the tab effect */
+  margin-left: 5px;
+  /* Space between tabs, if you add more */
+  margin-right: 5px;
+  /* Space between tabs */
+  height: 80%;
+}
+
+.buttons button:hover {
+  background: linear-gradient(to bottom, #80c7ee, #60b4dd);
 }

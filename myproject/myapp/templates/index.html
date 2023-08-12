@@ -2,6 +2,7 @@
 
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="UTF-8">
   <title>VisualP4 IDE</title>
@@ -16,24 +17,51 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.2/mode/javascript/javascript.min.js"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 </head>
+
 <body style="background-color:#7CDEDC;">
   <script src="{% static 'main.js' %}"></script>
-    <div id="drawflow"></div>
+  <div id="drawflow"></div>
   <div class="headers-page">
     <div class="headers-page-item" id="vars"> </div>
     <div class="headers-page-item" id="typedefs"> </div>
     <div class="headers-page-item" id="headers"> </div>
     <div class="headers-page-item" id="structs"> </div>
   </div>
+  <div class="actions-page">
+    <div class="actions-page-search-bar">
+      <input type="text" placeholder="Search Actions...">
+      <i class="fas fa-search"></i>
+    </div>
+    <div class="actions-page-items">
+      <div id="node-12" class="drawflow-node"
+        style="width: 400px; min-height: 200px; border-radius: 10px; background: #DB3A34; align-items: baseline;">
+        <div class="drawflow_content_node" style="display: flex; flex-direction: column;">
+          <div class="module-element">
+            <p style="justify-content: center; float:left; margin: auto;"> State </p>
+            <p style="justify-content: center; float:left; margin: auto;"> <input id="state-input-field"
+                placeholder="State name" style="font-family:Courier, monospace; background: transparent;"> </p>
+            <p style="justify-content: center; float:right; margin: auto;">
+              <button class="btn" onclick="addModuleStatements('node-1', 'state')">
+                <i class="fa-sharp fa-solid fa-circle-plus fa-lg" style="color: #1f2551;"></i>
+              </button>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
   <div class="file-selector-div">
     <div class="buttons">
       <button style="float:left; vertical-align: center;" onclick="HeaderDisplaySetting()"> Headers </button>
     </div>
     <div class="buttons">
+      <button style="float:left; vertical-align: center;" onclick="ActionDisplaySetting()"> Actions </button>
+    </div>
+    <div class="buttons">
       <button style="float:right; vertical-align: center;" onclick="CodeDisplaySetting()"> Code </button>
     </div>
   </div>
-  <div class="code-block-div"> 
+  <div class="code-block-div">
     <textarea id="code" rows="40"></textarea>
   </div>
   <div class="code-action-div">
@@ -45,4 +73,5 @@
     </div>
   </div>
 </body>
+
 </html>
