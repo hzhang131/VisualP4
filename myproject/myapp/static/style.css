@@ -406,3 +406,76 @@ button:hover {
 .buttons button:hover {
   background: linear-gradient(to bottom, #80c7ee, #60b4dd);
 }
+
+.action-statement {
+  position: relative;
+  display: inline-block;
+
+  /* Border and shadow */
+  border: none;
+  /* Remove old border */
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  /* subtle shadow for a lifted appearance */
+
+  /* Font and typography */
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 16px;
+  font-weight: 500;
+  /* a bit bolder than normal */
+  color: #333;
+  /* dark gray color for better readability */
+  text-align: center;
+  /* centering the text */
+
+  /* Padding and margin */
+  padding: 8px 16px;
+  /* vertical and horizontal padding */
+  margin: 4px;
+  /* spacing between adjacent elements */
+
+  /* Background and border radius */
+  background-color: #E65A49;
+  /* light gray background */
+  border-radius: 4px;
+  /* rounded corners */
+
+  /* Transition */
+  transition: all 0.3s ease;
+  /* smooth transition effect for hover */
+
+  /* Cursor style */
+  cursor: pointer;
+
+  width: 300px;
+}
+
+.action-statement:hover {
+  background-color: #E65A49;
+  /* slightly darker background on hover */
+  box-shadow: 0px 6px 10px rgba(0, 0, 0, 0.15);
+  /* a deeper shadow for "lifting" effect on hover */
+
+}
+
+#autocompleteBase {
+  position: absolute;
+  top: 0px;
+  /* Adjust as needed to align */
+  left: 0px;
+  /* Adjust as needed to align */
+  color: lightgrey;
+  pointer-events: none;
+  z-index: 1;
+}
+
+#autocompleteInput {
+  position: relative;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: black;
+  z-index: 2;
+  width: 100%;
+  font-family: 'Courier New', Courier, monospace;
+  /* Make sure it fills the entire container */
+}

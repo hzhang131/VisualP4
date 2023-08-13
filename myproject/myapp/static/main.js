@@ -16,7 +16,16 @@ let global_slider = null;
 let display_code = false;
 let display_headers_page = false;
 let display_actions_page = false;
+let init_load = true;
 let types = ["vars", "structs", "typedefs", "headers"];
+/* TODO: Change autoCompleteData */
+/* 
+  autoCompleteData sources keywords from the following sources:
+  1. global_init_header_page_data
+  2. global_init_action_page_data
+  3. There might be more, but I don't remember. Let's add as we go.
+*/
+let autoCompleteData = [];
 window.header_name_dict = [];
 /* This thing is Javascript's equivalent of a defaultdict. */
 let highest_node_sequence = new Proxy(
@@ -97,7 +106,10 @@ let HTMLCONTENT_FIELDS = {
 };
 
 let ACTION_STATEMENT = function (node_id, sequence_id) {
-  return `<p style="margin: auto; justify-content: center; float:left;"> You got me hahaha</p>`;
+  return `<div class="action-statement">
+              <input id="autocompleteInput" type="text" autocomplete="off">
+              <span id="autocompleteBase ${node_id} ${sequence_id}"></span>
+          </div>`;
 };
 
 let STATE_STATEMENT = function (node_id, sequence_id) {
@@ -150,7 +162,7 @@ window.addEventListener("DOMContentLoaded", function () {
   var codeTextArea = document.getElementById("code");
   height = window.innerHeight;
   var minLines = Math.trunc((height * 0.8) / 15) + 3;
-  var startingValue = "/**\nWelcome to the VisualP4 IDE!\nDevelopment Version: 2023.08.12\n**/";
+  var startingValue = "/**\nWelcome to the VisualP4 IDE!\nDevelopment Version: 2023.08.13\n**/";
   for (var i = 0; i < minLines; i++) {
     startingValue += "\n";
   }
@@ -192,6 +204,82 @@ window.addEventListener("DOMContentLoaded", function () {
       console.error("Error:", error);
     });
 
+  injectLinkTargets_async().then(init_load = false);
+  /* Observer to observe DOM changes. */
+  const observer = new MutationObserver((mutationsList, observer) => {
+    for (let mutation of mutationsList) {
+      if (mutation.type === 'childList') {
+        mutation.addedNodes.forEach(node => {
+          if (node.childNodes[0] && node.childNodes[0].className == "action-statement") {
+            // Add event listener to the new input
+            console.log('hahaa', node)
+            node.addEventListener('input', function (e) {
+              // Ensure the event is from an input element you want to autocomplete
+              if (e.target.id === 'autocompleteInput') { // I'm using a class name to identify relevant input elements
+                let inputValue = e.target.value;
+
+                if (inputValue.includes(" ")) {
+                  splitValues = inputValue.split(" ");
+                  if (splitValues[splitValues.length - 1] == "") {
+                    inputValue = null;
+                  } else {
+                    inputValue = splitValues[splitValues.length - 1];
+                  }
+                }
+
+                console.log("input val", inputValue);
+                // Reset the suggested word data attribute on every input
+                e.target.dataset.suggestedWord = "";
+
+                // Check if any word in autoCompleteData starts with the input value
+                for (let word of autoCompleteData) {
+                  if (word.startsWith(inputValue)) {
+                    // Store the current suggested word in the data attribute
+                    e.target.dataset.suggestedWord = word;
+                    // Display the suggestion in some manner (e.g., as a placeholder)
+                    e.target.placeholder = word;
+                    console.log("in here!", e.target.dataset.suggestedWord, e.target.placeholder);
+                    break;
+                  }
+                }
+
+                let span = node.querySelectorAll('span')[0];
+
+                let span_id = span.id;
+
+                let span_id_split = span_id.split(' ');
+
+                let node_id = span_id_split[1];
+
+                let sequence_id = span_id_split[2];
+
+                console.log(node_id, sequence_id);
+
+                // Inside your input event listener:
+                for (let word of autoCompleteData) {
+                  if (word.startsWith(inputValue)) {
+                    // Only set the suggestion part to the span (subtracting what the user already typed)
+                    span.textContent = "↹ " + inputValue + word.substring(inputValue.length);
+                    break;
+                  } else {
+                    span.textContent = "";  // If no match, show only the user's input
+                  }
+                }
+              }
+            }
+            );
+          }
+        });
+      }
+    }
+  });
+
+  const config = {
+    childList: true,
+    subtree: true
+  };
+
+  observer.observe(document.body, config);
 
 });
 
@@ -539,6 +627,21 @@ function HeaderPageData(INIT_HEADER_PAGE_DATA) {
   });
 }
 
+function extractValues(obj, arr = []) {
+  for (let key in obj) {
+    if (typeof obj[key] === "object" && obj[key] !== null) {
+      extractValues(obj[key], arr);
+    } else {
+      if (!arr.includes(obj[key])) {
+        if (typeof obj[key] === "string") {
+          arr.push(obj[key]);
+        }
+      }
+    }
+  }
+  return arr;
+}
+
 function InjectAction() {
   /* TODO: Fill in this part ASAP!*/
 }
@@ -845,6 +948,7 @@ function inferStateExtractionTarget(INIT_HEADER_PAGE_DATA) {
         for (let k = 0; k < INIT_HEADER_PAGE_DATA["headers"][j]["fields"].length; k++) {
           /* TODO: change it later!!!!! We should not hardcode hdr to extraction targets.*/
           extraction_targets.push(`hdr.${name}.${INIT_HEADER_PAGE_DATA["headers"][j]["fields"][k]["name"]}`);
+          autoCompleteData.push(`hdr.${name}.${INIT_HEADER_PAGE_DATA["headers"][j]["fields"][k]["name"]}`);
         }
       }
     }
@@ -939,6 +1043,20 @@ function resolveConditionHTML() {
     });
 }
 
+function replaceLastOccurrence(str, find, replaceWith) {
+  let lastIndex = str.lastIndexOf(find);
+
+  if (lastIndex === -1) {
+    return str;  // The substring was not found, return original string
+  }
+
+  let beginning = str.substring(0, lastIndex);
+  let ending = str.substring(lastIndex + find.length);
+
+  return beginning + replaceWith + ending;
+}
+
+
 async function injectLinkTargets_async() {
   await resolveExtractionTargets();
   await resolveConditionHTML();
@@ -951,7 +1069,7 @@ function injectLinkTargets_sync(init = true) {
 
   if (state_condition_targets && state_extraction_targets) {
     /* Extract Link Target Menus */
-    if (init) {
+    if (init == true && raw_condition_html) {
       temp_menu_html = "";
       temp_target_html = "";
       /* Extract ID */
@@ -982,7 +1100,7 @@ function injectLinkTargets_sync(init = true) {
         dropdownElementContent.innerHTML = tempHTML;
       }
     }
-
+    autoCompleteData = extractValues(global_init_header_page_data, autoCompleteData);
   } else {
     // Update value in global_init_header_page_data
     console.log("hits `else` in injectLinkTargets_sync");
@@ -1397,14 +1515,43 @@ function addButtonsByInnerText(new_display_name, sequence_id) {
 
 window.addEventListener("resize", reportWindowSize);
 window.addEventListener("keydown", captureCode);
-window.addEventListener("contextmenu", injectLinkTargets_async);
+document.addEventListener("keydown", function (e) {
+  // Ensure the event is from an input element you want to autocomplete
+  if (e.target.id == 'autocompleteInput') {
+    if (e.key == 'Tab' && e.target.dataset.suggestedWord && e.target.value.trim() != e.target.dataset.suggestedWord) {
+      e.preventDefault();
+      splitValue = e.target.value.split(' ');
+      console.log(e.target.value, splitValue[splitValue.length - 1], e.target.dataset.suggestedWord);
+      e.target.value = replaceLastOccurrence(e.target.value, splitValue[splitValue.length - 1], e.target.dataset.suggestedWord);
+      console.log("target value", e.target.value);
+    }
+  }
+});
+window.addEventListener("contextmenu", injectLinkTargets_sync(false));
 
 /***********************************Misc functions****************************/
 function addActionModuleStatements(node_id) {
-  console.log("line 207");
+  /* TODO: Add Module Statements with syntax highlighting and auto_complete variable names. */
+  actions_page_items = document.querySelector(".actions-page-items");
+  matches = actions_page_items.querySelectorAll(`#${node_id}`);
+  node_display_content = matches[0].childNodes[1]
+  const newDiv = document.createElement("div");
+  newDiv.classList.add("module-element");
+  newDiv.setAttribute(
+    "id",
+    `statement-${node_id}-${highest_node_sequence[node_id]}`
+  );
+  newDiv.innerHTML =
+    STATEMENTS["action"](node_id, highest_node_sequence[node_id]) + "<br>";
+
+  /* increments node_sequence to prevent collisions. */
+  highest_node_sequence[node_id] += 1;
+  /* Append the new div as a child of the parent div. */
+  node_display_content.appendChild(newDiv);
+
 }
 async function addStateModuleStatements(node_id) {
-  /***Get number of current statements ***/
+  /*** Get number of current statements ***/
   matches = document.getElementById(node_id);
   node_display_content = matches.childNodes[1];
   node_display_items = node_display_content.childNodes;

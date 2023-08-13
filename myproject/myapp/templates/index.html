@@ -11,6 +11,8 @@
   <link rel="stylesheet" href="{% static 'custom.css' %}">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jerosoler/Drawflow/dist/drawflow.min.css">
+  <link rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.7/dist/css/autoComplete.min.css">
   <script src="{% static 'drawflow.js' %}"></script>
   <script src="{% static 'metadata.js' %}"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.2/codemirror.min.js"></script>
@@ -37,11 +39,11 @@
         style="width: 400px; min-height: 200px; border-radius: 10px; background: #DB3A34; align-items: baseline;">
         <div class="drawflow_content_node" style="display: flex; flex-direction: column;">
           <div class="module-element">
-            <p style="justify-content: center; float:left; margin: auto;"> State </p>
-            <p style="justify-content: center; float:left; margin: auto;"> <input id="state-input-field"
-                placeholder="State name" style="font-family:Courier, monospace; background: transparent;"> </p>
+            <p style="justify-content: center; float:left; margin: auto;"> Action </p>
+            <p style="justify-content: center; float:left; margin: auto;"> <input id="action-input-field"
+                placeholder="Action name" style="font-family:Courier, monospace; background: transparent;"> </p>
             <p style="justify-content: center; float:right; margin: auto;">
-              <button class="btn" onclick="addModuleStatements('node-1', 'state')">
+              <button class="btn" onclick="addModuleStatements('node-12', 'action')">
                 <i class="fa-sharp fa-solid fa-circle-plus fa-lg" style="color: #1f2551;"></i>
               </button>
             </p>
