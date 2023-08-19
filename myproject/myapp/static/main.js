@@ -106,10 +106,32 @@ let HTMLCONTENT_FIELDS = {
 };
 
 let ACTION_STATEMENT = function (node_id, sequence_id) {
-  return `<div class="action-statement">
-              <input id="autocompleteInput" type="text" autocomplete="off">
-              <span id="autocompleteBase ${node_id} ${sequence_id}"></span>
-          </div>`;
+  switch (sequence_id) {
+    case 0:
+      return `<div class="action-statement" id = "${node_id} ${sequence_id}">
+               Description
+               <textarea class="autocompleteInput" id = "${node_id} ${sequence_id}" type="text" autocomplete="off"></textarea>
+               <span id="autocompleteBase"></span>
+              </div>`;
+    case 1:
+      return `<div class="action-statement" id = "${node_id} ${sequence_id}">
+               Inputs
+               <textarea class="autocompleteInput" id = "${node_id} ${sequence_id}" type="text" autocomplete="off"></textarea>
+               <span id="autocompleteBase"></span>
+              </div>`;
+    case 2:
+      return `<div class="action-statement" id = "${node_id} ${sequence_id}">
+               Outputs
+               <textarea class="autocompleteInput" id = "${node_id} ${sequence_id}" type="text" autocomplete="off"></textarea>
+               <span id="autocompleteBase"></span>
+              </div>`;
+    case 3:
+      return `<div class="action-statement" id = "${node_id} ${sequence_id}" onclick = "expandActionCode("${node_id}", "${sequence_id}")">
+                Click to show code
+              </div>`;
+    default:
+      return '';
+  }
 };
 
 let STATE_STATEMENT = function (node_id, sequence_id) {
@@ -162,7 +184,7 @@ window.addEventListener("DOMContentLoaded", function () {
   var codeTextArea = document.getElementById("code");
   height = window.innerHeight;
   var minLines = Math.trunc((height * 0.8) / 15) + 3;
-  var startingValue = "/**\nWelcome to the VisualP4 IDE!\nDevelopment Version: 2023.08.13\n**/";
+  var startingValue = "/**\nWelcome to the VisualP4 IDE!\nDevelopment Version: 2023.08.19\n**/";
   for (var i = 0; i < minLines; i++) {
     startingValue += "\n";
   }
@@ -215,7 +237,8 @@ window.addEventListener("DOMContentLoaded", function () {
             console.log('hahaa', node)
             node.addEventListener('input', function (e) {
               // Ensure the event is from an input element you want to autocomplete
-              if (e.target.id === 'autocompleteInput') { // I'm using a class name to identify relevant input elements
+              console.log('hahaa', e.target)
+              if (e.target.className === 'autocompleteInput') { // I'm using a class name to identify relevant input elements
                 let inputValue = e.target.value;
 
                 if (inputValue.includes(" ")) {
@@ -268,6 +291,19 @@ window.addEventListener("DOMContentLoaded", function () {
               }
             }
             );
+            node.addEventListener('input', function (event) {
+              if (event.target.tagName.toLowerCase() === 'textarea') {
+                const textarea = event.target;
+                if (textarea.selectionStart % 38 == 0) {
+                  if (!textarea.style.height) {
+                    textarea.style.height = 64 + parseInt(window.getComputedStyle(textarea, null).getPropertyValue('line-height').slice(0, -2)) + "px";
+                  } else {
+                    textarea.style.height = 64 + parseInt(window.getComputedStyle(textarea, null).getPropertyValue('line-height').slice(0, -2)) * parseInt(textarea.selectionStart / 38) + "px";
+                  }
+
+                }
+              }
+            });
           }
         });
       }
@@ -1517,7 +1553,7 @@ window.addEventListener("resize", reportWindowSize);
 window.addEventListener("keydown", captureCode);
 document.addEventListener("keydown", function (e) {
   // Ensure the event is from an input element you want to autocomplete
-  if (e.target.id == 'autocompleteInput') {
+  if (e.target.className == 'autocompleteInput') {
     if (e.key == 'Tab' && e.target.dataset.suggestedWord && e.target.value.trim() != e.target.dataset.suggestedWord) {
       e.preventDefault();
       splitValue = e.target.value.split(' ');
@@ -1531,6 +1567,9 @@ window.addEventListener("contextmenu", injectLinkTargets_sync(false));
 
 /***********************************Misc functions****************************/
 function addActionModuleStatements(node_id) {
+  if (highest_node_sequence[node_id] > 3) {
+    return;
+  }
   /* TODO: Add Module Statements with syntax highlighting and auto_complete variable names. */
   actions_page_items = document.querySelector(".actions-page-items");
   matches = actions_page_items.querySelectorAll(`#${node_id}`);
@@ -1543,7 +1582,6 @@ function addActionModuleStatements(node_id) {
   );
   newDiv.innerHTML =
     STATEMENTS["action"](node_id, highest_node_sequence[node_id]) + "<br>";
-
   /* increments node_sequence to prevent collisions. */
   highest_node_sequence[node_id] += 1;
   /* Append the new div as a child of the parent div. */
@@ -1599,4 +1637,26 @@ function removeTableModuleStatements(node_id) {
 // Hover.
 if (document.querySelector("body > p:hover") != null) {
   console.log("hovered");
+}
+
+function addActionModule() {
+  raw_html_string = `<div id="node-${highest_headers_page_variable_sequence}" class="drawflow-node"
+                      style="width: 400px; min-height: 200px; border-radius: 10px; background: #DB3A34; align-items: baseline;">
+                      <div class="drawflow_content_node" style="display: flex; flex-direction: column;">
+                        <div class="module-element">
+                          <p style="justify-content: center; float:left; margin: auto;"> Action </p>
+                          <p style="justify-content: center; float:left; margin: auto;"> <input id="action-input-field"
+                              placeholder="Action name" style="font-family:Courier, monospace; background: transparent;"> </p>
+                          <p style="justify-content: center; float:right; margin: auto;">
+                            <button class="btn" onclick="addModuleStatements('node-${highest_headers_page_variable_sequence}', 'action')">
+                              <i class="fa-sharp fa-solid fa-circle-plus fa-lg" style="color: #1f2551;"></i>
+                            </button>
+                          </p>
+                        </div>
+                      </div>
+                    </div>`
+  new_html_element = document.createElement("div");
+  new_html_element.innerHTML = raw_html_string;
+  document.querySelector(`.actions-page-items`).appendChild(new_html_element);
+  highest_headers_page_variable_sequence += 1;
 }

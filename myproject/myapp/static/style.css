@@ -248,6 +248,25 @@ button:hover {
   pointer-events: none;
 }
 
+/* Search Icon */
+.actions-page-search-bar .plus-action-module {
+  position: absolute;
+  left: 0%;
+  top: 40%;
+  transform: translateY(-50%);
+  background-color: transparent;
+  font-size: 18px;
+  pointer-events: none;
+  z-index: 12;
+  margin: 5px 0;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  color: #888;
+  pointer-events: auto;
+}
+
 .actions-page-items {
   border-top: 2px solid rgba(0, 0, 0, 0.15);
   /* semi-transparent line */
@@ -407,48 +426,6 @@ button:hover {
   background: linear-gradient(to bottom, #80c7ee, #60b4dd);
 }
 
-.action-statement {
-  position: relative;
-  display: inline-block;
-
-  /* Border and shadow */
-  border: none;
-  /* Remove old border */
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-  /* subtle shadow for a lifted appearance */
-
-  /* Font and typography */
-  font-family: 'Courier New', Courier, monospace;
-  font-size: 16px;
-  font-weight: 500;
-  /* a bit bolder than normal */
-  color: #333;
-  /* dark gray color for better readability */
-  text-align: center;
-  /* centering the text */
-
-  /* Padding and margin */
-  padding: 8px 16px;
-  /* vertical and horizontal padding */
-  margin: 4px;
-  /* spacing between adjacent elements */
-
-  /* Background and border radius */
-  background-color: #E65A49;
-  /* light gray background */
-  border-radius: 4px;
-  /* rounded corners */
-
-  /* Transition */
-  transition: all 0.3s ease;
-  /* smooth transition effect for hover */
-
-  /* Cursor style */
-  cursor: pointer;
-
-  width: 300px;
-}
-
 .action-statement:hover {
   background-color: #E65A49;
   /* slightly darker background on hover */
@@ -468,14 +445,41 @@ button:hover {
   z-index: 1;
 }
 
-#autocompleteInput {
+.action-statement {
+  position: relative;
+  display: block;
+  /* For better control over child elements */
+  border: none;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+  text-align: center;
+  padding: 8px 16px;
+  margin: 4px;
+  background-color: #E65A49;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  width: 400px;
+}
+
+.action-statement .autocompleteInput {
   position: relative;
   background: transparent;
   border: none;
   outline: none;
   color: black;
   z-index: 2;
-  width: 100%;
   font-family: 'Courier New', Courier, monospace;
-  /* Make sure it fills the entire container */
+  width: 100%;
+  flex: 1;
+  resize: none;
+  /* Prevent manual resize of textarea */
+  overflow: hidden;
+  /* Hide the scrollbar */
+  white-space: pre-wrap;
+  /* Wrap the overflowing text to the next line */
+  height: 64px;
 }

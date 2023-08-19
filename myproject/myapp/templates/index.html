@@ -31,25 +31,14 @@
   </div>
   <div class="actions-page">
     <div class="actions-page-search-bar">
+      <!-- This search bar is a place holder for now, will add searching functionality later. -->
       <input type="text" placeholder="Search Actions...">
       <i class="fas fa-search"></i>
+      <button class="plus-action-module" onclick="addActionModule()">
+        <i class="fa-solid fa-plus"></i>
+      </button>
     </div>
     <div class="actions-page-items">
-      <div id="node-12" class="drawflow-node"
-        style="width: 400px; min-height: 200px; border-radius: 10px; background: #DB3A34; align-items: baseline;">
-        <div class="drawflow_content_node" style="display: flex; flex-direction: column;">
-          <div class="module-element">
-            <p style="justify-content: center; float:left; margin: auto;"> Action </p>
-            <p style="justify-content: center; float:left; margin: auto;"> <input id="action-input-field"
-                placeholder="Action name" style="font-family:Courier, monospace; background: transparent;"> </p>
-            <p style="justify-content: center; float:right; margin: auto;">
-              <button class="btn" onclick="addModuleStatements('node-12', 'action')">
-                <i class="fa-sharp fa-solid fa-circle-plus fa-lg" style="color: #1f2551;"></i>
-              </button>
-            </p>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
   <div class="file-selector-div">
