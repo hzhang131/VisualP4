@@ -483,3 +483,19 @@ button:hover {
   /* Wrap the overflowing text to the next line */
   height: 64px;
 }
+
+.module-element .CodeMirror.cm-s-default {
+  position: fixed;
+  width: 50%;
+  height: 50%;
+  top: 25%;
+  left: 25%;
+  /* Keep this unblurred when the code block is triggered. */
+  z-index: 20;
+  font-size: 20px;
+  background-color: #111;
+  color: lime;
+  border: 40px solid grey;
+  display: none;
+  border-radius: 5px;
+}

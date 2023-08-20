@@ -126,9 +126,17 @@ let ACTION_STATEMENT = function (node_id, sequence_id) {
                <span id="autocompleteBase"></span>
               </div>`;
     case 3:
-      return `<div class="action-statement" id = "${node_id} ${sequence_id}" onclick = "expandActionCode("${node_id}", "${sequence_id}")">
-                Click to show code
-              </div>`;
+      return `<div class="action-statement" id="${node_id} ${sequence_id}" onclick="expandActionCode('${node_id}', '${sequence_id}')">
+                  Click here to show code
+              </div>
+              <div class="blur-filter ${node_id}-${sequence_id}"
+                style="z-index: 15; backdrop-filter: blur(5px); position: fixed; display: none; width:100%;height: 100%; top: 0;left: 0;background-color: transparent;">
+              </div>
+              <textarea id="code ${node_id} ${sequence_id}" rows="40" style="caret-color: white; position: fixed; width: 50%; height: 50%; top: 25%; left: 25%;" autofocus></textarea>
+              <button id="action-code-hide-${node_id}-${sequence_id}" style="position: fixed; display: none; z-index: 20; top: 25%; right: 20%; background-color: transparent; height: 3%; width: 3%; justify-content: center; align-items: center;" onclick="hideActionCode('${node_id}', '${sequence_id}');"> 
+              <i class="fa fa-times-circle" style="position:relative;font-size:24px;color:red"></i>
+              </button>
+              `;
     default:
       return '';
   }
@@ -136,22 +144,22 @@ let ACTION_STATEMENT = function (node_id, sequence_id) {
 
 let STATE_STATEMENT = function (node_id, sequence_id) {
   return `<div class="dropdown-container">
-                                        <div class="dropdown" id = "category-${node_id}-${sequence_id}">
-                                            <button class="dropdown-item">Menu &#9662;</button>
-                                            <div class="dropdown-content">
-                                                <button class="dropdown-content-item" onclick="dropdownContentItemHandler('${node_id}', '${sequence_id}', 'category', 'Extract')">Extract</button>
-                                                <button class="dropdown-content-item" onclick="dropdownContentItemHandler('${node_id}', '${sequence_id}', 'category', 'Drop')">Drop</button>
-                                            </div>               
-                                        </div>
-                                        <div class="dropdown" id = "target-${node_id}-${sequence_id}">
-                                            <button class="dropdown-item">Target &#9662;</button>
-                                            <div class="dropdown-content">
-                                            </div>               
-                                        </div>
-                                        <button class="btn" onclick="dropdownDivRemove('${node_id}', '${sequence_id}')"> 
-                                            <i class="fa-sharp fa-solid fa-times-circle fa-lg" style="color: #1f2551;"></i> 
-                                        </button> 
-                                    </div>`;
+            <div class="dropdown" id = "category-${node_id}-${sequence_id}">
+                <button class="dropdown-item">Menu &#9662;</button>
+                <div class="dropdown-content">
+                    <button class="dropdown-content-item" onclick="dropdownContentItemHandler('${node_id}', '${sequence_id}', 'category', 'Extract')">Extract</button>
+                    <button class="dropdown-content-item" onclick="dropdownContentItemHandler('${node_id}', '${sequence_id}', 'category', 'Drop')">Drop</button>
+                </div>               
+            </div>
+            <div class="dropdown" id = "target-${node_id}-${sequence_id}">
+                <button class="dropdown-item">Target &#9662;</button>
+                <div class="dropdown-content">
+                </div>               
+            </div>
+            <button class="btn" onclick="dropdownDivRemove('${node_id}', '${sequence_id}')"> 
+                <i class="fa-sharp fa-solid fa-times-circle fa-lg" style="color: #1f2551;"></i> 
+            </button> 
+        </div>`;
 };
 
 let TABLE_STATEMENT = function (node_id, sequence_id) {
@@ -233,8 +241,15 @@ window.addEventListener("DOMContentLoaded", function () {
       if (mutation.type === 'childList') {
         mutation.addedNodes.forEach(node => {
           if (node.childNodes[0] && node.childNodes[0].className == "action-statement") {
+            // Add event listener once the code statement is added
+            if (node.childNodes[4] && node.childNodes[4].id.slice(0, 4) == "code") {
+              codeTextArea = node.childNodes[4];
+              CodeMirror.fromTextArea(codeTextArea, {
+                lineNumbers: false,
+                tabSize: 2,
+              });
+            }
             // Add event listener to the new input
-            console.log('hahaa', node)
             node.addEventListener('input', function (e) {
               // Ensure the event is from an input element you want to autocomplete
               console.log('hahaa', e.target)
@@ -292,7 +307,7 @@ window.addEventListener("DOMContentLoaded", function () {
             }
             );
             node.addEventListener('input', function (event) {
-              if (event.target.tagName.toLowerCase() === 'textarea') {
+              if (event.target.tagName.toLowerCase() === 'textarea' && event.target.className.toLowerCase() == 'autocompleteinput') {
                 const textarea = event.target;
                 if (textarea.selectionStart % 38 == 0) {
                   if (!textarea.style.height) {
@@ -1659,4 +1674,29 @@ function addActionModule() {
   new_html_element.innerHTML = raw_html_string;
   document.querySelector(`.actions-page-items`).appendChild(new_html_element);
   highest_headers_page_variable_sequence += 1;
+}
+
+function expandActionCode(node_id, sequence_id) {
+  /* toggle on blur, and bring up the code block */
+  document.querySelector(`.blur-filter.${node_id}-${sequence_id}`).style.display = 'block';
+  console.log(document.querySelector(`.blur-filter.${node_id}-${sequence_id}`));
+  document.querySelector(`#statement-${node_id}-${sequence_id}.module-element .CodeMirror.cm-s-default`).style.display = 'block';
+  document.getElementById(`action-code-hide-${node_id}-${sequence_id}`).style.display = 'flex';
+  /* Keep code blocks un-blurred */
+  return;
+}
+
+function hideActionCode(node_id, sequence_id) {
+  /* Do the reverse of expandActionCode */
+  /* toggle on blur, and bring up the code block */
+  document.querySelector(`.blur-filter.${node_id}-${sequence_id}`).style.display = 'none';
+  document.querySelector(`#statement-${node_id}-${sequence_id}.module-element .CodeMirror.cm-s-default`).style.display = 'none';
+  document.getElementById(`action-code-hide-${node_id}-${sequence_id}`).style.display = 'none';
+  /* Keep code blocks un-blurred */
+  return;
+}
+
+function extractActionCode(node_id, sequence_id) {
+  /* Extract the inputs, outputs, and params from the code block */
+  console.log(document.getElementById(`code ${node_id} ${sequence_id}`).value);
 }
