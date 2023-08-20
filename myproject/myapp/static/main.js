@@ -12,13 +12,13 @@ let current_selected_window = 0;
 let fileCount = 0;
 let global_node_dict = [];
 let global_flow_editor = null;
+let action_code_editor = {};
 let global_slider = null;
 let display_code = false;
 let display_headers_page = false;
 let display_actions_page = false;
 let init_load = true;
 let types = ["vars", "structs", "typedefs", "headers"];
-/* TODO: Change autoCompleteData */
 /* 
   autoCompleteData sources keywords from the following sources:
   1. global_init_header_page_data
@@ -192,7 +192,7 @@ window.addEventListener("DOMContentLoaded", function () {
   var codeTextArea = document.getElementById("code");
   height = window.innerHeight;
   var minLines = Math.trunc((height * 0.8) / 15) + 3;
-  var startingValue = "/**\nWelcome to the VisualP4 IDE!\nDevelopment Version: 2023.08.19\n**/";
+  var startingValue = "/**\nWelcome to the VisualP4 IDE!\nDevelopment Version: 2023.08.20\n**/";
   for (var i = 0; i < minLines; i++) {
     startingValue += "\n";
   }
@@ -244,10 +244,11 @@ window.addEventListener("DOMContentLoaded", function () {
             // Add event listener once the code statement is added
             if (node.childNodes[4] && node.childNodes[4].id.slice(0, 4) == "code") {
               codeTextArea = node.childNodes[4];
-              CodeMirror.fromTextArea(codeTextArea, {
+              editor = CodeMirror.fromTextArea(codeTextArea, {
                 lineNumbers: false,
                 tabSize: 2,
               });
+              action_code_editor[node.id] = editor;
             }
             // Add event listener to the new input
             node.addEventListener('input', function (e) {
@@ -691,10 +692,6 @@ function extractValues(obj, arr = []) {
     }
   }
   return arr;
-}
-
-function InjectAction() {
-  /* TODO: Fill in this part ASAP!*/
 }
 /**
  *           Cache these things, might be useful later.
@@ -1696,7 +1693,22 @@ function hideActionCode(node_id, sequence_id) {
   return;
 }
 
+/* Not put into maincode for now... */
 function extractActionCode(node_id, sequence_id) {
   /* Extract the inputs, outputs, and params from the code block */
-  console.log(document.getElementById(`code ${node_id} ${sequence_id}`).value);
+  input = action_code_editor[`statement-${node_id}-${sequence_id}`].getValue();
+  const actionRegex = /action\s+(\w+)\s*\(([^)]+)\)/;
+  const match = input.match(actionRegex);
+
+  if (!match) {
+    return null;
+  }
+
+  const name = match[1];
+  const args = match[2].split(',').map(arg => arg.trim());
+
+  return {
+    name,
+    args
+  };
 }
