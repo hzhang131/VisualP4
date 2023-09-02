@@ -19,6 +19,7 @@ from django.urls import path
 from myapp import views
 
 urlpatterns = [
-    path('', views.index, name='index'),
-    path('HPD/', views.header_metadata_pagefile, name='headers_page')
+    path("", views.index, name="index"),
+    path("HPD/", views.header_metadata_pagefile, name="headers_page"),
+    path("APD/", views.action_metadata_pagefile, name="actions_page"),
 ]

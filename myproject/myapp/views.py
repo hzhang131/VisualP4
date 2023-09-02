@@ -21,3 +21,18 @@ def header_metadata_pagefile(request):
         return JsonResponse(
             {"error": "Directory not found", "current pwd": os.getcwd()}, status=404
         )
+
+
+def action_metadata_pagefile(request):
+    try:
+        file_list = []
+        for file_name in os.listdir("./myapp/templates/APD"):
+            file_path = os.path.join("./myapp/templates/APD", file_name)
+            if os.path.isfile(file_path):
+                with open(file_path, "r") as f:
+                    file_list.append({file_name: f.read()})
+        return JsonResponse({"files": file_list})
+    except FileNotFoundError:
+        return JsonResponse(
+            {"error": "Directory not found", "current pwd": os.getcwd()}, status=404
+        )

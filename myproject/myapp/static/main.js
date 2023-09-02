@@ -120,12 +120,6 @@ let ACTION_STATEMENT = function (node_id, sequence_id) {
                <span id="autocompleteBase"></span>
               </div>`;
     case 2:
-      return `<div class="action-statement" id = "${node_id} ${sequence_id}">
-               Outputs
-               <textarea class="autocompleteInput" id = "${node_id} ${sequence_id}" type="text" autocomplete="off"></textarea>
-               <span id="autocompleteBase"></span>
-              </div>`;
-    case 3:
       return `<div class="action-statement" id="${node_id} ${sequence_id}" onclick="expandActionCode('${node_id}', '${sequence_id}')">
                   Click here to show code
               </div>
@@ -188,11 +182,11 @@ window.addEventListener("DOMContentLoaded", function () {
   //This section loads up the code editor(s).
   let INIT_HEADER_PAGE_DATA = {};
   INIT_HEADER_PAGE_DATA["ABC"] = "abc";
-  console.log(INIT_HEADER_PAGE_DATA);
+  let INIT_ACTION_PAGE_DATA = {};
   var codeTextArea = document.getElementById("code");
   height = window.innerHeight;
   var minLines = Math.trunc((height * 0.8) / 15) + 3;
-  var startingValue = "/**\nWelcome to the VisualP4 IDE!\nDevelopment Version: 2023.08.20\n**/";
+  var startingValue = "/**\nWelcome to the VisualP4 IDE!\nDevelopment Version: 2023.09.01\n**/";
   for (var i = 0; i < minLines; i++) {
     startingValue += "\n";
   }
@@ -235,6 +229,16 @@ window.addEventListener("DOMContentLoaded", function () {
     });
 
   injectLinkTargets_async().then(init_load = false);
+
+  /* Load ActionPageData */
+  ActionPageData(INIT_ACTION_PAGE_DATA).then((INIT_ACTION_PAGE_DATA) => {
+    // Automatically populate the action page with the data.
+    console.log("INIT_ACTION_PAGE_DATA object:", INIT_ACTION_PAGE_DATA)
+    populateActionPage(INIT_ACTION_PAGE_DATA);
+  }).catch((error) => {
+    console.error("Error:", error);
+  });
+
   /* Observer to observe DOM changes. */
   const observer = new MutationObserver((mutationsList, observer) => {
     for (let mutation of mutationsList) {
@@ -598,39 +602,54 @@ function ActionDisplaySetting() {
   display_actions_page = !display_actions_page;
 }
 
-function ActionPageData(INIT_HEADER_PAGE_DATA) {
+// function ActionPageData(INIT_ACTION_PAGE_DATA) {
+//   // Reads the initial header data stored in './APD/'
+//   const directoryPath = "./APD/";
+//   var INIT_ACTION_PAGE_DATA = {};
+
+//   return new Promise((resolve, reject) => {
+//     fetch(directoryPath)
+//       .then((response) => response.text())
+//       .then((actions) => {
+//         actions = JSON.parse(actions);
+//         console.log(actions)
+//         for (let action_index in actions){
+//           const firstFileObj = actions[action_index][0];
+//           const key = Object.keys(firstFileObj)[0];
+//           const value = Object.values(firstFileObj)[0];
+//           INIT_ACTION_PAGE_DATA[key] = {"code": value, "metadata": extractActionCore(value)};
+//         }
+//       }).then(() => {resolve(INIT_ACTION_PAGE_DATA); console.log(INIT_ACTION_PAGE_DATA)})
+//       .catch((error) => {
+//         reject(error);
+//       });
+//   });
+// }
+function ActionPageData(initialData) {
   // Reads the initial header data stored in './APD/'
-  const directoryPath = "./HPD/";
-  var INIT_ACTION_PAGE_DATA = {};
+  const directoryPath = "./APD/";
+  var actionPageData = {};
 
   return new Promise((resolve, reject) => {
     fetch(directoryPath)
       .then((response) => response.text())
-      .then((fileList) => {
-        console.log(fileList);
-        const files = JSON.parse(fileList)["files"];
-        for (let i = 0; i < files.length; i++) {
-          var file_name = Object.keys(files[i])[0];
-          var raw_json = files[i][file_name];
-          var jsonData = JSON.parse(raw_json);
-          INJECT_FUNCS[file_name.slice(0, -5)](
-            document.querySelector(`.headers-page-item#${file_name.slice(0, -5)}`),
-            jsonData
-          );
-          INIT_ACTION_PAGE_DATA[file_name.slice(0, -5)] = jsonData;
-          console.log("JSON data stored in INIT_ACTION_PAGE_DATA:", file_name.slice(0, -5));
-        }
-      })
-      .then(() => {
-        resolve(INIT_ACTION_PAGE_DATA);
-        global_init_action_page_data = INIT_ACTION_PAGE_DATA;
-        for (let index in types) {
-          var type = types[index];
-          for (let doc in global_init_action_page_data[type]) {
-            var name = global_init_action_page_data[type][doc]["name"];
-            window.header_name_dict[name] = doc;
+      .then((actions) => {
+        actions = JSON.parse(actions);
+        console.log("actions:", actions);
+        for (let action_index in actions){
+          console.log("actions[action_index]:", actions[action_index], actions[action_index].length);
+          for (let index = 0; index < actions[action_index].length; index++) {
+            const FileObj = actions[action_index][index];
+            const key = Object.keys(FileObj)[0];
+            const value = Object.values(FileObj)[0];
+            actionPageData[key] = {"code": value, "metadata": extractActionCore(value)};
           }
         }
+        console.log("Inside ActionPageData 1:", actionPageData);
+      })
+      .then(() => {
+        resolve(actionPageData);
+        console.log("Inside ActionPageData:", actionPageData);
       })
       .catch((error) => {
         reject(error);
@@ -1579,10 +1598,10 @@ window.addEventListener("contextmenu", injectLinkTargets_sync(false));
 
 /***********************************Misc functions****************************/
 function addActionModuleStatements(node_id) {
-  if (highest_node_sequence[node_id] > 3) {
+  if (highest_node_sequence[node_id] > 2) {
     return;
   }
-  /* TODO: Add Module Statements with syntax highlighting and auto_complete variable names. */
+  /* TODO: Add Module Statements with syntax highlighting and auto complete variable names. */
   actions_page_items = document.querySelector(".actions-page-items");
   matches = actions_page_items.querySelectorAll(`#${node_id}`);
   node_display_content = matches[0].childNodes[1]
@@ -1598,7 +1617,7 @@ function addActionModuleStatements(node_id) {
   highest_node_sequence[node_id] += 1;
   /* Append the new div as a child of the parent div. */
   node_display_content.appendChild(newDiv);
-
+  console.log(node_display_content);
 }
 async function addStateModuleStatements(node_id) {
   /*** Get number of current statements ***/
@@ -1693,15 +1712,16 @@ function hideActionCode(node_id, sequence_id) {
   return;
 }
 
-/* Not put into maincode for now... */
-function extractActionCode(node_id, sequence_id) {
-  /* Extract the inputs, outputs, and params from the code block */
-  input = action_code_editor[`statement-${node_id}-${sequence_id}`].getValue();
+function extractActionCore(input) {
+  const nameRegex = /(?<=action).*?(?=\()/g;
   const actionRegex = /action\s+(\w+)\s*\(([^)]+)\)/;
   const match = input.match(actionRegex);
 
+  /* Should also match the case where the provided data is gibberish... */
+  /* But I don't have time for it. */
+  console.log(input, input.match(nameRegex));
   if (!match) {
-    return null;
+    return {name: input.match(nameRegex)[0].trim(), args: []};
   }
 
   const name = match[1];
@@ -1711,4 +1731,73 @@ function extractActionCode(node_id, sequence_id) {
     name,
     args
   };
+}
+
+function waitForElement(elementFn) {
+  return new Promise((resolve) => {
+    function checkElement() {
+      const element = elementFn();
+      console.log(element);
+      if (element) {
+        console.log("Element is now available!");
+        resolve(element);
+      } else {
+        setTimeout(checkElement, 100);
+      }
+    }
+    checkElement();
+  });
+}
+
+/* Not put into maincode for now... */
+function extractActionCode(node_id, sequence_id) {
+  /* Extract the inputs, outputs, and params from the code block */
+  input = action_code_editor[`statement-${node_id}-${sequence_id}`].getValue();
+  extractActionCore(input);
+}
+
+function populateActionPage(INIT_ACTION_PAGE_DATA){
+  /* Do something here haha */
+  /* Create action page items on the action Page */
+  console.log("line 1726", INIT_ACTION_PAGE_DATA);
+  Object.keys(INIT_ACTION_PAGE_DATA).forEach((key) => {
+    console.log("line 1728", key);
+    const code = INIT_ACTION_PAGE_DATA[key]["code"];
+    const value = INIT_ACTION_PAGE_DATA[key]["metadata"];
+    if (value == null) {
+      args = [];
+      name_ = "";
+    } else {
+      args = ("args" in value) ? value["args"] : [];;
+      name_ = value["name"];
+    }
+    
+    // Add action module onto action page.
+    assigned_node_id = `node-${highest_headers_page_variable_sequence}`;
+    console.log(assigned_node_id);
+    addActionModule();
+    // Name
+    document.querySelector(`div#${assigned_node_id}`).querySelector(`#action-input-field`).value = name_;
+    // Description
+    addActionModuleStatements(assigned_node_id);
+    textarea = document.querySelector(`div#statement-${assigned_node_id}-0`).querySelector(`textarea`);
+    textarea.value = "boilerplate value";
+    // Inputs
+    addActionModuleStatements(assigned_node_id);
+    textarea = document.querySelector(`div#statement-${assigned_node_id}-1`).querySelector(`textarea`);
+    textarea.value = args.join(" ");
+    // Code
+    addActionModuleStatements(assigned_node_id);
+    // waitForElement(() => document.getElementById(`statement-${assigned_node_id}-2`).querySelector(`.CodeMirror-code`))
+    // .then(() => {formatCodeToCodeMirror(assigned_node_id, code);});
+    ((current_node_id, code) => {
+      waitForElement(() => document.getElementById(`statement-${current_node_id}-2`).querySelector(`.CodeMirror-code`))
+        .then(() => { formatCodeToCodeMirror(current_node_id, code); });
+    })(assigned_node_id, code);
+  });
+}
+
+function formatCodeToCodeMirror(node_id, code) {
+  console.log("formatCodeToCodeMirror", node_id, code);
+  action_code_editor[`statement-${node_id}-2`].setValue(code);
 }
