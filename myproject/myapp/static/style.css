@@ -499,3 +499,8 @@ button:hover {
   display: none;
   border-radius: 5px;
 }
+
+.formatable-input-field {
+  display: flex;
+  flex-direction: column;
+}

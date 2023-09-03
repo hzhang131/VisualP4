@@ -115,10 +115,9 @@ let ACTION_STATEMENT = function (node_id, sequence_id) {
               </div>`;
     case 1:
       return `<div class="action-statement" id = "${node_id} ${sequence_id}">
-               Inputs
-               <textarea class="autocompleteInput" id = "${node_id} ${sequence_id}" type="text" autocomplete="off"></textarea>
-               <span id="autocompleteBase"></span>
-              </div>`;
+                Inputs
+                <div class="formatable-input-field" id = "formatable-input-field-${node_id}"> </div>
+                </div>`;
     case 2:
       return `<div class="action-statement" id="${node_id} ${sequence_id}" onclick="expandActionCode('${node_id}', '${sequence_id}')">
                   Click here to show code
@@ -127,7 +126,8 @@ let ACTION_STATEMENT = function (node_id, sequence_id) {
                 style="z-index: 15; backdrop-filter: blur(5px); position: fixed; display: none; width:100%;height: 100%; top: 0;left: 0;background-color: transparent;">
               </div>
               <textarea id="code ${node_id} ${sequence_id}" rows="40" style="caret-color: white; position: fixed; width: 50%; height: 50%; top: 25%; left: 25%;" autofocus></textarea>
-              <button id="action-code-hide-${node_id}-${sequence_id}" style="position: fixed; display: none; z-index: 20; top: 25%; right: 20%; background-color: transparent; height: 3%; width: 3%; justify-content: center; align-items: center;" onclick="hideActionCode('${node_id}', '${sequence_id}');"> 
+              <button id="action-code-hide-${node_id}-${sequence_id}" style="position: fixed; display: none; z-index: 20; top: 25%; right: 20%; background-color: transparent; height: 3%; width: 3%; justify-content: center; align-items: center;" 
+                      onclick="hideActionCode('${node_id}', '${sequence_id}'); populateActionModuleByCode('${node_id}');"> 
               <i class="fa fa-times-circle" style="position:relative;font-size:24px;color:red"></i>
               </button>
               `;
@@ -186,7 +186,7 @@ window.addEventListener("DOMContentLoaded", function () {
   var codeTextArea = document.getElementById("code");
   height = window.innerHeight;
   var minLines = Math.trunc((height * 0.8) / 15) + 3;
-  var startingValue = "/**\nWelcome to the VisualP4 IDE!\nDevelopment Version: 2023.09.01\n**/";
+  var startingValue = "/**\nWelcome to the VisualP4 IDE!\nDevelopment Version: 2023.09.02\n**/";
   for (var i = 0; i < minLines; i++) {
     startingValue += "\n";
   }
@@ -245,6 +245,7 @@ window.addEventListener("DOMContentLoaded", function () {
       if (mutation.type === 'childList') {
         mutation.addedNodes.forEach(node => {
           if (node.childNodes[0] && node.childNodes[0].className == "action-statement") {
+            console.log("line 248", node);
             // Add event listener once the code statement is added
             if (node.childNodes[4] && node.childNodes[4].id.slice(0, 4) == "code") {
               codeTextArea = node.childNodes[4];
@@ -254,6 +255,18 @@ window.addEventListener("DOMContentLoaded", function () {
               });
               action_code_editor[node.id] = editor;
             }
+
+            // Add event listener to the highlighted input text
+            // Wait for the highlighted input text to be added first
+            ((current_node) => {
+              waitForElement(() => node.querySelectorAll(`span.highlighted-type`))
+                .then(() => { 
+                  attachHighlightEventListener(current_node);
+                 });
+            })(node);
+
+            
+
             // Add event listener to the new input
             node.addEventListener('input', function (e) {
               // Ensure the event is from an input element you want to autocomplete
@@ -287,17 +300,11 @@ window.addEventListener("DOMContentLoaded", function () {
                 }
 
                 let span = node.querySelectorAll('span')[0];
-
                 let span_id = span.id;
-
                 let span_id_split = span_id.split(' ');
-
                 let node_id = span_id_split[1];
-
                 let sequence_id = span_id_split[2];
-
                 console.log(node_id, sequence_id);
-
                 // Inside your input event listener:
                 for (let word of autoCompleteData) {
                   if (word.startsWith(inputValue)) {
@@ -373,16 +380,11 @@ function captureCode() {
 
 function createFileTabs() {
   const buttonList = document.querySelector(".buttons");
-
   buttonList.innerHTML += `<button id="file-${fileCount}"> file-${fileCount} </li>`;
-
   const buttonListItem = document.getElementById(`file-${fileCount}`);
-
   buttonListItem.classList.add("button");
-
   // add attributes
   buttonListItem.setAttribute("id", `file-${fileCount}`);
-
   // add events
   buttonListItem.addEventListener("click", () => {
     alert("You clicked on something!");
@@ -392,7 +394,6 @@ function createFileTabs() {
 function createNewModule() {
   /* This function creates a new module and dump that module to a less cluttered area. */
   /* editor.addNode(name, inputs, outputs, posx, posy, class, data, html); */
-
   var html = `<p style="text-align:center; font-family:Courier, monospace;">Right click to select type</p>`;
   global_flow_editor.addNode("New Node", 1, 1, 100, 300, "generic", {}, html);
   /* If there is no more room to put stuff in the new workspace, then we have to move it to another view */
@@ -602,29 +603,6 @@ function ActionDisplaySetting() {
   display_actions_page = !display_actions_page;
 }
 
-// function ActionPageData(INIT_ACTION_PAGE_DATA) {
-//   // Reads the initial header data stored in './APD/'
-//   const directoryPath = "./APD/";
-//   var INIT_ACTION_PAGE_DATA = {};
-
-//   return new Promise((resolve, reject) => {
-//     fetch(directoryPath)
-//       .then((response) => response.text())
-//       .then((actions) => {
-//         actions = JSON.parse(actions);
-//         console.log(actions)
-//         for (let action_index in actions){
-//           const firstFileObj = actions[action_index][0];
-//           const key = Object.keys(firstFileObj)[0];
-//           const value = Object.values(firstFileObj)[0];
-//           INIT_ACTION_PAGE_DATA[key] = {"code": value, "metadata": extractActionCore(value)};
-//         }
-//       }).then(() => {resolve(INIT_ACTION_PAGE_DATA); console.log(INIT_ACTION_PAGE_DATA)})
-//       .catch((error) => {
-//         reject(error);
-//       });
-//   });
-// }
 function ActionPageData(initialData) {
   // Reads the initial header data stored in './APD/'
   const directoryPath = "./APD/";
@@ -1601,7 +1579,6 @@ function addActionModuleStatements(node_id) {
   if (highest_node_sequence[node_id] > 2) {
     return;
   }
-  /* TODO: Add Module Statements with syntax highlighting and auto complete variable names. */
   actions_page_items = document.querySelector(".actions-page-items");
   matches = actions_page_items.querySelectorAll(`#${node_id}`);
   node_display_content = matches[0].childNodes[1]
@@ -1684,6 +1661,9 @@ function addActionModule() {
                             </button>
                           </p>
                         </div>
+                        <div class="module-element" id = "node-${highest_headers_page_variable_sequence}-labels"
+                         style = "display: flex; flex-direction: row;"> 
+                        </div>
                       </div>
                     </div>`
   new_html_element = document.createElement("div");
@@ -1713,15 +1693,75 @@ function hideActionCode(node_id, sequence_id) {
 }
 
 function extractActionCore(input) {
+  /* 
+   V1Switch:
+   Verify Checksum: (inout headers hdr, inout metadata meta)
+   Ingress Controller: (inout headers hdr,
+                        inout metadata meta,
+                        inout standard_metadata_t standard_metadata)
+   Egress Controller:  (inout headers hdr,
+                        inout metadata meta,
+                        inout standard_metadata_t standard_metadata)
+   Compute Checksum:   (inout headers hdr, inout metadata meta)
+   Deparser:           (packet_out packet, in headers hdr) 
+  */
   const nameRegex = /(?<=action).*?(?=\()/g;
   const actionRegex = /action\s+(\w+)\s*\(([^)]+)\)/;
   const match = input.match(actionRegex);
+  const contentRegex = /action\s+(\w+)\([\w\s,_]*\)\s*\{([\s\S]*?)\}/g;
 
-  /* Should also match the case where the provided data is gibberish... */
-  /* But I don't have time for it. */
-  console.log(input, input.match(nameRegex));
+  const raw_content = contentRegex.exec(input);
+  const content = raw_content ? raw_content[2].trim() : null;
+  
+  console.log("Captured body:", content);
+  let labels = [];
+  let actionVariableUsage = [];
+
+  if (content !== null) { // Ensure there's a match
+    let variables = ['hdr', 'meta', 'standard_metadata', 'packet'];
+
+    const variableRegex1 = /(\w+)\.\w+/g;
+    const variableRegex2 = /\b(\w+)\b/g;
+    let match;
+    let uniqueVariables = new Set();
+
+    // Capture compound names
+    while ((match = variableRegex1.exec(content)) !== null) {
+      uniqueVariables.add(match[1]);
+    }
+
+    // Capture simple names
+    while ((match = variableRegex2.exec(content)) !== null) {
+      uniqueVariables.add(match[1]);
+    }
+
+    let intersection = new Set();
+    for (const variable of variables) {
+      if (uniqueVariables.has(variable)) {
+        intersection.add(variable);
+      }
+    }
+    actionVariableUsage = Array.from(intersection);
+  }
+  
+  if (!actionVariableUsage.includes('standard_metadata') && !actionVariableUsage.includes('packet')) {
+    if (!labels.includes('checksum')) {labels.push('Checksum');}
+  } 
+  if (!actionVariableUsage.includes('packet') && actionVariableUsage.includes('standard_metadata')) {
+    if (!labels.includes('ingress/egress')) {labels.push('Ingress / Egress');}
+  }
+  if (!actionVariableUsage.includes('meta') && actionVariableUsage.includes('standard_metadata')) {
+    if (!labels.includes('deparser')) {labels.push('Deparser');}
+  }
+  if (actionVariableUsage.length == 0){
+    labels = ['Ingress / Egress', 'Deparser', 'Checksum'];
+  }
+  
+  console.log("line 1749", actionVariableUsage, labels);
   if (!match) {
-    return {name: input.match(nameRegex)[0].trim(), args: []};
+    /* In this case, there is no argument that is passed into the action. */
+    /* Which is fine for now. */
+    return {name: input.match(nameRegex)[0].trim(), args: [], labels};
   }
 
   const name = match[1];
@@ -1729,9 +1769,12 @@ function extractActionCore(input) {
 
   return {
     name,
-    args
+    args,
+    labels
   };
 }
+
+
 
 function waitForElement(elementFn) {
   return new Promise((resolve) => {
@@ -1749,29 +1792,21 @@ function waitForElement(elementFn) {
   });
 }
 
-/* Not put into maincode for now... */
-function extractActionCode(node_id, sequence_id) {
-  /* Extract the inputs, outputs, and params from the code block */
-  input = action_code_editor[`statement-${node_id}-${sequence_id}`].getValue();
-  extractActionCore(input);
-}
-
 function populateActionPage(INIT_ACTION_PAGE_DATA){
   /* Do something here haha */
   /* Create action page items on the action Page */
-  console.log("line 1726", INIT_ACTION_PAGE_DATA);
   Object.keys(INIT_ACTION_PAGE_DATA).forEach((key) => {
-    console.log("line 1728", key);
     const code = INIT_ACTION_PAGE_DATA[key]["code"];
     const value = INIT_ACTION_PAGE_DATA[key]["metadata"];
     if (value == null) {
       args = [];
       name_ = "";
+      labels = [];
     } else {
       args = ("args" in value) ? value["args"] : [];;
       name_ = value["name"];
+      labels = value["labels"];
     }
-    
     // Add action module onto action page.
     assigned_node_id = `node-${highest_headers_page_variable_sequence}`;
     console.log(assigned_node_id);
@@ -1781,23 +1816,140 @@ function populateActionPage(INIT_ACTION_PAGE_DATA){
     // Description
     addActionModuleStatements(assigned_node_id);
     textarea = document.querySelector(`div#statement-${assigned_node_id}-0`).querySelector(`textarea`);
-    textarea.value = "boilerplate value";
+    textarea.value = "User should supply the value in some way, shape, or form";
     // Inputs
     addActionModuleStatements(assigned_node_id);
-    textarea = document.querySelector(`div#statement-${assigned_node_id}-1`).querySelector(`textarea`);
-    textarea.value = args.join(" ");
+    // TODO: Modify this to be dynamic.
+    textarea = document.querySelector(`div#formatable-input-field-${assigned_node_id}`);
+    textarea.innerHTML = highlightTypes(args);
     // Code
     addActionModuleStatements(assigned_node_id);
-    // waitForElement(() => document.getElementById(`statement-${assigned_node_id}-2`).querySelector(`.CodeMirror-code`))
-    // .then(() => {formatCodeToCodeMirror(assigned_node_id, code);});
     ((current_node_id, code) => {
       waitForElement(() => document.getElementById(`statement-${current_node_id}-2`).querySelector(`.CodeMirror-code`))
         .then(() => { formatCodeToCodeMirror(current_node_id, code); });
     })(assigned_node_id, code);
+    // Labels
+    label_space = document.querySelector(`div#${assigned_node_id}-labels`);
+    // Now we hardcode the number of labels, but we should be able to do this dynamically.
+    for (let i = 0; i < labels.length; i++) {
+      label_space.innerHTML += `<button style = "margin-left: 3px;">
+                                  ${labels[i]}
+                                </button>`
+    }
   });
 }
 
 function formatCodeToCodeMirror(node_id, code) {
-  console.log("formatCodeToCodeMirror", node_id, code);
   action_code_editor[`statement-${node_id}-2`].setValue(code);
+}
+
+function fetchCodeFromCodeMirror(node_id){
+  return action_code_editor[`statement-${node_id}-2`].getValue();
+}
+
+// Populate existing module by the code inputted into the code block.
+function populateActionModuleByCode(node_id) {
+  let code = fetchCodeFromCodeMirror(node_id);
+  metadata = extractActionCore(code);
+  // put the metadata back to where they were.
+  document.querySelector(`div#${node_id}`).querySelector(`#action-input-field`).value = metadata["name"];
+  // Description
+  textarea = document.querySelector(`div#statement-${node_id}-0`).querySelector(`textarea`);
+  textarea.value = "User should supply the value in some way, shape, or form";
+  // Inputs
+  textarea = document.querySelector(`div#formatable-input-field-${node_id}`);
+  // Reattach the event listener for inputs.
+  attachHighlightEventListener(document.querySelector(`div#statement-${node_id}-1`));
+  lalala = highlightTypes(metadata["args"]);
+  textarea.innerHTML = lalala;
+  // Labels
+  label_space = document.querySelector(`div#${node_id}-labels`);
+  // Now we hardcode the number of labels, but we should be able to do this dynamically.
+  label_space.innerHTML = "";
+  for (let i = 0; i < metadata["labels"].length; i++) {
+    label_space.innerHTML += `<button style = "margin-left: 3px;">
+                                ${metadata["labels"][i]}
+                              </button>`
+  }
+  return;
+}
+
+function highlightTypes(args){
+  let raw_html_data = "";
+  // global_init_header_page_data;
+  for (let i = 0; i < args.length; i++) {
+    split_args = args[i].split(" ");
+    let type = split_args[0];
+    let name_ = split_args[1];
+    raw_html_data += `<div class="input_argument-line" style = "display: -webkit-box; height: 20px;">
+                      <span style = "color: teal;" class = "highlighted-type" id = "highlighted-type-${type}" ><strong>${type} </strong></span> 
+                      <span>${name_} </span>
+                      </div>`;
+  }   
+  return raw_html_data;
+}
+
+function findDataContainerByDataName(data_name) {
+  // Returns a copy of the data container.
+  const dataNameElements = document.querySelectorAll('.data-name');
+
+  let dataContainer = null;
+
+  for (const element of dataNameElements) {
+    if (element.textContent.trim().includes(data_name)) {
+      dataContainer = element.closest('.data-container');
+      break;
+    }
+  }
+
+  if (dataContainer) {
+    return dataContainer.cloneNode(true);  // Clone the node and its children
+  } else {
+    return null;
+  }
+}
+
+function attachHighlightEventListener(node){
+  console.log("line 1913 node content", node);
+  let highlighted_types = node.querySelectorAll(`span.highlighted-type`); // get the div element
+  console.log("line 1915 highlighted_types", highlighted_types);
+  for (let [index, highlighted_type] of Array.from(highlighted_types).entries()) {
+    console.log("line 1917 highlighted_type", highlighted_type);
+    highlighted_type.addEventListener('mouseover', function (e) {
+      /* Fetch the type information from the header page. */
+      text_content = highlighted_type.textContent.trim();
+      global_init_header_page_data["typedefs"].forEach(element => {
+        console.log(element["name"], text_content);
+        if (element["name"] == text_content) {       
+          /* Copy over the box from the header page. */
+          cloned_container = findDataContainerByDataName(text_content);
+          const buttons = cloned_container.querySelectorAll('button'); // Find all button elements within the cloned container
+
+          buttons.forEach((button) => {
+            button.remove();  // Remove each button
+          });
+
+          // Position the cloned container absolutely and directly under body.
+          const rect = highlighted_type.getBoundingClientRect();
+          const top = window.scrollY + rect.top;
+          const left = window.scrollX + rect.left;
+
+          // Set the style for cloned_container
+          cloned_container.id = `cloned-${node.id}-${index}`;
+          cloned_container.style.position = "absolute";
+          cloned_container.style.top = top + 10 + 'px';
+          cloned_container.style.left = left + 20 + 'px';
+          cloned_container.style.zIndex = 20000;
+
+          // Append it to body
+          document.body.appendChild(cloned_container);
+        }
+      });
+    });
+
+    highlighted_type.addEventListener('mouseout', function (e) {
+      /* Remove the type information from the header page. */
+      document.getElementById(`cloned-${node.id}-${index}`).remove();
+    });
+  }
 }
