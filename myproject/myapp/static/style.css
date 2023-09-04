@@ -36,6 +36,8 @@
   overflow: auto;
   text-align: center;
   vertical-align: middle;
+  display: flex;
+  justify-content: space-between;
 }
 
 #icons {
@@ -504,3 +506,45 @@ button:hover {
   display: flex;
   flex-direction: column;
 }
+
+
+.buttons.left, .buttons.right {
+  flex: 1;
+}
+
+.center-buttons {
+  flex: 2;
+  display: flex;
+  justify-content: space-between;
+}
+
+
+.circle {
+  display: inline-block;
+  border-radius: 100%;
+  width: 0.75em;
+  height: 0.75em;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+/* This color means the ControlBlock has not been modified yet. */
+.lime {
+  background-color: #197219;
+}
+
+/* This color means the ControlBlock has been modified yet. */
+.yellow {
+  background-color: goldenrod;
+}
+
+/* This color means the ControlBlock has syntax error. */
+/* Very basic syntax error checking... Checked on exit. */
+.red {
+  background-color: tomato;
+}
+
+.button-text {
+  margin-right: 8px; /* adjust this value as needed */
+}
+

@@ -12,6 +12,7 @@ let current_selected_window = 0;
 let fileCount = 0;
 let global_node_dict = [];
 let global_flow_editor = null;
+let global_flow_editors = {};
 let action_code_editor = {};
 let global_slider = null;
 let display_code = false;
@@ -19,6 +20,7 @@ let display_headers_page = false;
 let display_actions_page = false;
 let init_load = true;
 let types = ["vars", "structs", "typedefs", "headers"];
+let global_source_workspace = "parser";
 /* 
   autoCompleteData sources keywords from the following sources:
   1. global_init_header_page_data
@@ -186,7 +188,7 @@ window.addEventListener("DOMContentLoaded", function () {
   var codeTextArea = document.getElementById("code");
   height = window.innerHeight;
   var minLines = Math.trunc((height * 0.8) / 15) + 3;
-  var startingValue = "/**\nWelcome to the VisualP4 IDE!\nDevelopment Version: 2023.09.02\n**/";
+  var startingValue = "/**\nWelcome to the VisualP4 IDE!\nDevelopment Version: 2023.09.03\n**/";
   for (var i = 0; i < minLines; i++) {
     startingValue += "\n";
   }
@@ -200,9 +202,11 @@ window.addEventListener("DOMContentLoaded", function () {
   global_editor[current_selected_window] = editor;
 
   // This part initializes the flowchart canvas.
-  var example = document.getElementById("drawflow");
+  var example = document.getElementById("drawflow-parser");
   global_flow_editor = new Drawflow(example);
   global_flow_editor.start();
+  // put the flowchart editor into a dictionary.
+  global_flow_editors[global_source_workspace] = global_flow_editor;
 
   // This part initializes the slider input.
   global_slider = document.getElementById("myRange");
@@ -229,7 +233,7 @@ window.addEventListener("DOMContentLoaded", function () {
     });
 
   injectLinkTargets_async().then(init_load = false);
-
+  
   /* Load ActionPageData */
   ActionPageData(INIT_ACTION_PAGE_DATA).then((INIT_ACTION_PAGE_DATA) => {
     // Automatically populate the action page with the data.
@@ -237,6 +241,19 @@ window.addEventListener("DOMContentLoaded", function () {
     populateActionPage(INIT_ACTION_PAGE_DATA);
   }).catch((error) => {
     console.error("Error:", error);
+  });
+
+  /* Listen to action search bar submit events. */
+  let action_search_bar = document.querySelector(".actions-page-search-bar");
+  let action_search_bar_input = action_search_bar.querySelector("input");
+  action_search_bar_input.addEventListener("input", function (event) {
+    event.preventDefault();
+    let search_term = action_search_bar_input.value;
+    if (search_term == ""){
+      enableAllActionModules();
+    } else {
+      searchActionPage(search_term);
+    }
   });
 
   /* Observer to observe DOM changes. */
@@ -265,12 +282,9 @@ window.addEventListener("DOMContentLoaded", function () {
                  });
             })(node);
 
-            
-
             // Add event listener to the new input
             node.addEventListener('input', function (e) {
               // Ensure the event is from an input element you want to autocomplete
-              console.log('hahaa', e.target)
               if (e.target.className === 'autocompleteInput') { // I'm using a class name to identify relevant input elements
                 let inputValue = e.target.value;
 
@@ -395,14 +409,14 @@ function createNewModule() {
   /* This function creates a new module and dump that module to a less cluttered area. */
   /* editor.addNode(name, inputs, outputs, posx, posy, class, data, html); */
   var html = `<p style="text-align:center; font-family:Courier, monospace;">Right click to select type</p>`;
-  global_flow_editor.addNode("New Node", 1, 1, 100, 300, "generic", {}, html);
+  global_flow_editors[global_source_workspace].addNode("New Node", 1, 1, 100, 300, "generic", {}, html);
   /* If there is no more room to put stuff in the new workspace, then we have to move it to another view */
 }
 
 function zoomLevelAdjust() {
-  global_flow_editor.zoom = global_slider.value;
-  global_flow_editor.zoom_refresh();
-  UpdateConditionBoxLocation(global_flow_editor.zoom);
+  global_flow_editors[global_source_workspace].zoom = global_slider.value;
+  global_flow_editors[global_source_workspace].zoom_refresh();
+  UpdateConditionBoxLocation(global_flow_editors[global_source_workspace].zoom);
 }
 
 function changeModuleType(node_id, type) {
@@ -471,20 +485,19 @@ function dropdownContentItemHandler(node_id, sequence_id, type, arg) {
   // Match statement id here.
   lala = dropdown_button_info.querySelector(".dropdown .dropdown-item");
   lala.innerHTML = arg;
-  // TODO: Every onclick requires updating data in a persistant data storage.
 }
 
 function dropdownContentItemConnectionHandler(id, category, arg) {
   // Place an id here.
   var query_id = id.replaceAll(" ", "-");
   var query_class_name = id.replaceAll(" ", ".");
-  var toplevel_drawflow = document.querySelector(".parent-drawflow");
-  console.log(query_id);
+  var toplevel_drawflow = document.querySelector(`.drawflow-child.parent-drawflow#drawflow-${global_source_workspace}`);
   console.log(
     toplevel_drawflow.querySelectorAll(`div.side-by-side-div-${query_id}`)
       .length
   );
-
+  
+  console.log(query_class_name);
   /* Since I know the id of the thing, I can try grab the location data from it. */
   connection_box = document.querySelector(`svg.${query_class_name}`);
   path_box = connection_box.querySelector("path.main-path");
@@ -554,7 +567,7 @@ function dropdownContentItemConnectionHandler(id, category, arg) {
   current_side_by_side.style.zIndex = 1;
 
   // Scale everything by zoom level.
-  UpdateConditionBoxLocation(global_flow_editor.zoom);
+  UpdateConditionBoxLocation(global_flow_editors[global_source_workspace].zoom);
   /* On change, we also need to update new position in drawflow.js */
   // TODO: Every onclick requires updating data in a persistant data storage.
 }
@@ -572,15 +585,11 @@ function CodeDisplaySetting() {
   // User Toggle to enable / disable the code block.
   // Disabling: hides code block and expands the width of main canvas.
   // Enabling: shows code block and shrinks the width of main canvas.
-  if (display_code) {
-    document.querySelector(".code-block-div").style.display = "none";
-    document.getElementById("drawflow").style.width = "100%";
-  } else {
-    document.querySelector(".code-block-div").style.display = "block";
-    document.getElementById("drawflow").style.width = "70%";
-  }
+  // TODO: Dynamically retrieve current element id. For now, it is hardcoded.
+  adjustWorkspaceWidth();
   display_code = !display_code;
 }
+
 function HeaderDisplaySetting() {
   const headersPage = document.querySelector(".headers-page");
   // User can toggle a headers page with this
@@ -1109,16 +1118,18 @@ async function injectLinkTargets_async() {
   injectLinkTargets_sync();
 }
 
-function injectLinkTargets_sync(init = true) {
-  console.log("inside injectLinkTargets", raw_condition_html, state_extraction_targets);
+function injectLinkTargets_sync(init = true) {  
+  console.log("inside injectLinkTargets", init, raw_condition_html, state_condition_targets, state_extraction_targets);
 
   if (state_condition_targets && state_extraction_targets) {
     /* Extract Link Target Menus */
     if (init == true && raw_condition_html) {
+      /* TODO: I suspect this function is not working properly, no action needs to be taken right now...*/
       temp_menu_html = "";
       temp_target_html = "";
       /* Extract ID */
       var connection_id = raw_condition_html[0].querySelector(".dropdown-content").id;
+      console.log("line 1132, connection_id", connection_id);
       /* Inject menu functions. */
       for (let i = 0; i < state_extraction_targets.length; i++) {
         temp_menu_html += `<button class="dropdown-content-item" onclick = 'dropdownContentItemConnectionHandler("${connection_id.slice(0, -9)}", "switch-head", "${state_extraction_targets[i]}: ")' style = "z-index: 2;">${state_extraction_targets[i]}</button>\n`;
@@ -1131,6 +1142,7 @@ function injectLinkTargets_sync(init = true) {
       raw_condition_html[0].querySelector(".dropdown-content").innerHTML = temp_menu_html;
       raw_condition_html[1].querySelector(".dropdown-content").innerHTML = temp_target_html;
     } else {
+      /* Update dropdown extraction targets */
       dropdownElements = document.querySelectorAll('div.dropdown[id^="target-node-"]');
       for (let i = 0; i < dropdownElements.length; i++) {
         dropdownElement = dropdownElements[i];
@@ -1144,6 +1156,33 @@ function injectLinkTargets_sync(init = true) {
         }
         dropdownElementContent.innerHTML = tempHTML;
       }
+      /* Update dropdown condition targets */
+      const category_dropboxes = Array.from(document.querySelectorAll('[id$="-category"]'))
+                       .filter(el => el.id.startsWith('connection') && el.classList.contains('dropdown-content'));
+      const target_dropboxes = Array.from(document.querySelectorAll('[id$="-target"]'))
+                       .filter(el => el.id.startsWith('connection') && el.classList.contains('dropdown-content'));
+      
+      /* Populate category */
+      category_dropboxes.forEach((category_dropdown) => {
+        connection_id = category_dropdown.id;
+        tempHTML = "";
+        // TODO: Let me find which onclick function to call, will be back real quick!!
+        for (let i = 0; i < state_extraction_targets.length; i++) {
+          tempHTML += `<button class="dropdown-content-item" onclick = 'dropdownContentItemConnectionHandler("${connection_id.slice(0, -9)}", "switch-head", "${state_extraction_targets[i]}: ")' style = "z-index: 2;">${state_extraction_targets[i]}</button>\n`;
+        }
+        category_dropdown.innerHTML = tempHTML;
+      });
+      /* Populate Target */
+      target_dropboxes.forEach((target_dropdown) => {
+        connection_id = target_dropdown.id;
+        tempHTML = "";
+        /* Inject Conditions */
+        for (let i = 0; i < state_condition_targets.length; i++) {
+          tempHTML += `<button class="dropdown-content-item" onclick = 'dropdownContentItemConnectionHandler("${connection_id.slice(0, -7)}", "switch-target", "${state_condition_targets[i]}")' style = "z-index: 2;">${state_condition_targets[i]}</button>\n`;
+        }
+        target_dropdown.innerHTML = tempHTML;
+      });
+
     }
     autoCompleteData = extractValues(global_init_header_page_data, autoCompleteData);
   } else {
@@ -1572,7 +1611,10 @@ document.addEventListener("keydown", function (e) {
     }
   }
 });
-window.addEventListener("contextmenu", injectLinkTargets_sync(false));
+// window.addEventListener("contextmenu", injectLinkTargets_sync(false));
+window.addEventListener("contextmenu", function(e) {
+  injectLinkTargets_sync(false);
+});
 
 /***********************************Misc functions****************************/
 function addActionModuleStatements(node_id) {
@@ -1629,19 +1671,6 @@ async function addStateModuleStatements(node_id) {
   node_display_content.appendChild(newDiv);
 }
 
-function addTableModuleStatements(node_id) {
-  console.log("line 213");
-}
-function removeActionModuleStatements(node_id) {
-  console.log("To be implemented later!");
-}
-function removeStateModuleStatements(node_id) {
-  console.log("To be implemented later!");
-}
-function removeTableModuleStatements(node_id) {
-  console.log("To be implemented later!");
-}
-
 // Hover.
 if (document.querySelector("body > p:hover") != null) {
   console.log("hovered");
@@ -1652,12 +1681,19 @@ function addActionModule() {
                       style="width: 400px; min-height: 200px; border-radius: 10px; background: #DB3A34; align-items: baseline;">
                       <div class="drawflow_content_node" style="display: flex; flex-direction: column;">
                         <div class="module-element">
-                          <p style="justify-content: center; float:left; margin: auto;"> Action </p>
-                          <p style="justify-content: center; float:left; margin: auto;"> <input id="action-input-field"
+                          <p style="justify-content: center; float:left; margin: auto; max-height: 25px;"> Action </p>
+                          <p style="justify-content: center; float:left; margin: auto; max-height: 25px;"> <input id="action-input-field"
                               placeholder="Action name" style="font-family:Courier, monospace; background: transparent;"> </p>
-                          <p style="justify-content: center; float:right; margin: auto;">
-                            <button class="btn" onclick="addModuleStatements('node-${highest_headers_page_variable_sequence}', 'action')">
+                          <p style="justify-content: center; float:right; max-height: 25px;">
+                            <button class="btn" onclick="addModuleStatements('node-${highest_headers_page_variable_sequence}', 'action')"
+                             style = "padding-left: 2px; padding-right: 5px; padding-bottom: 5px;">
                               <i class="fa-sharp fa-solid fa-circle-plus fa-lg" style="color: #1f2551;"></i>
+                            </button>
+                          </p>
+                          <p style="justify-content: center; float:right; max-height: 25px;">
+                            <button class="btn" onclick="removeActionModule('node-${highest_headers_page_variable_sequence}')"
+                             style = "padding-left: 2px; padding-right: 10px; padding-bottom: 5px;">
+                              <i class="fa fa-times-circle fa-lg" style="position:relative; color:maroon"></i>
                             </button>
                           </p>
                         </div>
@@ -1859,9 +1895,9 @@ function populateActionModuleByCode(node_id) {
   // Inputs
   textarea = document.querySelector(`div#formatable-input-field-${node_id}`);
   // Reattach the event listener for inputs.
-  attachHighlightEventListener(document.querySelector(`div#statement-${node_id}-1`));
   lalala = highlightTypes(metadata["args"]);
   textarea.innerHTML = lalala;
+  attachHighlightEventListener(document.querySelector(`div#statement-${node_id}-1`));
   // Labels
   label_space = document.querySelector(`div#${node_id}-labels`);
   // Now we hardcode the number of labels, but we should be able to do this dynamically.
@@ -1881,7 +1917,7 @@ function highlightTypes(args){
     split_args = args[i].split(" ");
     let type = split_args[0];
     let name_ = split_args[1];
-    raw_html_data += `<div class="input_argument-line" style = "display: -webkit-box; height: 20px;">
+    raw_html_data += `<div class="input_argument-line" style = "display: -webkit-box; height: 30px;">
                       <span style = "color: teal;" class = "highlighted-type" id = "highlighted-type-${type}" ><strong>${type} </strong></span> 
                       <span>${name_} </span>
                       </div>`;
@@ -1910,9 +1946,7 @@ function findDataContainerByDataName(data_name) {
 }
 
 function attachHighlightEventListener(node){
-  console.log("line 1913 node content", node);
   let highlighted_types = node.querySelectorAll(`span.highlighted-type`); // get the div element
-  console.log("line 1915 highlighted_types", highlighted_types);
   for (let [index, highlighted_type] of Array.from(highlighted_types).entries()) {
     console.log("line 1917 highlighted_type", highlighted_type);
     highlighted_type.addEventListener('mouseover', function (e) {
@@ -1939,7 +1973,7 @@ function attachHighlightEventListener(node){
           cloned_container.style.position = "absolute";
           cloned_container.style.top = top + 10 + 'px';
           cloned_container.style.left = left + 20 + 'px';
-          cloned_container.style.zIndex = 20000;
+          cloned_container.style.zIndex = 200;
 
           // Append it to body
           document.body.appendChild(cloned_container);
@@ -1952,4 +1986,99 @@ function attachHighlightEventListener(node){
       document.getElementById(`cloned-${node.id}-${index}`).remove();
     });
   }
+}
+
+function removeActionModule(node_id){
+  console.log("line 1959", document.getElementById(node_id).parentNode);
+  document.getElementById(node_id).parentNode.remove();
+}
+
+function searchActionPage(keyword){
+  // This is a naive implementation of the search function.
+  // We could have supported elasticsearch or something, but that's not the main point of this project.
+  // 1. Search by name, type, label, description, code
+  /* General flow: get a set of ids, and then disable all the ids that are not in the set. */
+  let disabled_divs = new Set();
+  document.querySelectorAll(".actions-page-items > div").forEach(elem => {
+    all_divs = elem.querySelectorAll('div');
+    
+    // Loop through all div elements
+    all_divs.forEach(div => {
+      const nodeRegex = /^node-\d+$/;
+      // Check if the div's ID matches the node-X pattern and contains the keyword
+      if (nodeRegex.test(div.id)) {
+        if (!div.textContent.toLowerCase().includes(keyword)) {
+          disabled_divs.add(div);
+        }
+      } 
+    });
+  });
+  disabled_divs.forEach(div => {
+    div.parentNode.style.display = 'none';
+  })
+  return;
+}
+
+function enableAllActionModules(){
+  document.querySelectorAll(".actions-page-items > div").forEach(elem => {
+    all_divs = elem.querySelectorAll('div');
+    // Loop through all div elements
+    all_divs.forEach(div => {
+      const nodeRegex = /^node-\d+$/;
+      if (nodeRegex.test(div.id)) {
+        div.parentNode.style.display = 'block';
+      }
+    });
+  });
+  return;
+}
+
+/* Next up: 
+   1. Creating control tabs on welcome page. (Ongoing)
+   2. Integrate actions on each control tab.
+   3. Create onboarding page for new users. 
+   Will work on this after I am back from lunch!!!
+*/
+function controlSwitch(target_workspace){
+  console.log(target_workspace);
+  /* General flow: Switches workspace and drawflow editor to the new workspace. */  
+  /* If the target workspace has not been initialized, initialize it. */
+  if (!(target_workspace in global_flow_editors)) {
+    // Do something.
+    var example = document.getElementById(`drawflow-${target_workspace}`);
+    global_flow_editor = new Drawflow(example);
+    global_flow_editor.start();
+    global_flow_editors[target_workspace] = global_flow_editor;
+  }
+  /* Hide the original workspace and expose the new one. */
+  document.getElementById(`drawflow-${global_source_workspace}`).style.display = "none";
+  document.getElementById(`drawflow-${target_workspace}`).style.display = "block";
+  /* Switch tab color. */
+  document.querySelector(`button#${global_source_workspace}`).style.background = "linear-gradient(to bottom, #91c3e0, #609cb2)";
+  document.querySelector(`button#${target_workspace}`).style.background = "linear-gradient(to bottom, #406a7e, #30505e)";
+  /* Update previous workspace syntax status. */
+  checkWorkspaceSyntaxStatus(global_source_workspace);
+  /* Update global source workspace to the target workspace. */
+  global_source_workspace = target_workspace;
+  // Refresh the code display settings as well if needed.
+  adjustWorkspaceWidth();
+  return;
+}
+
+function checkWorkspaceSyntaxStatus(){
+  /* To be implemented later */
+  /* It checks the status for the global_source_workspace before we switch to another workspace. */
+  return;
+}
+
+function adjustWorkspaceWidth(){
+  if (display_code) {
+    document.querySelector(".code-block-div").style.display = "none";
+    document.getElementById(`drawflow-${global_source_workspace}`).style.width = "100%";
+  } else {
+    console.log("workspace shrinks!!!");
+    document.querySelector(".code-block-div").style.display = "block";
+    document.getElementById(`drawflow-${global_source_workspace}`).style.width = "70%";
+  }
+  return;
 }

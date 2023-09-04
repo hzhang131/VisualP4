@@ -164,7 +164,7 @@ header a {
   padding-left: 0px;
 }
 
-#drawflow {
+.drawflow-child {
   position: relative;
   width: calc(100vw - 301px);
   height: calc(100% - 50px);
@@ -185,12 +185,10 @@ header a {
     display: none;
   }
 
-  #drawflow {
+  .drawflow-child {
     width: calc(100vw - 51px);
   }
 }
-
-
 
 /* Editing Drawflow */
 
