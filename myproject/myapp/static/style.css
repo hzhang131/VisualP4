@@ -544,6 +544,10 @@ button:hover {
   background-color: tomato;
 }
 
+.blue {
+  background-color: #34495e;
+}
+
 .button-text {
   margin-right: 8px; /* adjust this value as needed */
 }

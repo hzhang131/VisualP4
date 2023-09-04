@@ -21,6 +21,7 @@ let display_actions_page = false;
 let init_load = true;
 let types = ["vars", "structs", "typedefs", "headers"];
 let global_source_workspace = "parser";
+let workspace_status_tracker_class_list = ["module-element", "dropdown-content-item"];
 /* 
   autoCompleteData sources keywords from the following sources:
   1. global_init_header_page_data
@@ -69,7 +70,7 @@ let STYLE_OVERRIDE = {
   table: TABLE_STYLE_OVERRIDE,
 };
 let ACTION_HTMLCONTENT_FIELDS = function (node_id) {
-  return `<div class = "module-element">
+  return `<div class = "module-element" id = "module-element-top-bar-${global_source_workspace}-${node_id}">
                                     <p style="justify-content: center; float:left; margin: auto;"> Action </p>
                                     <p style="justify-content: center; float:left; margin: auto;"> <input id = "action-input-field" placeholder="Action name" style="font-family:Courier, monospace; background: transparent;"> </input> </p>
                                     <p style="justify-content: center; float:right; margin: auto;"> 
@@ -80,7 +81,7 @@ let ACTION_HTMLCONTENT_FIELDS = function (node_id) {
                                 </div>`;
 };
 let STATE_HTMLCONTENT_FIELDS = function (node_id) {
-  return `<div class = "module-element">
+  return `<div class = "module-element" id = "module-element-top-bar-${global_source_workspace}-${node_id}">
                                     <p style="justify-content: center; float:left; margin: auto;"> State </p>
                                     <p style="justify-content: center; float:left; margin: auto;"> <input id = "state-input-field" placeholder="State name" style="font-family:Courier, monospace; background: transparent;"> </input> </p>
                                     <p style="justify-content: center; float:right; margin: auto;"> 
@@ -91,7 +92,7 @@ let STATE_HTMLCONTENT_FIELDS = function (node_id) {
                                 </div>`;
 };
 let TABLE_HTMLCONTENT_FIELDS = function (node_id) {
-  return `<div class = "module-element">
+  return `<div class = "module-element" id = "module-element-top-bar-${global_source_workspace}-${node_id}">
                                     <p style="justify-content: center; float:left; margin: auto;"> Table </p>
                                     <p style="justify-content: center; float:left; margin: auto;"> <input id = "table-input-field" placeholder="Table name" style="font-family:Courier, monospace; background: transparent;"> </input> </p>
                                     <p style="justify-content: center; float:right; margin: auto;"> 
@@ -188,7 +189,7 @@ window.addEventListener("DOMContentLoaded", function () {
   var codeTextArea = document.getElementById("code");
   height = window.innerHeight;
   var minLines = Math.trunc((height * 0.8) / 15) + 3;
-  var startingValue = "/**\nWelcome to the VisualP4 IDE!\nDevelopment Version: 2023.09.03\n**/";
+  var startingValue = "/**\nWelcome to the VisualP4 IDE!\nDevelopment Version: 2023.09.04\n**/";
   for (var i = 0; i < minLines; i++) {
     startingValue += "\n";
   }
@@ -261,8 +262,16 @@ window.addEventListener("DOMContentLoaded", function () {
     for (let mutation of mutationsList) {
       if (mutation.type === 'childList') {
         mutation.addedNodes.forEach(node => {
+          if (workspace_status_tracker_class_list.includes(node.className)) {
+            // Update status light to yellow --> In progress
+            if (this.document.querySelector(`div#${global_source_workspace}-status-circle-lime`) != null){
+              this.document.querySelector(`div#${global_source_workspace}-status-circle-lime`).style.display = "none"
+              this.document.querySelector(`div#${global_source_workspace}-status-circle-yellow`).style.display = "inline-block";
+              this.document.querySelector(`div#${global_source_workspace}-status-circle-red`).style.display = "none";
+              this.document.querySelector(`div#${global_source_workspace}-status-circle-blue`).style.display = "none";
+            }
+          }
           if (node.childNodes[0] && node.childNodes[0].className == "action-statement") {
-            console.log("line 248", node);
             // Add event listener once the code statement is added
             if (node.childNodes[4] && node.childNodes[4].id.slice(0, 4) == "code") {
               codeTextArea = node.childNodes[4];
@@ -1615,6 +1624,18 @@ document.addEventListener("keydown", function (e) {
 window.addEventListener("contextmenu", function(e) {
   injectLinkTargets_sync(false);
 });
+window.addEventListener("keydown", function(event) {
+  if((event.ctrlKey || event.metaKey) && event.key === 's') { 
+    console.log("Hey! Ctrl+S or Command+S event captured!");
+    event.preventDefault(); 
+    checkWorkspaceSyntaxStatus();
+  }
+  if((event.ctrlKey || event.metaKey) && event.key === 'f') { 
+    console.log("Hey! Ctrl+F or Command+F event captured!");
+    event.preventDefault(); 
+    ToggleWorkspaceSearchBar();
+  }
+});
 
 /***********************************Misc functions****************************/
 function addActionModuleStatements(node_id) {
@@ -1793,7 +1814,6 @@ function extractActionCore(input) {
     labels = ['Ingress / Egress', 'Deparser', 'Checksum'];
   }
   
-  console.log("line 1749", actionVariableUsage, labels);
   if (!match) {
     /* In this case, there is no argument that is passed into the action. */
     /* Which is fine for now. */
@@ -2066,8 +2086,50 @@ function controlSwitch(target_workspace){
 }
 
 function checkWorkspaceSyntaxStatus(){
-  /* To be implemented later */
-  /* It checks the status for the global_source_workspace before we switch to another workspace. */
+  /* 
+     Mainly looking for the following errors:
+     1. Unconnected nodes
+     2. Unnamed modules / Duplicate modules.
+     3. Undefined transition conditions.
+     TODO: Add other errors if I see fit.
+  */
+  current_workspace = global_flow_editors[global_source_workspace];
+  current_workspace_content = document.querySelector(`div#drawflow-${global_source_workspace}`)
+                              .querySelector(`.drawflow`);
+  if (current_workspace_content === null || current_workspace_content.innerHTML == "") {
+     /* Short circuit if we haven't made any changes to the workspace. 
+        Or all the changes have been removed. 
+        In that case we ALWAYS switch the status light to green. */
+    document.querySelector(`div#${global_source_workspace}-status-circle-lime`).style.display = 'inline-block';
+    document.querySelector(`div#${global_source_workspace}-status-circle-yellow`).style.display = 'none';
+    document.querySelector(`div#${global_source_workspace}-status-circle-red`).style.display = 'none';
+    document.querySelector(`div#${global_source_workspace}-status-circle-blue`).style.display = "none";
+    return;
+  }
+  /* Check for unconnected nodes. */
+
+  /* Check for unnamed modules */
+  let node_module_top_bars = document.querySelectorAll(`[id^="module-element-top-bar-${global_source_workspace}"]`);
+  let class_name_set = new Set();
+  node_module_top_bars.forEach(node_module_top_bar => {
+    if (class_name_set.has(node_module_top_bar.querySelector('input').value) || node_module_top_bar.querySelector(`input`).value == "") {
+      document.querySelector(`div#${global_source_workspace}-status-circle-lime`).style.display = 'none';
+      document.querySelector(`div#${global_source_workspace}-status-circle-yellow`).style.display = 'none';
+      document.querySelector(`div#${global_source_workspace}-status-circle-red`).style.display = 'inline-block';
+      document.querySelector(`div#${global_source_workspace}-status-circle-red`).style.display = "none";
+      return;
+    }
+    class_name_set.add(node_module_top_bar.querySelector(`input`).value);
+  });
+  /* Check for duplicate named modules*/
+
+  /* Check for undefined transition conditions */
+
+  /* Everything passes, update the status light to blue. */
+  document.querySelector(`div#${global_source_workspace}-status-circle-lime`).style.display = 'none';
+  document.querySelector(`div#${global_source_workspace}-status-circle-yellow`).style.display = 'none';
+  document.querySelector(`div#${global_source_workspace}-status-circle-red`).style.display = 'none';
+  document.querySelector(`div#${global_source_workspace}-status-circle-blue`).style.display = "inline-block";
   return;
 }
 
@@ -2081,4 +2143,16 @@ function adjustWorkspaceWidth(){
     document.getElementById(`drawflow-${global_source_workspace}`).style.width = "70%";
   }
   return;
+}
+
+function ToggleWorkspaceSearchBar(){
+  /* 
+     TODO:
+     Does not do anything for now, but my long term vision is 
+     1. Bring up a search bar when the user presses Ctrl+F
+     2. User should be able to search for the NAME of the module ONLY.
+     3. While the user is typing, the search bar should be able to auto-suggest along the way.
+     4. Once the correct module is located, we should jump to the location that contains the module.
+  */
+  return
 }

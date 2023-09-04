@@ -65,49 +65,55 @@
               id = "parser"  
               onclick = "controlSwitch('parser')">
           <span class="button-text">Parser</span> 
-          <div class="circle lime"></div>
-          <div class="circle yellow" style = "display: none"></div>
-          <div class="circle red" style = "display: none"></div>  
+          <div class="circle lime" id = "parser-status-circle-lime"></div>
+          <div class="circle yellow" id = "parser-status-circle-yellow" style = "display: none"></div>
+          <div class="circle red" id = "parser-status-circle-red" style = "display: none"></div>
+          <div class="circle blue" id = "parser-status-circle-blue" style = "display: none"></div>  
         </button>
       </div>
       <div class="buttons">
         <button style = "display: flex; align-items: center;" id = "verify-checksum" onclick = "controlSwitch('verify-checksum')">
           <span class="button-text">VerifyChecksum</span> 
-          <div class="circle lime"></div>
-          <div class="circle yellow" style = "display: none"></div>
-          <div class="circle red" style = "display: none"></div>  
+          <div class="circle lime" id = "verify-checksum-status-circle-lime"></div>
+          <div class="circle yellow" style = "display: none" id = "verify-checksum-status-circle-yellow"></div>
+          <div class="circle red" style = "display: none" id = "verify-checksum-status-circle-red"></div> 
+          <div class="circle blue" id = "verify-checksum-status-circle-blue" style = "display: none"></div> 
         </button>
       </div>
       <div class="buttons">
         <button style = "display: flex; align-items: center;" id = "ingress" onclick = "controlSwitch('ingress')">
           <span class="button-text">Ingress</span> 
-          <div class="circle lime"></div>
-          <div class="circle yellow" style = "display: none"></div>
-          <div class="circle red" style = "display: none"></div>  
+          <div class="circle lime" id = "ingress-status-circle-lime"></div>
+          <div class="circle yellow" style = "display: none" id = "ingress-status-circle-yellow"></div>
+          <div class="circle red" style = "display: none" id = "ingress-status-circle-red"></div>
+          <div class="circle blue" id = "ingress-status-circle-blue" style = "display: none"></div>  
         </button>
       </div>
       <div class="buttons">
         <button style = "display: flex; align-items: center;" id = "egress" onclick = "controlSwitch('egress')">
           <span class="button-text">Egress</span> 
-          <div class="circle lime"></div>
-          <div class="circle yellow" style = "display: none"></div>
-          <div class="circle red" style = "display: none"></div>  
+          <div class="circle lime" id = "egress-status-circle-lime"></div>
+          <div class="circle yellow" style = "display: none" id = "egress-status-circle-yellow"></div>
+          <div class="circle red" style = "display: none" id = "egress-status-circle-red"></div>  
+          <div class="circle blue" id = "egress-status-circle-blue" style = "display: none"></div>
         </button>
       </div>
       <div class="buttons">
         <button style = "display: flex; align-items: center;" id = "compute-checksum" onclick = "controlSwitch('compute-checksum')">
           <span class="button-text">ComputeChecksum</span>
-          <div class="circle lime"></div>
-          <div class="circle yellow" style = "display: none"></div>
-          <div class="circle red" style = "display: none"></div>  
+          <div class="circle lime" id = "compute-checksum-status-circle-lime"></div>
+          <div class="circle yellow" style = "display: none" id = "compute-checksum-status-circle-yellow"></div>
+          <div class="circle red" style = "display: none" id = "compute-checksum-status-circle-red"></div>  
+          <div class="circle blue" id = "compute-checksum-status-circle-blue" style = "display: none"></div>
         </button>
       </div>
       <div class="buttons">
         <button style = "display: flex; align-items: center;" id = "deparser" onclick = "controlSwitch('deparser')">
           <span class="button-text">Deparser</span>
-          <div class="circle lime"></div>
-          <div class="circle yellow" style = "display: none"></div>
-          <div class="circle red" style = "display: none"></div>  
+          <div class="circle lime" id = "deparser-status-circle-lime"></div>
+          <div class="circle yellow" style = "display: none" id = "deparser-status-circle-yellow"></div>
+          <div class="circle red" style = "display: none" id = "deparser-status-circle-red"></div>  
+          <div class="circle blue" id = "deparser-status-circle-blue" style = "display: none"></div>
         </button>
       </div>
     </div>
