@@ -552,3 +552,76 @@ button:hover {
   margin-right: 8px; /* adjust this value as needed */
 }
 
+.variable-hub {
+  position: fixed;
+  top: 5%;
+  width: calc(100% - 1%); /* Reducing 0.5% from each side */
+  min-height: 45px; /* Minimum height, you can adjust it */
+  background-color: goldenrod;
+  overflow: auto;
+  text-align: center;
+  margin-top: 0.5%;
+  margin-left: 0.5%;
+  margin-right: 0.5%;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap; /* Allows items to wrap */
+  align-items: flex-start; /* Aligns items to the top */
+  border-radius: 12px; /* Rounded edges */
+}
+
+.variable-hub {
+  position: fixed;
+  top: 5%;
+  width: calc(100% - 1%); 
+  min-height: 55px; 
+  background-color: #F0E68C; /* softer golden color */
+  overflow: auto;
+  margin: 0.5%;
+  padding: 5px;
+  display: flex;
+  flex-wrap: wrap; 
+  align-items: flex-start;
+  border-radius: 12px; 
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2); /* add some depth */
+}
+
+.variable-hub-variables {
+  background-color: #4682B4; /* softer navy blue */
+  align-items: center;
+  border: 1px solid #B0C4DE; /* softer border color */
+  border-radius: 12px; /* more rounded corners */
+  min-width: 100px; 
+  height: 45px;
+  margin: 5px 10px; /* more horizontal spacing */
+  padding: 5px 10px; /* internal padding for breathing room */
+  display: flex;
+  align-items: center;
+  transition: background-color 0.3s; /* smooth transition for hover states */
+  z-index: 10;
+}
+
+.variable-hub-variables:hover {
+  background-color: #5A9ACD; /* slightly lighter navy for hover */
+}
+
+.variable-hub-variable-text-field {
+  flex-grow: 1;
+  border: none;
+  background-color: transparent;
+  color: #F8F8FF; /* off-white for readability */
+  font-size: 16px; /* increased font size */
+  margin-right: 10px;
+  outline: none; /* removes the default focus outline */
+}
+
+.variable-hub-variable-text-field:focus {
+  border-bottom: 2px solid #FFF; /* underlined when focused */
+}
+
+.variable-hub-variable-delete-button {
+  background-color: transparent;
+  color: white;
+  border: none;
+  cursor: pointer;
+}

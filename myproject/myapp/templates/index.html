@@ -119,9 +119,24 @@
     </div>
     <!-- Program Procession Ends Here -->
     <div class = "buttons right">
-    <div class="buttons">
-      <button style="float:right; vertical-align: center;" onclick="CodeDisplaySetting()"> Generate Code </button>
+      <div class="buttons">
+        <!-- Disabled for low usage... If there is a need, we can enable it again. -->
+        <!-- <button style="float:right; vertical-align: center;" onclick="CodeDisplaySetting()"> Generate Code </button> -->
+        <button id = "control-variables" style="float: right; vertical-align: center;" onclick="ToggleControlVariables()" style = "display: none;"> Control Variables </button>
+      </div>
     </div>
+  </div>
+  <div>
+    <!-- The variable hubs default to display none, they are only triggered when we switch to the corresponding page. -->
+    <div class="variable-hub" id="variable-hub-verify-checksum" onclick = "addVariableToVariableHub()" style = "display: none;"> 
+    </div>
+    <div class="variable-hub" id="variable-hub-ingress" onclick = "addVariableToVariableHub()" style = "display: none;">
+    </div>
+    <div class="variable-hub" id="variable-hub-egress" onclick = "addVariableToVariableHub()" style = "display: none;">
+    </div>
+    <div class="variable-hub" id="variable-hub-compute-checksum" onclick = "addVariableToVariableHub()" style = "display: none;">
+    </div>
+    <div class="variable-hub" id="variable-hub-deparser" onclick = "addVariableToVariableHub()" style = "display: none;">
     </div>
   </div>
   <div class="code-block-div">

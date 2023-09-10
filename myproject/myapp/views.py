@@ -28,8 +28,9 @@ def action_metadata_pagefile(request):
         file_list = []
         for file_name in os.listdir("./myapp/templates/APD"):
             file_path = os.path.join("./myapp/templates/APD", file_name)
-            if os.path.isfile(file_path):
+            if os.path.isfile(file_path) and file_name[-2:] == "p4":
                 with open(file_path, "r") as f:
+                    print(file_path)
                     file_list.append({file_name: f.read()})
         return JsonResponse({"files": file_list})
     except FileNotFoundError:

@@ -1,3 +1,11 @@
+/* TODO: for 09/09/2023.
+   1. Setup variable hubs (collapsable) for all workspaces except parser.
+   2. Redesign the action and table module so that
+      2.1 modules support embedded elements.
+      2.2 the embedded elements also have inputs and outputs.
+*/
+
+
 /* Before you come here and yell me at these global constants... I know these are not good. 
    But I don't feel the need to change anything for now. */
 
@@ -40,6 +48,18 @@ let highest_node_sequence = new Proxy(
 
 let highest_headers_page_variable_sequence = 0;
 let highest_subfield_sequence_under_headers_page_variables = new Proxy(
+  {},
+  {
+    get: (target, name) => (name in target ? target[name] : 0),
+  }
+);
+let variable_hub_enabled_dict = new Proxy(
+  {},
+  {
+    get: (target, name) => (name in target ? target[name] : false),
+  }
+);
+let variable_hub_variable_count = new Proxy(
   {},
   {
     get: (target, name) => (name in target ? target[name] : 0),
@@ -202,6 +222,8 @@ window.addEventListener("DOMContentLoaded", function () {
   editor.setValue(startingValue);
   global_editor[current_selected_window] = editor;
 
+  // Killswitch display_code
+  adjustWorkspaceWidth();
   // This part initializes the flowchart canvas.
   var example = document.getElementById("drawflow-parser");
   global_flow_editor = new Drawflow(example);
@@ -256,7 +278,7 @@ window.addEventListener("DOMContentLoaded", function () {
       searchActionPage(search_term);
     }
   });
-
+ 
   /* Observer to observe DOM changes. */
   const observer = new MutationObserver((mutationsList, observer) => {
     for (let mutation of mutationsList) {
@@ -414,12 +436,38 @@ function createFileTabs() {
   });
 }
 
-function createNewModule() {
-  /* This function creates a new module and dump that module to a less cluttered area. */
-  /* editor.addNode(name, inputs, outputs, posx, posy, class, data, html); */
+function createNewModule(type = null) {
+  /* TODO: (Lower Priority) This function creates a new module and dump that module to a less cluttered area. */
   var html = `<p style="text-align:center; font-family:Courier, monospace;">Right click to select type</p>`;
-  global_flow_editors[global_source_workspace].addNode("New Node", 1, 1, 100, 300, "generic", {}, html);
-  /* If there is no more room to put stuff in the new workspace, then we have to move it to another view */
+  node_id = global_flow_editors[global_source_workspace].addNode("New Node", 1, 1, 100, 300, `generic ${global_source_workspace}`, {}, html);
+  current_node = `node-${node_id}`;
+  switch (global_source_workspace) {
+    /* Mocking the existing workflow that we have. Could be completely streamlined!! */
+    case "parser":
+      changeModuleType(current_node, 'state');
+      break;
+
+    case "compute-checksum":
+    case "verify-checksum":
+    case "deparser":
+      /* Default to action only for low activity controls */
+      changeModuleType(current_node, 'action');
+      break;
+
+    case "ingress":
+    case "egress":
+      /* Not implemented yet. */
+      if (type) {
+        changeModuleType(current_node, type);
+      } else {
+        /* Fall back to table */
+        changeModuleType(current_node, 'table');
+      }
+      break;
+
+    default:
+      throw new Error("Not implemented yet.");
+  }
 }
 
 function zoomLevelAdjust() {
@@ -429,7 +477,9 @@ function zoomLevelAdjust() {
 }
 
 function changeModuleType(node_id, type) {
-  matches = document.getElementById(node_id);
+  // matches = document.getElementById(node_id);
+  matches = document.querySelector(`div#${node_id}.drawflow-node.generic.${global_source_workspace}`);
+  /* Modify the node id to prevent further collisions down the road. */
   var class_name = matches.getAttribute("class");
   myArray = class_name.split(" ");
   myArray[1] = type;
@@ -443,6 +493,7 @@ function changeModuleType(node_id, type) {
   matches.setAttribute("style", myArray.join(";"));
   /* Initialize content fields for each module type */
   console.log(matches.childNodes[1]);
+  /* Change the node_id to prevent potential collisions. */
   matches.childNodes[1].innerHTML = HTMLCONTENT_FIELDS[type](node_id);
   /* Change drawflow-content-node to flex and flex-direction: column for better visuability. */
   matches.childNodes[1].setAttribute(
@@ -454,7 +505,7 @@ function changeModuleType(node_id, type) {
 function addModuleStatements(node_id, type) {
   switch (type) {
     case "action":
-      addActionModuleStatements(node_id);
+      addDrawflowActionModuleStatements(node_id);
       break;
     case "state":
       addStateModuleStatements(node_id);
@@ -1009,7 +1060,7 @@ function inferStateExtractionTarget(INIT_HEADER_PAGE_DATA) {
     for (let j = 0; j < INIT_HEADER_PAGE_DATA["headers"].length; j++) {
       if (type == INIT_HEADER_PAGE_DATA["headers"][j]["name"]) {
         for (let k = 0; k < INIT_HEADER_PAGE_DATA["headers"][j]["fields"].length; k++) {
-          /* TODO: change it later!!!!! We should not hardcode hdr to extraction targets.*/
+          /* TODO: change it later!!!!! We should not hardcode hdr to extraction targets. */
           extraction_targets.push(`hdr.${name}.${INIT_HEADER_PAGE_DATA["headers"][j]["fields"][k]["name"]}`);
           autoCompleteData.push(`hdr.${name}.${INIT_HEADER_PAGE_DATA["headers"][j]["fields"][k]["name"]}`);
         }
@@ -1649,7 +1700,7 @@ function addActionModuleStatements(node_id) {
   newDiv.classList.add("module-element");
   newDiv.setAttribute(
     "id",
-    `statement-${node_id}-${highest_node_sequence[node_id]}`
+    `statement-${node_id}-${highest_node_sequence[node_id]}-action-only`
   );
   newDiv.innerHTML =
     STATEMENTS["action"](node_id, highest_node_sequence[node_id]) + "<br>";
@@ -1671,7 +1722,7 @@ async function addStateModuleStatements(node_id) {
   newDiv.classList.add("module-element");
   newDiv.setAttribute(
     "id",
-    `statement-${node_id}-${highest_node_sequence[node_id]}`
+    `statement-${node_id}-${highest_node_sequence[node_id]}-state-${global_source_workspace}`
   );
   newDiv.innerHTML =
     STATEMENTS["state"](node_id, highest_node_sequence[node_id]) + "<br>";
@@ -1698,7 +1749,7 @@ if (document.querySelector("body > p:hover") != null) {
 }
 
 function addActionModule() {
-  raw_html_string = `<div id="node-${highest_headers_page_variable_sequence}" class="drawflow-node"
+  raw_html_string = `<div id="node-${highest_headers_page_variable_sequence}" class="drawflow-node action-only"
                       style="width: 400px; min-height: 200px; border-radius: 10px; background: #DB3A34; align-items: baseline;">
                       <div class="drawflow_content_node" style="display: flex; flex-direction: column;">
                         <div class="module-element">
@@ -1733,7 +1784,7 @@ function expandActionCode(node_id, sequence_id) {
   /* toggle on blur, and bring up the code block */
   document.querySelector(`.blur-filter.${node_id}-${sequence_id}`).style.display = 'block';
   console.log(document.querySelector(`.blur-filter.${node_id}-${sequence_id}`));
-  document.querySelector(`#statement-${node_id}-${sequence_id}.module-element .CodeMirror.cm-s-default`).style.display = 'block';
+  document.querySelector(`#statement-${node_id}-${sequence_id}-action-only.module-element .CodeMirror.cm-s-default`).style.display = 'block';
   document.getElementById(`action-code-hide-${node_id}-${sequence_id}`).style.display = 'flex';
   /* Keep code blocks un-blurred */
   return;
@@ -1743,7 +1794,7 @@ function hideActionCode(node_id, sequence_id) {
   /* Do the reverse of expandActionCode */
   /* toggle on blur, and bring up the code block */
   document.querySelector(`.blur-filter.${node_id}-${sequence_id}`).style.display = 'none';
-  document.querySelector(`#statement-${node_id}-${sequence_id}.module-element .CodeMirror.cm-s-default`).style.display = 'none';
+  document.querySelector(`#statement-${node_id}-${sequence_id}-action-only.module-element .CodeMirror.cm-s-default`).style.display = 'none';
   document.getElementById(`action-code-hide-${node_id}-${sequence_id}`).style.display = 'none';
   /* Keep code blocks un-blurred */
   return;
@@ -1868,10 +1919,10 @@ function populateActionPage(INIT_ACTION_PAGE_DATA){
     console.log(assigned_node_id);
     addActionModule();
     // Name
-    document.querySelector(`div#${assigned_node_id}`).querySelector(`#action-input-field`).value = name_;
+    document.querySelector(`div#${assigned_node_id}.drawflow-node.action-only`).querySelector(`#action-input-field`).value = name_;
     // Description
     addActionModuleStatements(assigned_node_id);
-    textarea = document.querySelector(`div#statement-${assigned_node_id}-0`).querySelector(`textarea`);
+    textarea = document.querySelector(`div#statement-${assigned_node_id}-0-action-only`).querySelector(`textarea`);
     textarea.value = "User should supply the value in some way, shape, or form";
     // Inputs
     addActionModuleStatements(assigned_node_id);
@@ -1881,7 +1932,7 @@ function populateActionPage(INIT_ACTION_PAGE_DATA){
     // Code
     addActionModuleStatements(assigned_node_id);
     ((current_node_id, code) => {
-      waitForElement(() => document.getElementById(`statement-${current_node_id}-2`).querySelector(`.CodeMirror-code`))
+      waitForElement(() => document.getElementById(`statement-${current_node_id}-2-action-only`).querySelector(`.CodeMirror-code`))
         .then(() => { formatCodeToCodeMirror(current_node_id, code); });
     })(assigned_node_id, code);
     // Labels
@@ -1896,11 +1947,11 @@ function populateActionPage(INIT_ACTION_PAGE_DATA){
 }
 
 function formatCodeToCodeMirror(node_id, code) {
-  action_code_editor[`statement-${node_id}-2`].setValue(code);
+  action_code_editor[`statement-${node_id}-2-action-only`].setValue(code);
 }
 
 function fetchCodeFromCodeMirror(node_id){
-  return action_code_editor[`statement-${node_id}-2`].getValue();
+  return action_code_editor[`statement-${node_id}-2-action-only`].getValue();
 }
 
 // Populate existing module by the code inputted into the code block.
@@ -1908,16 +1959,16 @@ function populateActionModuleByCode(node_id) {
   let code = fetchCodeFromCodeMirror(node_id);
   metadata = extractActionCore(code);
   // put the metadata back to where they were.
-  document.querySelector(`div#${node_id}`).querySelector(`#action-input-field`).value = metadata["name"];
+  document.querySelector(`div#${node_id}.drawflow-node.action-only`).querySelector(`#action-input-field`).value = metadata["name"];
   // Description
-  textarea = document.querySelector(`div#statement-${node_id}-0`).querySelector(`textarea`);
+  textarea = document.querySelector(`div#statement-${node_id}-0-action-only`).querySelector(`textarea`);
   textarea.value = "User should supply the value in some way, shape, or form";
   // Inputs
   textarea = document.querySelector(`div#formatable-input-field-${node_id}`);
   // Reattach the event listener for inputs.
   lalala = highlightTypes(metadata["args"]);
   textarea.innerHTML = lalala;
-  attachHighlightEventListener(document.querySelector(`div#statement-${node_id}-1`));
+  attachHighlightEventListener(document.querySelector(`div#statement-${node_id}-1-action-only`));
   // Labels
   label_space = document.querySelector(`div#${node_id}-labels`);
   // Now we hardcode the number of labels, but we should be able to do this dynamically.
@@ -2064,7 +2115,6 @@ function controlSwitch(target_workspace){
   /* General flow: Switches workspace and drawflow editor to the new workspace. */  
   /* If the target workspace has not been initialized, initialize it. */
   if (!(target_workspace in global_flow_editors)) {
-    // Do something.
     var example = document.getElementById(`drawflow-${target_workspace}`);
     global_flow_editor = new Drawflow(example);
     global_flow_editor.start();
@@ -2078,6 +2128,14 @@ function controlSwitch(target_workspace){
   document.querySelector(`button#${target_workspace}`).style.background = "linear-gradient(to bottom, #406a7e, #30505e)";
   /* Update previous workspace syntax status. */
   checkWorkspaceSyntaxStatus(global_source_workspace);
+  /* Switch off the current variable hub, if there is any. */
+  if (document.querySelector(`div#variable-hub-${global_source_workspace}`)){
+    document.querySelector(`div#variable-hub-${global_source_workspace}`).style.display = "none";
+  }
+  /* Switch on the target variable hub, if it is toggled on. */
+  if (variable_hub_enabled_dict[target_workspace] == true && document.querySelector(`div#variable-hub-${target_workspace}`)) {
+    document.querySelector(`div#variable-hub-${target_workspace}`).style.display = "flex";
+  }
   /* Update global source workspace to the target workspace. */
   global_source_workspace = target_workspace;
   // Refresh the code display settings as well if needed.
@@ -2091,7 +2149,7 @@ function checkWorkspaceSyntaxStatus(){
      1. Unconnected nodes
      2. Unnamed modules / Duplicate modules.
      3. Undefined transition conditions.
-     TODO: Add other errors if I see fit.
+     TODO: Shouldn't worry about it right NOW... We still have bigger fish to fry... 
   */
   current_workspace = global_flow_editors[global_source_workspace];
   current_workspace_content = document.querySelector(`div#drawflow-${global_source_workspace}`)
@@ -2107,22 +2165,22 @@ function checkWorkspaceSyntaxStatus(){
     return;
   }
   /* Check for unconnected nodes. */
-
-  /* Check for unnamed modules */
+  
+  /* Check for unnamed and duplicate-named modules */
   let node_module_top_bars = document.querySelectorAll(`[id^="module-element-top-bar-${global_source_workspace}"]`);
   let class_name_set = new Set();
+  let early_exit = false;
   node_module_top_bars.forEach(node_module_top_bar => {
     if (class_name_set.has(node_module_top_bar.querySelector('input').value) || node_module_top_bar.querySelector(`input`).value == "") {
       document.querySelector(`div#${global_source_workspace}-status-circle-lime`).style.display = 'none';
       document.querySelector(`div#${global_source_workspace}-status-circle-yellow`).style.display = 'none';
       document.querySelector(`div#${global_source_workspace}-status-circle-red`).style.display = 'inline-block';
-      document.querySelector(`div#${global_source_workspace}-status-circle-red`).style.display = "none";
-      return;
+      document.querySelector(`div#${global_source_workspace}-status-circle-blue`).style.display = "none";
+      early_exit = true;
     }
     class_name_set.add(node_module_top_bar.querySelector(`input`).value);
-  });
-  /* Check for duplicate named modules*/
-
+  });  
+  if (early_exit) { return; }
   /* Check for undefined transition conditions */
 
   /* Everything passes, update the status light to blue. */
@@ -2134,11 +2192,10 @@ function checkWorkspaceSyntaxStatus(){
 }
 
 function adjustWorkspaceWidth(){
-  if (display_code) {
+  if (!display_code) {
     document.querySelector(".code-block-div").style.display = "none";
     document.getElementById(`drawflow-${global_source_workspace}`).style.width = "100%";
   } else {
-    console.log("workspace shrinks!!!");
     document.querySelector(".code-block-div").style.display = "block";
     document.getElementById(`drawflow-${global_source_workspace}`).style.width = "70%";
   }
@@ -2154,5 +2211,39 @@ function ToggleWorkspaceSearchBar(){
      3. While the user is typing, the search bar should be able to auto-suggest along the way.
      4. Once the correct module is located, we should jump to the location that contains the module.
   */
-  return
+  return;
+}
+
+function ToggleControlVariables() {
+    /* Turn off current variable hub and instantiate new ones, if needed. */
+    if (variable_hub_enabled_dict[global_source_workspace]) {
+      /* Turn off the current variable hub. */
+      if (document.querySelector(`div#variable-hub-${global_source_workspace}`)){
+        document.querySelector(`div#variable-hub-${global_source_workspace}`).style.display = "none";
+      }
+    } else {
+      /* Turn on the current variable hub. */
+      if (document.querySelector(`div#variable-hub-${global_source_workspace}`)){
+        document.querySelector(`div#variable-hub-${global_source_workspace}`).style.display = "flex";
+      }
+    }
+    variable_hub_enabled_dict[global_source_workspace] = !variable_hub_enabled_dict[global_source_workspace];
+}
+
+function addVariableToVariableHub(){
+  /* Add a new variable to the variable hub. */
+  /* We start with an empty variable element. */
+  document.querySelector(`div#variable-hub-${global_source_workspace}`).innerHTML += `<div class="variable-hub-variables" id = "variable-hub-variable-${global_source_workspace}-${variable_hub_variable_count[global_source_workspace]}"onclick = "(function(event){ editVariableHubVariable("variable-hub-variable-${global_source_workspace}-${variable_hub_variable_count[global_source_workspace]}", event })(event)")">
+                                                                                        <input type="text" class="variable-hub-variable-text-field">
+                                                                                        <button class="variable-hub-variable-delete-button">
+                                                                                        <i class="fa fa-times-circle" style="position:relative;font-size:24px;color:red"></i>
+                                                                                        </button>
+                                                                                      </div>\n`;
+  variable_hub_variable_count[global_source_workspace] += 1;
+  return;
+}
+
+function editVariableHubVariable(variable_id, event){
+  /* Do nothing about variable_id just yet. */
+  event.stopPropagation();
 }
