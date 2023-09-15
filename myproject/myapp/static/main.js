@@ -1,5 +1,4 @@
 /* TODO: for 09/09/2023.
-   1. Setup variable hubs (collapsable) for all workspaces except parser.
    2. Redesign the action and table module so that
       2.1 modules support embedded elements.
       2.2 the embedded elements also have inputs and outputs.
@@ -22,6 +21,7 @@ let global_node_dict = [];
 let global_flow_editor = null;
 let global_flow_editors = {};
 let action_code_editor = {};
+let local_variable_code_editor = {};
 let global_slider = null;
 let display_code = false;
 let display_headers_page = false;
@@ -89,17 +89,14 @@ let STYLE_OVERRIDE = {
   state: STATE_STYLE_OVERRIDE,
   table: TABLE_STYLE_OVERRIDE,
 };
+/* Do some action style surgery */
 let ACTION_HTMLCONTENT_FIELDS = function (node_id) {
   return `<div class = "module-element" id = "module-element-top-bar-${global_source_workspace}-${node_id}">
                                     <p style="justify-content: center; float:left; margin: auto;"> Action </p>
-                                    <p style="justify-content: center; float:left; margin: auto;"> <input id = "action-input-field" placeholder="Action name" style="font-family:Courier, monospace; background: transparent;"> </input> </p>
-                                    <p style="justify-content: center; float:right; margin: auto;"> 
-                                        <button class="btn" onclick="addModuleStatements('${node_id}', 'action')"> 
-                                            <i class="fa-sharp fa-solid fa-circle-plus fa-lg" style="color: #1f2551;"></i> 
-                                        </button> 
-                                    </p>
+                                    <p style="justify-content: center; float:left; margin: auto;"> <input id = "action-input-field-workspace-${global_source_workspace}-${node_id}" placeholder="Action name" style="font-family:Courier, monospace; background: transparent;"> </input> </p>
                                 </div>`;
 };
+
 let STATE_HTMLCONTENT_FIELDS = function (node_id) {
   return `<div class = "module-element" id = "module-element-top-bar-${global_source_workspace}-${node_id}">
                                     <p style="justify-content: center; float:left; margin: auto;"> State </p>
@@ -209,7 +206,7 @@ window.addEventListener("DOMContentLoaded", function () {
   var codeTextArea = document.getElementById("code");
   height = window.innerHeight;
   var minLines = Math.trunc((height * 0.8) / 15) + 3;
-  var startingValue = "/**\nWelcome to the VisualP4 IDE!\nDevelopment Version: 2023.09.04\n**/";
+  var startingValue = "/**\nWelcome to the VisualP4 IDE!\nDevelopment Version: 2023.09.15\n**/";
   for (var i = 0; i < minLines; i++) {
     startingValue += "\n";
   }
@@ -278,7 +275,7 @@ window.addEventListener("DOMContentLoaded", function () {
       searchActionPage(search_term);
     }
   });
- 
+
   /* Observer to observe DOM changes. */
   const observer = new MutationObserver((mutationsList, observer) => {
     for (let mutation of mutationsList) {
@@ -293,6 +290,25 @@ window.addEventListener("DOMContentLoaded", function () {
               this.document.querySelector(`div#${global_source_workspace}-status-circle-blue`).style.display = "none";
             }
           }
+          // Add mutation event listener to the new action node.
+          if (node.className == "module-element" && 
+              node.id.includes("module-element-top-bar") &&
+              node.textContent.includes("Action")) {
+              // Do something hehe
+              console.log(document.querySelector(`div.actions-page-items`));
+              node.addEventListener('input', function (e) {
+                // Look for all actions on the action page and try to find a match.
+                document.querySelectorAll(`input#action-input-field`).forEach((element) => {
+                  if (element.value.trim() == e.target.value) {
+                    // Match found. Extract the inputs of this action.
+                    action_match_head = element.parentElement.parentElement.parentElement;
+                    inputs = action_match_head.querySelectorAll(`div.formatable-input-field .input_argument-line`);
+                    // type |__| argument name
+                    // TODO: You know what, that is it for today... I am leaving the rest for tomorrow.
+                  }
+                })
+              });
+            }
           if (node.childNodes[0] && node.childNodes[0].className == "action-statement") {
             // Add event listener once the code statement is added
             if (node.childNodes[4] && node.childNodes[4].id.slice(0, 4) == "code") {
@@ -505,7 +521,7 @@ function changeModuleType(node_id, type) {
 function addModuleStatements(node_id, type) {
   switch (type) {
     case "action":
-      addDrawflowActionModuleStatements(node_id);
+      addActionModuleStatements(node_id);
       break;
     case "state":
       addStateModuleStatements(node_id);
@@ -2233,17 +2249,135 @@ function ToggleControlVariables() {
 function addVariableToVariableHub(){
   /* Add a new variable to the variable hub. */
   /* We start with an empty variable element. */
-  document.querySelector(`div#variable-hub-${global_source_workspace}`).innerHTML += `<div class="variable-hub-variables" id = "variable-hub-variable-${global_source_workspace}-${variable_hub_variable_count[global_source_workspace]}"onclick = "(function(event){ editVariableHubVariable("variable-hub-variable-${global_source_workspace}-${variable_hub_variable_count[global_source_workspace]}", event })(event)")">
-                                                                                        <input type="text" class="variable-hub-variable-text-field">
-                                                                                        <button class="variable-hub-variable-delete-button">
-                                                                                        <i class="fa fa-times-circle" style="position:relative;font-size:24px;color:red"></i>
-                                                                                        </button>
-                                                                                      </div>\n`;
+  
+  // Create the div element for a new variable
+  const divElement = document.createElement("div");
+  const workspace = global_source_workspace;
+  const variable_count = variable_hub_variable_count[global_source_workspace];
+  divElement.className = "variable-hub-variables";
+  divElement.id = `variable-hub-variable-${global_source_workspace}-${variable_hub_variable_count[global_source_workspace]}`;
+
+  // Attach an event listener to the div element
+  divElement.addEventListener('click', function(event) {
+    console.log(event.target.classList, event.target);
+    if (event.target.classList.contains('fa-times-circle') && event.target.id === `variable-hub-variable-delete-icon-${workspace}-${variable_count}`) {
+      editVariableHubVariableHandler(this.id, event, "delete");
+    } else if (event.target.classList.contains('variable-hub-variable-text-field')) {
+      editVariableHubVariableHandler(this.id, event, "text");
+    } else {
+      editVariableHubVariableHandler(this.id, event);
+    }
+  });
+
+  // Create the input element
+  const inputElement = document.createElement("input");
+  inputElement.type = "text";
+  inputElement.className = "variable-hub-variable-text-field";
+
+  // Create the delete button
+  const buttonElement = document.createElement("button");
+  buttonElement.className = "variable-hub-variable-delete-button";
+
+  // Create the Font Awesome icon for delete
+  const iconElement = document.createElement("i");
+  iconElement.className = "fa fa-times-circle";
+  iconElement.style.position = "relative";
+  iconElement.style.fontSize = "24px";
+  iconElement.style.color = "red";
+  iconElement.id = `variable-hub-variable-delete-icon-${workspace}-${variable_count}`;
+
+  // Create a function window for users to specify values.
+  const functionWindowElement = document.createElement("div");
+  functionWindowElement.id = `variable-hub-variable-function-window-${global_source_workspace}-${variable_hub_variable_count[global_source_workspace]}`;
+  functionWindowElement.className = "variable-hub-variable-function-window";
+  functionWindowElement.style.position = "fixed";
+  functionWindowElement.style.display = "none";
+  functionWindowElement.style.width = "50%";
+  functionWindowElement.style.height = "50%";
+  functionWindowElement.style.top = "25%";
+  functionWindowElement.style.left = "25%";
+  functionWindowElement.style.border = "35px solid grey";
+  functionWindowElement.style.borderRadius = "3%";
+
+  // Create a text area before converting it to a CodeMirror instance.
+  const textAreaElement = document.createElement("textarea");
+  textAreaElement.id = `variable-hub-variable-function-window-${global_source_workspace}-${variable_hub_variable_count[global_source_workspace]}-textarea`;
+  textAreaElement.style.position = "fixed";
+  functionWindowElement.appendChild(textAreaElement);
+
+  // Add another button to hide the function window.
+  const hideButtonElement = document.createElement("button");
+  hideButtonElement.className = "variable-hub-variable-function-window-hide-button";
+  hideButtonElement.style.position = "absolute";
+  hideButtonElement.innerHTML = `<i class="fa fa-times-circle" style="font-size:24px;color:red"></i>`;
+  hideButtonElement.style.backgroundColor = "grey";
+  hideButtonElement.style.padding = "0px";
+  hideButtonElement.style.top = "-6%";
+  hideButtonElement.style.right = "-3%";
+  hideButtonElement.onclick = function(event) {
+    document.querySelector(`div#variable-hub-variable-function-window-${workspace}-${variable_count}`).style.display = "none";
+  }
+  functionWindowElement.appendChild(hideButtonElement);
+
+  // Append the icon to the button
+  buttonElement.appendChild(iconElement);
+
+  // Append the input and delete button to the div element
+  divElement.appendChild(inputElement);
+  divElement.appendChild(buttonElement);
+  divElement.appendChild(functionWindowElement);
+
+  // Append the div element to the variable hub
+  document.querySelector(`div#variable-hub-${global_source_workspace}`).appendChild(divElement);
+
+  // Convert functionWindowElement into a CodeMirror instance.
+  codeTextArea = document.getElementById(`variable-hub-variable-function-window-${global_source_workspace}-${variable_hub_variable_count[global_source_workspace]}-textarea`);
+  var editor = CodeMirror.fromTextArea(codeTextArea, {
+    lineNumbers: true,
+    tabSize: 2,
+  });
+  editor.setSize(null, "100%");
+  editor.setFontSize = function(size) {
+    var editorDiv = this.getWrapperElement();
+    editorDiv.style.fontSize = size + 'px';
+  };
+  
+  editor.setFontSize(24);
+
+  editor.setCaretColor = function(color) {
+    var cursorStyle = document.createElement('style');
+    document.head.appendChild(cursorStyle);
+    cursorStyle.sheet.insertRule(`.CodeMirror-cursor { border-left: 1.4px solid ${color} !important; }`, 0);
+  };
+
+  editor.setCaretColor('lime');
+  editor.getWrapperElement().classList.add('custom-codemirror-text-color');
+  editor.getWrapperElement().classList.add('custom-background');
+
+  var gutterElement = editor.getWrapperElement().querySelector('.CodeMirror-gutters');
+  if (gutterElement) {
+    gutterElement.style.backgroundColor = 'grey';
+  }
+
+  editor.refresh();
+  local_variable_code_editor[codeTextArea.id] = editor;
+
+  divElement.addEventListener('contextmenu', function(event) {
+    // Prevent default action from triggering.
+    event.preventDefault();
+    // Bring up a new code window if the user `right clicks` on a variable.
+    document.querySelector(`div#variable-hub-variable-function-window-${workspace}-${variable_count}`).style.display = "block";
+  });
+  
+  // Increment the variable count
   variable_hub_variable_count[global_source_workspace] += 1;
   return;
 }
 
-function editVariableHubVariable(variable_id, event){
-  /* Do nothing about variable_id just yet. */
+function editVariableHubVariableHandler(variable_id, event, type = null){
+  if (type === "delete") {
+    document.querySelector(`div#${variable_id}`).remove();
+  }
+  // For all types of element clicks, we want to prevent the default behavior.
   event.stopPropagation();
 }

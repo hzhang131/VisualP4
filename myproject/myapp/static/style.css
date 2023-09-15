@@ -555,24 +555,6 @@ button:hover {
 .variable-hub {
   position: fixed;
   top: 5%;
-  width: calc(100% - 1%); /* Reducing 0.5% from each side */
-  min-height: 45px; /* Minimum height, you can adjust it */
-  background-color: goldenrod;
-  overflow: auto;
-  text-align: center;
-  margin-top: 0.5%;
-  margin-left: 0.5%;
-  margin-right: 0.5%;
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap; /* Allows items to wrap */
-  align-items: flex-start; /* Aligns items to the top */
-  border-radius: 12px; /* Rounded edges */
-}
-
-.variable-hub {
-  position: fixed;
-  top: 5%;
   width: calc(100% - 1%); 
   min-height: 55px; 
   background-color: #F0E68C; /* softer golden color */
@@ -584,6 +566,7 @@ button:hover {
   align-items: flex-start;
   border-radius: 12px; 
   box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2); /* add some depth */
+  cursor: pointer;
 }
 
 .variable-hub-variables {
@@ -609,14 +592,15 @@ button:hover {
   flex-grow: 1;
   border: none;
   background-color: transparent;
-  color: #F8F8FF; /* off-white for readability */
-  font-size: 16px; /* increased font size */
+  color: #F8F8FF;
+  font-size: 20px;
   margin-right: 10px;
-  outline: none; /* removes the default focus outline */
+  outline: none;
+  font-family: 'Courier New', Courier, monospace;
 }
 
 .variable-hub-variable-text-field:focus {
-  border-bottom: 2px solid #FFF; /* underlined when focused */
+  outline: none;
 }
 
 .variable-hub-variable-delete-button {
@@ -624,4 +608,12 @@ button:hover {
   color: white;
   border: none;
   cursor: pointer;
+}
+
+.custom-background {
+  background-color: black;
+}
+
+.custom-codemirror-text-color {
+  color: lime;
 }
