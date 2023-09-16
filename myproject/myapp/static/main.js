@@ -1,10 +1,3 @@
-/* TODO: for 09/09/2023.
-   2. Redesign the action and table module so that
-      2.1 modules support embedded elements.
-      2.2 the embedded elements also have inputs and outputs.
-*/
-
-
 /* Before you come here and yell me at these global constants... I know these are not good. 
    But I don't feel the need to change anything for now. */
 
@@ -92,8 +85,8 @@ let STYLE_OVERRIDE = {
 /* Do some action style surgery */
 let ACTION_HTMLCONTENT_FIELDS = function (node_id) {
   return `<div class = "module-element" id = "module-element-top-bar-${global_source_workspace}-${node_id}">
-                                    <p style="justify-content: center; float:left; margin: auto;"> Action </p>
-                                    <p style="justify-content: center; float:left; margin: auto;"> <input id = "action-input-field-workspace-${global_source_workspace}-${node_id}" placeholder="Action name" style="font-family:Courier, monospace; background: transparent;"> </input> </p>
+                                    <p style="justify-content: center; float:left; margin: auto; font-size: 20px; font-family: Courier, monospace;"> Action </p>
+                                    <p style="justify-content: center; float:left; margin: auto; "> <input id = "action-input-field-workspace-${global_source_workspace}-${node_id}" placeholder="Action name" style="background: transparent; font-size: 20px; font-family: Courier, monospace;"> </input> </p>
                                 </div>`;
 };
 
@@ -110,14 +103,26 @@ let STATE_HTMLCONTENT_FIELDS = function (node_id) {
 };
 let TABLE_HTMLCONTENT_FIELDS = function (node_id) {
   return `<div class = "module-element" id = "module-element-top-bar-${global_source_workspace}-${node_id}">
-                                    <p style="justify-content: center; float:left; margin: auto;"> Table </p>
-                                    <p style="justify-content: center; float:left; margin: auto;"> <input id = "table-input-field" placeholder="Table name" style="font-family:Courier, monospace; background: transparent;"> </input> </p>
-                                    <p style="justify-content: center; float:right; margin: auto;"> 
-                                        <button class="btn" onclick="addModuleStatements('${node_id}', 'table')"> 
-                                            <i class="fa-sharp fa-solid fa-circle-plus fa-lg" style="color: #1f2551;"></i> 
-                                        </button> 
-                                    </p>
-                                </div>`;
+            <p style="justify-content: center; float:left; margin: auto; color: #c8c8c8; font-size: 20px;"> Table </p>
+            <p style="justify-content: center; float:left; margin: auto;"> <input id = "table-input-field" placeholder="Table name" style="font-family:Courier, monospace; background: transparent; color: #b8b8b8; font-size: 20px;"> </input> </p>
+            <p style="justify-content: center; float:right; margin: auto;"> 
+                <button class="btn" onclick="addModuleStatements('${node_id}', 'table')"> 
+                    <i class="fa-sharp fa-solid fa-circle-plus fa-lg" style="color: #1f2551;"></i> 
+                </button> 
+            </p>
+          </div>
+          <div class="module-element" id="module-element-top-bar-${global_source_workspace}-${node_id}-size">
+          <span class="size-label" style = "color: #c8c8c8; font-size: 20px;"> Size </span>
+          <div class="size-illustration" id="module-element-top-bar-${global_source_workspace}-${node_id}-size-illustration">
+          </div>
+          <span class="input-container">
+            <input class="size-input" type="text" placeholder="1024" oninput="changeBackground(this)"/>
+          </span>
+          </div>
+          <div class = "module-element" id = "module-element-top-bar-${global_source_workspace}-${node_id}-keys">
+          </div>
+          <div class = "module-element" id = "module-element-top-bar-${global_source_workspace}-${node_id}-actions">
+          </div>`;
 };
 let HTMLCONTENT_FIELDS = {
   action: ACTION_HTMLCONTENT_FIELDS,
@@ -282,7 +287,7 @@ window.addEventListener("DOMContentLoaded", function () {
       if (mutation.type === 'childList') {
         mutation.addedNodes.forEach(node => {
           if (workspace_status_tracker_class_list.includes(node.className)) {
-            // Update status light to yellow --> In progress
+            // Update status light  to yellow --> In progress
             if (this.document.querySelector(`div#${global_source_workspace}-status-circle-lime`) != null){
               this.document.querySelector(`div#${global_source_workspace}-status-circle-lime`).style.display = "none"
               this.document.querySelector(`div#${global_source_workspace}-status-circle-yellow`).style.display = "inline-block";
@@ -296,17 +301,108 @@ window.addEventListener("DOMContentLoaded", function () {
               node.textContent.includes("Action")) {
               // Do something hehe
               console.log(document.querySelector(`div.actions-page-items`));
+              let node_parent = node.parentElement;
               node.addEventListener('input', function (e) {
+                var display = false;
                 // Look for all actions on the action page and try to find a match.
-                document.querySelectorAll(`input#action-input-field`).forEach((element) => {
+                for (let index = 0; index < document.querySelectorAll(`input#action-input-field`).length; index++){
+                  element = document.querySelectorAll(`input#action-input-field`)[index];
                   if (element.value.trim() == e.target.value) {
                     // Match found. Extract the inputs of this action.
                     action_match_head = element.parentElement.parentElement.parentElement;
                     inputs = action_match_head.querySelectorAll(`div.formatable-input-field .input_argument-line`);
-                    // type |__| argument name
-                    // TODO: You know what, that is it for today... I am leaving the rest for tomorrow.
-                  }
-                })
+                    var list_of_inputs = [];
+                    inputs.forEach((input) => {
+                      input.querySelectorAll('span').forEach((elem) => {list_of_inputs.push(elem.textContent)});
+                    });
+                    for (let i = 0; i < list_of_inputs.length; i = i + 2) {
+                      let type = list_of_inputs[i];
+                      let arg = list_of_inputs[i + 1];
+                      new_div = document.createElement("div");
+                      new_div.className = "module-element dropbox";
+                      new_div.id = `module-${node.id}-${type}-${arg}`;
+                      new_div.innerHTML = `${type} ${arg}`;
+                      new_div.style.fontSize = "20px";
+                      // This is a long and a messy onclick function. I am sorry.
+                      new_div.onclick = function() {
+                        const currentText = this.textContent;
+                        const inputElement = document.createElement('input');
+                        if (this.className.includes("complete-dropbox")) {
+                          this.className = this.className.replace("complete-dropbox", "dropbox");
+                        }
+                        inputElement.type = 'text';
+                        inputElement.value = currentText;
+                        const computedStyle = getComputedStyle(this);
+                        inputElement.style.width = computedStyle.width;
+                        inputElement.style.height = computedStyle.height;
+                        inputElement.style.fontSize = '20px';
+                        inputElement.style.backgroundColor = 'transparent';
+                        inputElement.style.border = 'none';
+                        inputElement.style.outline = 'none';
+                        this.innerHTML = '';
+                        this.appendChild(inputElement);
+                        inputElement.focus();
+                        inputElement.select();
+                        inputElement.addEventListener('blur', revertToDiv);
+                        inputElement.addEventListener('keydown', function(e) {
+                          if (e.key === 'Enter') {
+                            revertToDiv.call(this);
+                          }
+                        });
+                        function revertToDiv() {
+                          this.removeEventListener('blur', revertToDiv);
+                          const newText = this.value;
+                          const parentDiv = this.parentNode;
+                          
+                          // Create a new text node
+                          const textNode = document.createTextNode(newText);
+                          parentDiv.replaceChild(textNode, this);
+                          
+                          // Update class and event handlers as before
+                          parentDiv.className = 'module-element complete-dropbox data-is-set';
+                          parentDiv.onclick = this.onclick;
+                        }
+                      };                      
+
+                      /* Dragover event when variable hub variables drags over individual elements. */
+                      new_div.addEventListener('dragover', function (event) {
+                        event.preventDefault();
+                        this.classList.add('hovering');
+                        if (this.className.includes("complete-dropbox")) {
+                          this.className = this.className.replace("complete-dropbox", "dropbox");
+                        }
+                      });
+                      
+                      // Remove the CSS class when drag leaves the element
+                      new_div.addEventListener('dragleave', function (event) {
+                        event.preventDefault();
+                        this.classList.remove('hovering');
+                        if (!this.className.includes("data-is-set") && this.className.includes("dropbox")){
+                          this.className = this.className.replace("dropbox", "complete-dropbox");
+                        }
+                      });
+
+                      /* After dragover, we modify the content on that stuff. */
+                      new_div.addEventListener('drop', function (event) {
+                        event.preventDefault();
+                        if (this.className.includes("hovering")){
+                          this.classList.remove('hovering');
+                        }
+                        const droppedData = event.dataTransfer.getData('text/plain');
+                        this.innerHTML = droppedData;
+                        if (this.className.includes("dropbox")){
+                          this.className = this.className.replace("dropbox", "complete-dropbox");
+                        }
+                      });
+                      node_parent.appendChild(new_div);
+                    }
+                    display = true;
+                    break;
+                 } 
+                }
+                if (display == false && node_parent.querySelectorAll(`div[id^="module-${node.id}-"]`).length > 0) {
+                  node_parent.querySelectorAll(`div[id^="module-${node.id}-"]`).forEach((elem) => {elem.remove();});
+                }
               });
             }
           if (node.childNodes[0] && node.childNodes[0].className == "action-statement") {
@@ -2254,9 +2350,12 @@ function addVariableToVariableHub(){
   const divElement = document.createElement("div");
   const workspace = global_source_workspace;
   const variable_count = variable_hub_variable_count[global_source_workspace];
-  divElement.className = "variable-hub-variables";
+  divElement.className = "variable-hub-variables draggable";
   divElement.id = `variable-hub-variable-${global_source_workspace}-${variable_hub_variable_count[global_source_workspace]}`;
-
+  divElement.draggable = true;
+  divElement.addEventListener('dragstart', function(event) {
+    event.dataTransfer.setData('text/plain', this.querySelector('input').value);
+  });
   // Attach an event listener to the div element
   divElement.addEventListener('click', function(event) {
     console.log(event.target.classList, event.target);
@@ -2380,4 +2479,12 @@ function editVariableHubVariableHandler(variable_id, event, type = null){
   }
   // For all types of element clicks, we want to prevent the default behavior.
   event.stopPropagation();
+}
+
+function changeBackground(inputElement) {
+  if(inputElement.value !== '') {
+      inputElement.style.backgroundColor = 'transparent';
+  } else {
+      inputElement.style.backgroundColor = 'rgb(150, 135, 155)';
+  }
 }

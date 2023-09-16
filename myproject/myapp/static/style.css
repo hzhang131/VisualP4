@@ -15,6 +15,8 @@
 }
 
 .code-action-div {
+  display: flex;
+  flex-direction: row;
   position: fixed;
   top: 95%;
   right: 0;
@@ -22,9 +24,9 @@
   height: 15%;
   background-color: #ababab;
   float: left;
-  justify-content: center;
   z-index: 5;
 }
+
 
 .file-selector-div {
   position: fixed;
@@ -616,4 +618,69 @@ button:hover {
 
 .custom-codemirror-text-color {
   color: lime;
+}
+
+#icons-container {
+  display: flex;
+  align-items: center;
+  height: 50px;
+}
+
+.module-element.dropbox {
+  background-color: #34dbc4;
+  border: 5px dashed white;
+  border-radius: 15px;
+  padding: 20px;
+  margin: 5px;
+  width: 300px;
+  outline: 1px solid #ccc;
+  transition: all 0.3s ease;
+}
+
+.module-element.dropbox:hover {
+  background-color: #2db8b1;
+  transform: scale(1.05);
+  border: 5px solid white;
+}
+
+/* Exactly the same as the dropbox hover. */
+.hovering {
+  background-color: #2db8b1;
+  transform: scale(1.05);
+  border: 5px solid white;
+}
+
+.module-element.complete-dropbox {
+  background-color: #8a2be2;  
+  border: 5px solid white; 
+  border-radius: 15px;
+  padding: 20px;
+  margin: 5px;
+  width: 300px;
+  outline: 1px solid #ccc;
+  transition: all 0.3s ease;
+  color: white;
+}
+
+.size-label,
+.input-container {
+  margin: 0 10px;
+  display: flex;
+  align-items: center; /* Vertically aligns text inside these spans */
+}
+
+.size-illustration {
+  width: 20px;
+  height: 20px;
+  background-color: rgb(126, 111, 130); /* A slightly lighter shade of the background */
+  margin: auto;
+}
+
+.size-input {
+  width: 50px;  /* Reduced width */
+  border: 1px solid white;
+  background-color: rgb(150, 135, 155);
+  color: white;
+  padding: 1px;
+  border-radius: 3px;
 }
