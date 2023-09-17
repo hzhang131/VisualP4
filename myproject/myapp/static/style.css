@@ -670,17 +670,47 @@ button:hover {
 }
 
 .size-illustration {
-  width: 20px;
+  width: 150px;
   height: 20px;
   background-color: rgb(126, 111, 130); /* A slightly lighter shade of the background */
   margin: auto;
 }
 
 .size-input {
-  width: 50px;  /* Reduced width */
+  width: 50px;  
   border: 1px solid white;
-  background-color: rgb(150, 135, 155);
+  background-color: gold;
   color: white;
   padding: 1px;
   border-radius: 3px;
+}
+
+.battery-container {
+  width: 150px;
+  height: 20px;
+  border: 1px solid #F8F3C6;
+  border-radius: 3px;
+  position: relative;
+  background-color: gold;
+}
+
+.battery-container .battery-level-container {
+  background-color: green;
+  height: 100%;
+  width: 0%;
+  position: relative;
+}
+
+.table-key-pad-container {
+  background-color: #F8F3C6;
+  margin: 6px;
+  min-height: 40px;
+  min-width: 240px;
+}
+
+.table-action-pad-container {
+  background-color: #F8F3C6;
+  margin: 6px;
+  min-height: 40px;
+  min-width: 240px;
 }

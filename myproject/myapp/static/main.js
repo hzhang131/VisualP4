@@ -105,24 +105,33 @@ let TABLE_HTMLCONTENT_FIELDS = function (node_id) {
   return `<div class = "module-element" id = "module-element-top-bar-${global_source_workspace}-${node_id}">
             <p style="justify-content: center; float:left; margin: auto; color: #c8c8c8; font-size: 20px;"> Table </p>
             <p style="justify-content: center; float:left; margin: auto;"> <input id = "table-input-field" placeholder="Table name" style="font-family:Courier, monospace; background: transparent; color: #b8b8b8; font-size: 20px;"> </input> </p>
-            <p style="justify-content: center; float:right; margin: auto;"> 
-                <button class="btn" onclick="addModuleStatements('${node_id}', 'table')"> 
-                    <i class="fa-sharp fa-solid fa-circle-plus fa-lg" style="color: #1f2551;"></i> 
-                </button> 
-            </p>
           </div>
-          <div class="module-element" id="module-element-top-bar-${global_source_workspace}-${node_id}-size">
-          <span class="size-label" style = "color: #c8c8c8; font-size: 20px;"> Size </span>
-          <div class="size-illustration" id="module-element-top-bar-${global_source_workspace}-${node_id}-size-illustration">
+          <div class="module-element" id="aux-module-element-top-bar-${global_source_workspace}-${node_id}-size" style = "padding: 5px 10px; background-color: gold; border-radius: 5px;">
+            <span class="size-label" style = "color: #282828; font-size: 20px;"> Size </span>
+            <div class="size-illustration" id="aux-module-element-top-bar-${global_source_workspace}-${node_id}-size-illustration">
+                <div class="battery-container">
+                  <div class="battery-level-container" id="battery-level-${global_source_workspace}-${node_id}"></div>
+                </div>
+            </div>
+            <span class="input-container">
+              <input class="size-input" type="text" placeholder="" oninput="sizeInputHandler(this, '${global_source_workspace}', '${node_id}')"/>
+            </span>
           </div>
-          <span class="input-container">
-            <input class="size-input" type="text" placeholder="1024" oninput="changeBackground(this)"/>
-          </span>
+          <div class = "module-element" id = "aux-module-element-top-bar-${global_source_workspace}-${node_id}-keys" style = "padding: 5px 10px; background-color: gold; border-radius: 5px; display: flex; flex-direction: column;">
+            <div class = "table-key-header-container" id = "table-key-header-container-${global_source_workspace}-${node_id}">
+              <span class="size-label" style = "color: #282828; font-size: 20px;"> Keys </span>
+            </div>
+            <div class = "table-key-pad-container" id = "table-key-pad-container-${global_source_workspace}-${node_id}" onclick = "addTableElements(this, '${global_source_workspace}', '${node_id}', 'Keys')">
+            </div>
           </div>
-          <div class = "module-element" id = "module-element-top-bar-${global_source_workspace}-${node_id}-keys">
+          <div class = "module-element" id = "aux-module-element-top-bar-${global_source_workspace}-${node_id}-actions" style = "padding: 5px 10px; background-color: gold; border-radius: 5px; display: flex; flex-direction: column;">
+            <div class = "table-action-header-container" id = "table-action-header-container-${global_source_workspace}-${node_id}">
+              <span class="size-label" style = "color: #282828; font-size: 20px;"> Actions </span>
+            </div>
+            <div class = "table-action-pad-container" id = "table-action-pad-container-${global_source_workspace}-${node_id}" onclick = "addTableElements(this, '${global_source_workspace}', '${node_id}', 'Actions')">
+            </div>
           </div>
-          <div class = "module-element" id = "module-element-top-bar-${global_source_workspace}-${node_id}-actions">
-          </div>`;
+          `;
 };
 let HTMLCONTENT_FIELDS = {
   action: ACTION_HTMLCONTENT_FIELDS,
@@ -796,12 +805,12 @@ function ActionPageData(initialData) {
         actions = JSON.parse(actions);
         console.log("actions:", actions);
         for (let action_index in actions){
-          console.log("actions[action_index]:", actions[action_index], actions[action_index].length);
           for (let index = 0; index < actions[action_index].length; index++) {
             const FileObj = actions[action_index][index];
             const key = Object.keys(FileObj)[0];
             const value = Object.values(FileObj)[0];
             actionPageData[key] = {"code": value, "metadata": extractActionCore(value)};
+            autoCompleteData.push(actionPageData[key]["metadata"]["name"]);
           }
         }
         console.log("Inside ActionPageData 1:", actionPageData);
@@ -2276,7 +2285,7 @@ function checkWorkspaceSyntaxStatus(){
     document.querySelector(`div#${global_source_workspace}-status-circle-blue`).style.display = "none";
     return;
   }
-  /* Check for unconnected nodes. */
+  /* TODO: Check for unconnected nodes. */
   
   /* Check for unnamed and duplicate-named modules */
   let node_module_top_bars = document.querySelectorAll(`[id^="module-element-top-bar-${global_source_workspace}"]`);
@@ -2293,7 +2302,7 @@ function checkWorkspaceSyntaxStatus(){
     class_name_set.add(node_module_top_bar.querySelector(`input`).value);
   });  
   if (early_exit) { return; }
-  /* Check for undefined transition conditions */
+  /* TODO: Check for undefined transition conditions */
 
   /* Everything passes, update the status light to blue. */
   document.querySelector(`div#${global_source_workspace}-status-circle-lime`).style.display = 'none';
@@ -2317,7 +2326,7 @@ function adjustWorkspaceWidth(){
 function ToggleWorkspaceSearchBar(){
   /* 
      TODO:
-     Does not do anything for now, but my long term vision is 
+     I am not doing anything for now, but my long term vision is 
      1. Bring up a search bar when the user presses Ctrl+F
      2. User should be able to search for the NAME of the module ONLY.
      3. While the user is typing, the search bar should be able to auto-suggest along the way.
@@ -2477,14 +2486,228 @@ function editVariableHubVariableHandler(variable_id, event, type = null){
   if (type === "delete") {
     document.querySelector(`div#${variable_id}`).remove();
   }
-  // For all types of element clicks, we want to prevent the default behavior.
   event.stopPropagation();
 }
 
-function changeBackground(inputElement) {
-  if(inputElement.value !== '') {
-      inputElement.style.backgroundColor = 'transparent';
-  } else {
-      inputElement.style.backgroundColor = 'rgb(150, 135, 155)';
+function sizeInputHandler(inputElement, workspace, selected_node_id) {
+  inputElement.style.color = "#282828";
+  inputElement.style.fontFamily = "Courier, monospace";
+  inputElement.style.fontSize = "20px";
+
+  function setBatteryLevel(level, workspace, selected_node_id) {
+    if (level < 0 || level > 1024) {
+      // Should tell users that the input is invalid. But I am too lazy to do it haha.
+      return;
+    }
+    const maxLevel = 10;
+    const batteryElement = document.getElementById(`battery-level-${workspace}-${selected_node_id}`);
+    const percentage = Math.log2(level) / maxLevel * 100;
+    batteryElement.style.width = `${percentage}%`;
   }
+  setBatteryLevel(parseInt(inputElement.value), workspace, selected_node_id);
+}
+
+function resizeDiv(inputValue, new_div, type = "Keys") {
+  const inputLength = inputValue.length;
+  if (type == "Keys") {
+    new_div.style.width = Math.min(Math.max(300, inputLength * 15), 340) + 'px'; // Updated maximum width to 340
+  } else {
+    new_div.style.width = Math.min(Math.max(150, inputLength * 15), 300) + 'px';  // Updated maximum width to 200
+  }
+}
+
+function addTableElements(element, workspace, variable_count, type = "Keys") {
+  if (!element.dataset.hasListener) {
+    element.addEventListener('keydown', function(event) {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        addTableElements(element, workspace, variable_count, type);
+        const inputs = Array.from(element.querySelectorAll('input'));
+        const currentIndex = inputs.indexOf(event.target);
+        if (currentIndex !== -1 && currentIndex < inputs.length - 1) {
+          inputs[currentIndex + 1].focus();
+        }
+      }
+    });
+    element.dataset.hasListener = 'true';
+  }
+
+  if (type == "Keys" && !element.dataset.hasOwnProperty(`numberOf${type}`)) {
+    element.dataset.numberOfKeys = 0;
+  } else if (type == "Actions" && !element.dataset.hasOwnProperty(`numberOf${type}`)) {
+    element.dataset.numberOfActions = 0;
+  }
+  
+  const frozen_number = type == "Keys" ? element.dataset.numberOfKeys: element.dataset.nunberOfActions;
+  const new_div = document.createElement("div");
+  const input_element = document.createElement("input");
+
+  new_div.className = "table-key";
+  new_div.style.backgroundColor = "#4682B4";
+  new_div.style.width = (type == "Keys") ? '300px': '150px';  
+  new_div.style.maxWidth = (type == "Keys") ? '340px': '300px';  
+  new_div.style.height = '40px';
+  new_div.style.margin = '5px';
+  new_div.style.borderRadius = '5px';
+  new_div.style.display = 'flex';
+  new_div.style.alignItems = 'center';
+  new_div.style.justifyContent = 'space-between';
+  new_div.id = `table-${type}-${workspace}-${variable_count}-${frozen_number}`;
+
+  input_element.style.flexGrow = '1';
+  input_element.style.height = '80%';
+  input_element.style.minWidth = '75px';
+  input_element.style.backgroundColor = 'transparent';
+  input_element.style.color = '#c8c8c8';
+  input_element.style.border = 'none';
+  input_element.style.fontFamily = 'Courier, monospace';
+
+  // Create Default tab, initially hidden
+  const defaultTab = document.createElement("div");
+  defaultTab.style.display = 'none'; // Initially hidden
+  defaultTab.style.height = '100%';
+  defaultTab.style.padding = '0 10px';
+  defaultTab.style.backgroundColor = '#ccc';
+  defaultTab.style.alignSelf = 'center'; // Vertically center in flex container
+  defaultTab.textContent = 'Default';
+  defaultTab.className = 'default-tab';
+  defaultTab.style.borderRadius = 5 + 'px';
+  defaultTab.style.marginLeft = 10 + 'px';
+
+  // Listen for the 'Tab' key press for auto-completion.
+  element.addEventListener('keydown', function(event) {
+    if (event.key === 'Tab') {
+      event.preventDefault(); // Prevent the default tab key behavior
+      
+      const suggestedWord = event.target.dataset.suggestedWord;
+      
+      if (suggestedWord) {
+        let inputValue = event.target.value;
+
+        // If there are spaces in the input, keep everything before the last space
+        if (inputValue.includes(" ")) {
+          let splitValues = inputValue.split(" ");
+          splitValues.pop();  // Remove the last element, which we will replace with the suggested word
+          splitValues.push(suggestedWord);  // Add the suggested word as the last element
+          event.target.value = splitValues.join(" ");  // Join the array back into a string
+        } else {
+          // If no spaces, simply replace the entire input value
+          event.target.value = suggestedWord;
+        }
+      }
+
+      // Turn off auto-suggest
+      autoCompleteSpan.style.display = 'none';
+
+      // Resize the div after auto-completing
+      resizeDiv(event.target.value, new_div, type);
+    }
+  });
+  
+  // Listen to input suggestions, and offer auto-suggest if necessary.
+  element.addEventListener('input', function(event) {
+    let inputValue = event.target.value;
+    if (inputValue.includes(" ")) {
+      splitValues = inputValue.split(" ");
+      if (splitValues[splitValues.length - 1] == "") {
+        inputValue = null;
+      } else {
+        inputValue = splitValues[splitValues.length - 1];
+      }
+    }
+
+    // Reset the suggested word data attribute on every input
+    event.target.dataset.suggestedWord = "";
+
+    // Check if any word in autoCompleteData starts with the input value
+    for (let word of autoCompleteData) {
+      if (word.startsWith(inputValue)) {
+        // Store the current suggested word in the data attribute
+        event.target.dataset.suggestedWord = word;
+        // Display the suggestion in some manner (e.g., as a placeholder)
+        event.target.placeholder = word;
+        console.log("in here!", event.target.dataset.suggestedWord, event.target.placeholder);
+        break;
+      }
+    }
+
+    
+    if (!new_div.dataset.hasContextListener) {
+      new_div.addEventListener('contextmenu', function(event) {
+        event.preventDefault();
+        if (type === 'Actions') {
+          const tab = this.querySelector('.default-tab');
+          if (tab.style.display === 'none') {
+            tab.style.display = 'flex'; 
+            new_div.style.width = `${new_div.offsetWidth + tab.offsetWidth}px`;  
+          } else {
+            tab.style.display = 'none';
+            new_div.style.width = `${new_div.offsetWidth - tab.offsetWidth}px`;  
+          }
+          console.log('right click');
+        }
+      });
+      new_div.dataset.hasContextListener = 'true';
+    }
+
+    const suggestedWord = event.target.dataset.suggestedWord;
+
+    if (suggestedWord && event.target.value != suggestedWord) {
+      autoCompleteSpan.style.display = 'inline-block';
+      autoCompleteSpan.textContent = "↹ " + suggestedWord;
+    } else {
+      autoCompleteSpan.style.display = 'none';  // Hide if no suggestion
+    }
+  });
+
+  // Dynamically adjust the width of the div based on the input length
+  input_element.addEventListener('input', function() {
+    // Resize the div after auto-completing
+    resizeDiv(this.value, new_div, type);
+  });
+
+  new_div.appendChild(input_element);
+
+  // Create the delete button
+  const buttonElement = document.createElement("button");
+  buttonElement.className = `table-${type}-delete-button`;
+  buttonElement.style.backgroundColor = "transparent";
+  buttonElement.style.border = 'none';
+  buttonElement.onclick = function(){
+    document.querySelector(`div#table-${type}-${workspace}-${variable_count}-${frozen_number}`).remove();
+  }
+  // Create the Font Awesome icon for delete
+  const iconElement = document.createElement("i");
+  iconElement.className = "fa fa-times-circle";
+  iconElement.style.fontSize = "20px";
+  iconElement.style.color = "red";
+  iconElement.id = `table-${type}-delete-icon-${workspace}-${variable_count}-${frozen_number}`;
+
+  buttonElement.appendChild(iconElement);
+  new_div.appendChild(buttonElement);
+  // Add the default tab
+  new_div.appendChild(defaultTab);
+
+  // Create a span element for autocomplete suggestions
+  const autoCompleteSpan = document.createElement('span');
+  autoCompleteSpan.className = "auto-complete-span";
+  autoCompleteSpan.style.position = 'absolute';
+  autoCompleteSpan.style.left = '0';
+  autoCompleteSpan.style.bottom = '0';
+  autoCompleteSpan.style.backgroundColor = '#ccc'; 
+  autoCompleteSpan.style.display = 'none';  
+  new_div.appendChild(autoCompleteSpan);
+
+  // Add an event listener to the div element for on clicks.
+  new_div.addEventListener('click', function(event) {
+    event.stopPropagation();
+  });
+
+  element.appendChild(new_div);
+  if (type == "Keys") {
+    element.dataset.numberOfKeys++;
+  } else {
+    element.dataset.numberOfActions++;
+  }
+  return;
 }
