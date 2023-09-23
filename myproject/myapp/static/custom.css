@@ -206,6 +206,14 @@ header a {
   padding: 15px;
 }
 
+.drawflow .drawflow-node.begin-sign {
+  background-color: #D3D3D3;
+}
+
+.drawflow .drawflow-node.stop-sign {
+  background-color: #D3D3D3;
+}
+
 .drawflow .drawflow-node .state {
   display: flex;
   align-items: center;

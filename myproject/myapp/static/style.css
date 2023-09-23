@@ -714,3 +714,14 @@ button:hover {
   min-height: 40px;
   min-width: 240px;
 }
+
+.default-tab {
+  display: flex;
+  height: 100%;
+  padding: 0px 10px;
+  background-color: rgb(204, 204, 204);
+  align-items: center; /* This line will vertically center the content */
+  justify-content: center; /* This line will horizontally center the content */
+  border-radius: 5px;
+  margin-left: 10px;
+}

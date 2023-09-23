@@ -654,26 +654,6 @@ class Drawflow {
         this.precanvas.appendChild(deletebox);
 
       }
-
-      /* Deprecated, will be removed in the future if we no longer need its service hah. */
-      // if (this.node_selected){
-      //     /* Generate a selector menu for selected modules. */
-      //     var selectorbox = document.createElement('div');
-      //     selectorbox.classList.add('type-selector');
-      //     var currentnode = this.node_selected['id'];
-      //     selectorbox.innerHTML = `<div class="selector-box">
-      //                                 <p> Module types </p> 
-      //                                 <button class = "selector-button" id = "${currentnode}-action" onclick = "changeModuleType('${currentnode}', 'action')" style = "background-color: #DB3A34; color: #24c5cb;"> Action </button> 
-      //                                 <button class = "selector-button" id = "${currentnode}-state" onclick = "changeModuleType('${currentnode}', 'state')" style = "background-color: #DDCAD9; color: #223526;"> State </button> 
-      //                                 <button class = "selector-button" id = "${currentnode}-table" onclick = "changeModuleType('${currentnode}', 'table')" style = "background-color: #6A5B6E; color: #95a491;"> Table </button> 
-      //                               </div>`;
-      //     if(this.precanvas.getElementsByClassName("type-selector").length) {
-      //       this.precanvas.getElementsByClassName("type-selector")[0].remove()
-      //     };
-      //     if(this.node_selected) {
-      //       this.node_selected.appendChild(selectorbox);
-      //     };
-      // } 
       
       if (this.connection_selected && (this.connection_selected.parentElement.classList.length > 1)) {
           /* Generate conditions drop down for selected connections. */
@@ -684,7 +664,25 @@ class Drawflow {
           /* Temporary solution to get it moving, not ideal in the long run. */
           /* Eventually, button contented will be dynamically generated. */
           var connection_id = this.connection_selected.parentElement.className.baseVal;
-          conditionbox.innerHTML = `<div class="condition-box"> 
+          
+          
+          let element = this.connection_selected.parentElement.parentElement;
+          let drawflowNodes = element.querySelectorAll('.drawflow-node.generic');
+
+          let results = [];
+
+          drawflowNodes.forEach(node => {
+              let classList = node.className.split(' ');
+              let index = classList.indexOf('generic');
+              if (index !== -1 && classList[index + 1] && (classList[index + 2] === 'prev' || classList[index + 2] === 'post')) {
+                  results.push(classList[index + 1]);
+              }
+          });
+
+          current_workspace = results[0];
+          
+          if (current_workspace == "parser"){
+            conditionbox.innerHTML = `<div class="condition-box"> 
                                           <div class="dropdown" id = "${connection_id}-category">
                                             <button class="dropdown-item" >Menu &#9662;</button>
                                             <div class="dropdown-content"  id = "${connection_id}-category">
@@ -696,8 +694,11 @@ class Drawflow {
                                             </div>
                                           </div>                                      
                                     </div>`;
+          } else {
+            // Design the conditional box so that it is a textbox at the right place in the 
+            conditionalbox.innerHTML = ``;
+          }
           
-          console.log("Check condition hehe!")
           // Position the condition box right above the deletebox. */
           conditionbox.style.top = e.clientY * ( this.precanvas.clientHeight / (this.precanvas.clientHeight * this.zoom)) - ((this.precanvas.getBoundingClientRect().y + 40) *  ( this.precanvas.clientHeight / (this.precanvas.clientHeight * this.zoom)) ) + "px" ;
           conditionbox.style.left = e.clientX * ( this.precanvas.clientWidth / (this.precanvas.clientWidth * this.zoom)) - ((this.precanvas.getBoundingClientRect().x - 20)*  ( this.precanvas.clientWidth / (this.precanvas.clientWidth * this.zoom)) ) + "px";

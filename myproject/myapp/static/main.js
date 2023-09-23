@@ -23,13 +23,33 @@ let init_load = true;
 let types = ["vars", "structs", "typedefs", "headers"];
 let global_source_workspace = "parser";
 let workspace_status_tracker_class_list = ["module-element", "dropdown-content-item"];
+let workspace_transition_dict = {
+  "parser": ["Begin", "VerifyChecksum", "begin", "verify-checksum"],
+  "verify-checksum": ["Parser", "Ingress", "parser", "ingress"],
+  "ingress": ["VerifyChecksum", "Egress", "verify-checksum", "egress"],
+  "egress": ["Ingress", "ComputeChecksum", "ingress", "compute-checksum"],
+  "compute-checksum": ["Egress", "Deparser", "egress", "deparser"],
+  "deparser": ["ComputeChecksum", "End", "compute-checksum", "end"],
+}
+let html_begin = `<p style="text-align:center; font-family:Courier, monospace;">
+                    <svg width="40" height="40" xmlns="http://www.w3.org/2000/svg" style = "top: 24%; left: 10%;">
+                        <image href="https://upload.wikimedia.org/wikipedia/commons/7/7e/Diamond_warning_sign.svg" width="40" height="40"/>
+                    </svg>
+                    BEGIN
+                  </p>`;
+let html_stop = `<p style="text-align:center; font-family:Courier, monospace;">
+                    <svg width="40" height="40" xmlns="http://www.w3.org/2000/svg" style = "top: 24%; left: 10%;">
+                      <image href="https://upload.wikimedia.org/wikipedia/commons/c/c0/MUTCD_R1-1.svg" width="40" height="40"/>
+                    </svg>
+                    STOP
+                  </p>`;
 /* 
   autoCompleteData sources keywords from the following sources:
   1. global_init_header_page_data
   2. global_init_action_page_data
   3. There might be more, but I don't remember. Let's add as we go.
 */
-let autoCompleteData = [];
+let autoCompleteData = ["lpm", "exact", "ternary", "range", "optional"];
 window.header_name_dict = [];
 /* This thing is Javascript's equivalent of a defaultdict. */
 let highest_node_sequence = new Proxy(
@@ -139,6 +159,7 @@ let HTMLCONTENT_FIELDS = {
   table: TABLE_HTMLCONTENT_FIELDS,
 };
 
+
 let ACTION_STATEMENT = function (node_id, sequence_id) {
   switch (sequence_id) {
     case 0:
@@ -239,6 +260,10 @@ window.addEventListener("DOMContentLoaded", function () {
   var example = document.getElementById("drawflow-parser");
   global_flow_editor = new Drawflow(example);
   global_flow_editor.start();
+
+  var html_post = `<p style="text-align:center; font-family:Courier, monospace;">${workspace_transition_dict["parser"][1]}<i class="fa-solid fa-arrow-right fa-beat" style="margin-left: 8px;"></i></p>`;
+  global_flow_editor.addNode("New Node 1", 0, 1, 40, 400, `begin-sign`, {}, html_begin);
+  global_flow_editor.addNode("New Node 2", 1, 0, 1500, 400, "generic parser post", {}, html_post);
   // put the flowchart editor into a dictionary.
   global_flow_editors[global_source_workspace] = global_flow_editor;
 
@@ -289,6 +314,8 @@ window.addEventListener("DOMContentLoaded", function () {
       searchActionPage(search_term);
     }
   });
+
+  addWorkspaceTransitionButtonClickHandler("post", "parser", "verify-checksum");
 
   /* Observer to observe DOM changes. */
   const observer = new MutationObserver((mutationsList, observer) => {
@@ -460,7 +487,6 @@ window.addEventListener("DOMContentLoaded", function () {
                     e.target.dataset.suggestedWord = word;
                     // Display the suggestion in some manner (e.g., as a placeholder)
                     e.target.placeholder = word;
-                    console.log("in here!", e.target.dataset.suggestedWord, e.target.placeholder);
                     break;
                   }
                 }
@@ -585,7 +611,7 @@ function createNewModule(type = null) {
         changeModuleType(current_node, 'table');
       }
       break;
-
+  
     default:
       throw new Error("Not implemented yet.");
   }
@@ -2008,9 +2034,7 @@ function waitForElement(elementFn) {
   return new Promise((resolve) => {
     function checkElement() {
       const element = elementFn();
-      console.log(element);
       if (element) {
-        console.log("Element is now available!");
         resolve(element);
       } else {
         setTimeout(checkElement, 100);
@@ -2225,12 +2249,6 @@ function enableAllActionModules(){
   return;
 }
 
-/* Next up: 
-   1. Creating control tabs on welcome page. (Ongoing)
-   2. Integrate actions on each control tab.
-   3. Create onboarding page for new users. 
-   Will work on this after I am back from lunch!!!
-*/
 function controlSwitch(target_workspace){
   console.log(target_workspace);
   /* General flow: Switches workspace and drawflow editor to the new workspace. */  
@@ -2240,7 +2258,26 @@ function controlSwitch(target_workspace){
     global_flow_editor = new Drawflow(example);
     global_flow_editor.start();
     global_flow_editors[target_workspace] = global_flow_editor;
+    // add workspace transition modules to it lol.
+    var html_prev = `<p style="text-align:center; font-family:Courier, monospace;"><i class="fa-solid fa-arrow-left fa-beat" style="margin-right: 8px;"></i>${workspace_transition_dict[target_workspace][0]}</p>`;
+    var html_post = `<p style="text-align:center; font-family:Courier, monospace;">${workspace_transition_dict[target_workspace][1]}<i class="fa-solid fa-arrow-right fa-beat" style="margin-left: 8px;"></i></p>`;
+
+    if (target_workspace != "parser" && target_workspace != "deparser") {
+      global_flow_editors[target_workspace].addNode("New Node 1", 0, 1, 40, 400, `generic ${target_workspace} prev`, {}, html_prev);
+      global_flow_editors[target_workspace].addNode("New Node 2", 1, 0, 1500, 400, `generic ${target_workspace} post`, {}, html_post);
+      addWorkspaceTransitionButtonClickHandler("prev", target_workspace, workspace_transition_dict[target_workspace][2]);
+      addWorkspaceTransitionButtonClickHandler("post", target_workspace, workspace_transition_dict[target_workspace][3]);
+    } else if (target_workspace == "parser") {
+      global_flow_editors[target_workspace].addNode("New Node 1", 0, 1, 40, 400, `begin-sign`, {}, html_begin);
+      global_flow_editors[target_workspace].addNode("New Node 2", 1, 0, 1500, 400, `generic ${target_workspace} post`, {}, html_post);
+      addWorkspaceTransitionButtonClickHandler("post", target_workspace, workspace_transition_dict[target_workspace][3]);
+    } else {
+      global_flow_editors[target_workspace].addNode("New Node 1", 0, 1, 40, 400, `generic ${target_workspace} prev`, {}, html_prev);
+      global_flow_editors[target_workspace].addNode("New Node 2", 1, 0, 1500, 400, `stop-sign`, {}, html_stop);
+      addWorkspaceTransitionButtonClickHandler("prev", target_workspace, workspace_transition_dict[target_workspace][2]);
+    }
   }
+
   /* Hide the original workspace and expose the new one. */
   document.getElementById(`drawflow-${global_source_workspace}`).style.display = "none";
   document.getElementById(`drawflow-${target_workspace}`).style.display = "block";
@@ -2512,7 +2549,7 @@ function resizeDiv(inputValue, new_div, type = "Keys") {
   if (type == "Keys") {
     new_div.style.width = Math.min(Math.max(300, inputLength * 15), 340) + 'px'; // Updated maximum width to 340
   } else {
-    new_div.style.width = Math.min(Math.max(150, inputLength * 15), 300) + 'px';  // Updated maximum width to 200
+    new_div.style.width = Math.min(Math.max(300, inputLength * 15), 340) + 'px';  // Updated maximum width to 340
   }
 }
 
@@ -2537,15 +2574,20 @@ function addTableElements(element, workspace, variable_count, type = "Keys") {
   } else if (type == "Actions" && !element.dataset.hasOwnProperty(`numberOf${type}`)) {
     element.dataset.numberOfActions = 0;
   }
-  
-  const frozen_number = type == "Keys" ? element.dataset.numberOfKeys: element.dataset.nunberOfActions;
+  console.log("line 2540", type, element.dataset.numberOfKeys, element.dataset.numberOfActions);
+  if (type == "Keys") {
+    selection_number = element.dataset.numberOfKeys;
+  } else {
+    selection_number = element.dataset.numberOfActions;
+  }
+  const frozen_number = selection_number;
   const new_div = document.createElement("div");
   const input_element = document.createElement("input");
 
   new_div.className = "table-key";
   new_div.style.backgroundColor = "#4682B4";
-  new_div.style.width = (type == "Keys") ? '300px': '150px';  
-  new_div.style.maxWidth = (type == "Keys") ? '340px': '300px';  
+  new_div.style.width = (type == "Keys") ? '300px': '300px';  
+  new_div.style.maxWidth = (type == "Keys") ? '340px': '340px';  
   new_div.style.height = '40px';
   new_div.style.margin = '5px';
   new_div.style.borderRadius = '5px';
@@ -2638,13 +2680,25 @@ function addTableElements(element, workspace, variable_count, type = "Keys") {
         if (type === 'Actions') {
           const tab = this.querySelector('.default-tab');
           if (tab.style.display === 'none') {
+            // Cancel all other tabs from displaying, if applicable.
+            const tabs = document.querySelectorAll('.default-tab');
+            tabs.forEach((tab) => {
+              // find parent div of tab and change width back to where it was.
+              const parent_div = tab.parentNode;
+              if (tab.style.display == 'flex') {
+                parent_div.style.width = `${parent_div.style.width - 50}px`;
+                tab.style.display = 'none';
+              }
+            });
             tab.style.display = 'flex'; 
-            new_div.style.width = `${new_div.offsetWidth + tab.offsetWidth}px`;  
+            new_div.style.width = `${new_div.style.width + 50}px`;  
           } else {
             tab.style.display = 'none';
-            new_div.style.width = `${new_div.offsetWidth - tab.offsetWidth}px`;  
+            new_div.style.width = `${new_div.style.width - 50}px`;  
           }
           console.log('right click');
+          
+
         }
       });
       new_div.dataset.hasContextListener = 'true';
@@ -2710,4 +2764,29 @@ function addTableElements(element, workspace, variable_count, type = "Keys") {
     element.dataset.numberOfActions++;
   }
   return;
+}
+
+function addWorkspaceTransitionButtonClickHandler(mode, source_workspace, target_workspace){
+  // Listen to html_post node by adding an event listener.
+  var isDragging = false;
+
+  transition_node = document.querySelector(`div.drawflow-node.generic.${source_workspace}.${mode}`);
+  transition_node.addEventListener("mousedown", function() {
+    isDragging = false; // reset the dragging flag on mousedown
+  });
+
+  transition_node.addEventListener("mousemove", function() {
+    isDragging = true; // if mouse moved, set the dragging flag
+  });
+
+  transition_node.addEventListener("mouseup", function(event) {
+    if (!isDragging) {
+      // If the mouse hasn't moved much, treat it as a click
+      controlSwitch(target_workspace);
+      transition_node.classList.remove("selected");
+    }
+  });
+
+  transition_node.style.cursor = "pointer";  // Use 'cursor' instead of 'cursorStyle'
+
 }
