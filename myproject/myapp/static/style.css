@@ -722,6 +722,7 @@ button:hover {
   background-color: rgb(204, 204, 204);
   align-items: center; /* This line will vertically center the content */
   justify-content: center; /* This line will horizontally center the content */
-  border-radius: 5px;
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 5px;
   margin-left: 10px;
 }

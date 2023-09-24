@@ -322,6 +322,29 @@ window.addEventListener("DOMContentLoaded", function () {
     for (let mutation of mutationsList) {
       if (mutation.type === 'childList') {
         mutation.addedNodes.forEach(node => {
+          if (node.className instanceof SVGAnimatedString && node.className.baseVal === 'connection' && global_source_workspace !== "parser") {
+            node.addEventListener("dragover", (event) => {
+              event.preventDefault();
+            });
+            node.addEventListener("drop", (_) => {
+              console.log("Something is dropping on me!");
+              // Create a new div, and then append it to the svg
+              connection_id = node.className.baseVal.replace(/\s+/g, "-");
+              outerdiv = attachSVGDisplayBox(connection_id);
+              let first_child = outerdiv.querySelector(':first-child');
+              first_child.textContent = "Connection Established";
+              if (!node.parentElement.parentElement.querySelector(`div.${outerdiv.className}`)) {
+                node.parentElement.parentElement.appendChild(outerdiv);
+                console.log("new insertion");
+              }
+            });
+          }
+          // Override click default behavior for the non-parser workspaces.
+          if (node.className == "condition-selector" && global_source_workspace != "parser") {
+            node.addEventListener("click", (event) => {
+              event.preventDefault();
+            });
+          }
           if (workspace_status_tracker_class_list.includes(node.className)) {
             // Update status light  to yellow --> In progress
             if (this.document.querySelector(`div#${global_source_workspace}-status-circle-lime`) != null){
@@ -334,7 +357,7 @@ window.addEventListener("DOMContentLoaded", function () {
           // Add mutation event listener to the new action node.
           if (node.className == "module-element" && 
               node.id.includes("module-element-top-bar") &&
-              node.textContent.includes("Action")) {
+              node.textContent.includes("Action") && !node.textContent.includes("Actions")) {
               // Do something hehe
               console.log(document.querySelector(`div.actions-page-items`));
               let node_parent = node.parentElement;
@@ -351,6 +374,7 @@ window.addEventListener("DOMContentLoaded", function () {
                     inputs.forEach((input) => {
                       input.querySelectorAll('span').forEach((elem) => {list_of_inputs.push(elem.textContent)});
                     });
+                    console.log(list_of_inputs);
                     for (let i = 0; i < list_of_inputs.length; i = i + 2) {
                       let type = list_of_inputs[i];
                       let arg = list_of_inputs[i + 1];
@@ -708,6 +732,7 @@ function dropdownContentItemConnectionHandler(id, category, arg) {
   /* Since I know the id of the thing, I can try grab the location data from it. */
   connection_box = document.querySelector(`svg.${query_class_name}`);
   path_box = connection_box.querySelector("path.main-path");
+  console.log("line 711", connection_box);
   /* Increase the z-index of the paths so that the paths always take priority. */
   connection_box.z_index = 0.5;
   path_pos_data = path_box.getBoundingClientRect();
@@ -717,6 +742,7 @@ function dropdownContentItemConnectionHandler(id, category, arg) {
   ) {
     /* Create display box if not exists */
     var outerdiv = document.createElement("div");
+    console.log("line 738: ", query_id);
     outerdiv.classList.add(`side-by-side-div-${query_id}`);
 
     var div1 = document.createElement("div");
@@ -736,17 +762,19 @@ function dropdownContentItemConnectionHandler(id, category, arg) {
     outerdiv.appendChild(div4);
 
     // Some style parameters. I know I am not allowed to do it here, but come on!
-    outerdiv.style.backgroundColor = "lightblue";
-    outerdiv.style.opacity = 0.5;
-    outerdiv.style.border = "1px solid black";
+    outerdiv.style.backgroundColor = "#B5E6E9";
+    outerdiv.style.border = "1px solid #aaa";
     outerdiv.style.width = "auto";
     outerdiv.style.height = "auto";
+    outerdiv.style.padding = "5px 10px";
     outerdiv.style.display = "inline-flex";
-    outerdiv.style.fontFamily = "Courier New";
+    outerdiv.style.fontFamily = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
+    outerdiv.style.fontSize = "14px";
+    outerdiv.style.fontWeight = "normal";
     outerdiv.style.position = "absolute";
-
-    outerdiv.style.top = top + "px";
-    outerdiv.style.left = left + "px";
+    outerdiv.style.borderRadius = "5px";
+    outerdiv.style.boxShadow = "0 2px 5px rgba(0,0,0,0.1)";
+    outerdiv.style.textAlign = "center";
     toplevel_drawflow.appendChild(outerdiv);
   }
 
@@ -772,7 +800,7 @@ function dropdownContentItemConnectionHandler(id, category, arg) {
   current_side_by_side.style.top = top + "px";
   current_side_by_side.style.left = left + "px";
   current_side_by_side.style.zIndex = 1;
-
+  console.log("line 775, side by side location", top, left);
   // Scale everything by zoom level.
   UpdateConditionBoxLocation(global_flow_editors[global_source_workspace].zoom);
   /* On change, we also need to update new position in drawflow.js */
@@ -1170,16 +1198,44 @@ function UpdateConditionBoxLocation(zoom_level) {
 
       var path_box = svg_elements[svg_index].querySelector("path.main-path");
       var path_pos_data = path_box.getBoundingClientRect();
+      
+      if (path_pos_data.width == 0 || path_pos_data.height == 0) {
+        // This is a hacky way to deal with the situation where the path is not rendered yet.
+        return;
+      }
 
-      var centerX = path_pos_data.left + path_pos_data.width / 2; // Calculate the x-coordinate of the center
-      var centerY = path_pos_data.top + path_pos_data.height / 2; // Calculate the y-coordinate of the center
+      const coords = path_box.getAttribute('d').trim().split(' ').filter(coord => coord !== 'M' && coord !== 'C');
+      const filtered_coords = coords.filter(value => value.trim() !== '');
+      // Extract the four points
+      const point1 = { x: parseFloat(filtered_coords[0]), y: parseFloat(filtered_coords[1]) };
+      const point2 = { x: parseFloat(filtered_coords[2]), y: parseFloat(filtered_coords[3]) };
+      const point3 = { x: parseFloat(filtered_coords[4]), y: parseFloat(filtered_coords[5]) };
+      const point4 = { x: parseFloat(filtered_coords[6]), y: parseFloat(filtered_coords[7]) };
 
-      var width = side_by_side_divs[current_index].offsetWidth;
-      var height = side_by_side_divs[current_index].offsetHeight;
+      var near_horizontal_regions = findHorizontalRegions(point1, point2, point3, point4);
 
-      console.log(width, height, centerX, centerY);
-      var left = centerX - width / 2; // Calculate the left position
-      var top = centerY - height / 2; // Calculate the top position
+      var centerX, centerY, width, height, left, top;
+      if (near_horizontal_regions.length == 0) {
+        centerX = path_pos_data.left + path_pos_data.width / 2; // Calculate the x-coordinate of the center
+        centerY = path_pos_data.top + path_pos_data.height / 2; // Calculate the y-coordinate of the center
+
+        width = side_by_side_divs[current_index].offsetWidth;
+        height = side_by_side_divs[current_index].offsetHeight;
+
+        left = centerX - width / 2; // Calculate the left position
+        top = centerY - height / 2; // Calculate the top position
+      } else {
+        var near_horizontal_region_x = near_horizontal_regions[near_horizontal_regions.length - 1].x;
+        var near_horizontal_region_y = near_horizontal_regions[near_horizontal_regions.length - 1].y;
+        centerX = path_pos_data.left + path_pos_data.width / 2 + near_horizontal_region_x;
+        centerY = path_pos_data.top + path_pos_data.height / 2 + near_horizontal_region_y;
+
+        width = side_by_side_divs[current_index].offsetWidth;
+        height = side_by_side_divs[current_index].offsetHeight;
+
+        left = centerX - width / 2 + 30; // Calculate the left position
+        top = centerY - height / 2; // Calculate the top position
+      }
       side_by_side_divs[current_index].style.top = top + "px";
       side_by_side_divs[current_index].style.left = left + "px";
       if (zoom_level) {
@@ -2607,14 +2663,8 @@ function addTableElements(element, workspace, variable_count, type = "Keys") {
   // Create Default tab, initially hidden
   const defaultTab = document.createElement("div");
   defaultTab.style.display = 'none'; // Initially hidden
-  defaultTab.style.height = '100%';
-  defaultTab.style.padding = '0 10px';
-  defaultTab.style.backgroundColor = '#ccc';
-  defaultTab.style.alignSelf = 'center'; // Vertically center in flex container
   defaultTab.textContent = 'Default';
   defaultTab.className = 'default-tab';
-  defaultTab.style.borderRadius = 5 + 'px';
-  defaultTab.style.marginLeft = 10 + 'px';
 
   // Listen for the 'Tab' key press for auto-completion.
   element.addEventListener('keydown', function(event) {
@@ -2696,9 +2746,6 @@ function addTableElements(element, workspace, variable_count, type = "Keys") {
             tab.style.display = 'none';
             new_div.style.width = `${new_div.style.width - 50}px`;  
           }
-          console.log('right click');
-          
-
         }
       });
       new_div.dataset.hasContextListener = 'true';
@@ -2789,4 +2836,74 @@ function addWorkspaceTransitionButtonClickHandler(mode, source_workspace, target
 
   transition_node.style.cursor = "pointer";  // Use 'cursor' instead of 'cursorStyle'
 
+}
+
+function bezierDerivative(t, P0, P1, P2, P3) {
+  // Calculate the derivative of Bézier curve
+  const dBx_dt = 3 * Math.pow(1 - t, 2) * (P1.x - P0.x) + 6 * (1 - t) * t * (P2.x - P1.x) + 3 * t * t * (P3.x - P2.x);
+  const dBy_dt = 3 * Math.pow(1 - t, 2) * (P1.y - P0.y) + 6 * (1 - t) * t * (P2.y - P1.y) + 3 * t * t * (P3.y - P2.y);
+  return dBy_dt / dBx_dt;
+}
+
+function bezierPoint(t, P0, P1, P2, P3) {
+  
+  const x = Math.pow(1-t, 3) * P0.x + 3 * Math.pow(1-t, 2) * t * P1.x + 3 * (1-t) * t * t * P2.x + t * t * t * P3.x;
+  const y = Math.pow(1-t, 3) * P0.y + 3 * Math.pow(1-t, 2) * t * P1.y + 3 * (1-t) * t * t * P2.y + t * t * t * P3.y;
+  return {x, y};
+}
+
+function bezierPointCenterDiff(t, P0, P1, P2, P3) {
+  let {x, y} = bezierPoint(t, P0, P1, P2, P3);
+  let {x: center_x, y: center_y} = bezierPoint(0.5, P0, P1, P2, P3);
+  return {x: x - center_x, y: y - center_y};
+}
+
+function findHorizontalRegions(P0, P1, P2, P3, samples = 10) {
+  // find the difference between t and t=0.5
+  const tValues = Array(samples).fill(0).map((_, i) => i / (samples - 1));
+  const horizontalRegions = [];
+  for (let t of tValues) {
+      if (Math.abs(bezierDerivative(t, P0, P1, P2, P3)) > 0 && Math.abs(bezierDerivative(t, P0, P1, P2, P3)) < 0.5) {
+          horizontalRegions.push(t);
+      }
+  }
+  return horizontalRegions.map(t => bezierPointCenterDiff(t, P0, P1, P2, P3));
+}
+
+function attachSVGDisplayBox(query_id){
+  let outerdiv = document.createElement("div");
+  outerdiv.classList.add(`side-by-side-div-${query_id}`);
+
+  var div1 = document.createElement("div");
+  var div2 = document.createElement("div");
+  var div3 = document.createElement("div");
+  var div4 = document.createElement("div");
+
+  div1.classList.add(`side-by-side-div-${query_id}-switch-head`);
+  div2.classList.add(`side-by-side-div-${query_id}-switch-target`);
+  div3.classList.add("side-by-side-div-field3");
+  div4.classList.add("side-by-side-div-field4");
+  subdivs = [div1, div2, div3, div4];
+
+  outerdiv.appendChild(div1);
+  outerdiv.appendChild(div2);
+  outerdiv.appendChild(div3);
+  outerdiv.appendChild(div4);
+
+  // Some style parameters. I know I am not allowed to do it here, but come on!
+  outerdiv.style.backgroundColor = "#B5E6E9";
+  outerdiv.style.border = "1px solid #aaa";
+  outerdiv.style.width = "auto";
+  outerdiv.style.height = "auto";
+  outerdiv.style.padding = "5px 10px";
+  outerdiv.style.display = "inline-flex";
+  outerdiv.style.fontFamily = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
+  outerdiv.style.fontSize = "14px";
+  outerdiv.style.fontWeight = "normal";
+  outerdiv.style.position = "absolute";
+  outerdiv.style.borderRadius = "5px";
+  outerdiv.style.boxShadow = "0 2px 5px rgba(0,0,0,0.1)";
+  outerdiv.style.textAlign = "center";
+
+  return outerdiv;
 }

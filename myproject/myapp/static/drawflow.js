@@ -104,9 +104,11 @@ class Drawflow {
     this.drag = false;
     this.reroute = false;
     this.reroute_fix_curvature = false;
-    this.curvature = 0.5;
+    // temporarily bumping curvature to 0.
+    this.curvature = 1;
     this.reroute_curvature_start_end = 0.5;
-    this.reroute_curvature = 0.5;
+    // temporarily bumping reroute_curvature to 1.
+    this.reroute_curvature = 1;
     this.reroute_width = 6;
     this.drag_point = false;
     this.editor_selected = false;
@@ -398,7 +400,7 @@ class Drawflow {
         this.ele_selected.classList.add("selected");
       break;
       case 'drawflow-delete':
-        if(this.node_selected ) {
+        if(this.node_selected) {
           this.removeNodeId(this.node_selected.id);
         }
 
@@ -441,6 +443,7 @@ class Drawflow {
   }
 
   position(e) {
+     
     if (e.type === "touchmove") {
       var e_pos_x = e.touches[0].clientX;
       var e_pos_y = e.touches[0].clientY;
@@ -459,7 +462,7 @@ class Drawflow {
       this.dispatch('translate', { x: x, y: y});
       this.precanvas.style.transform = "translate("+x+"px, "+y+"px) scale("+this.zoom+")";
       UpdateConditionBoxLocation(this.zoom);
-      // UpdateConditionBoxZoom(x, y, this.zoom);
+      console.log("466");
     }
     if(this.drag) {
       e.preventDefault();
@@ -480,6 +483,7 @@ class Drawflow {
          Of course, there might be many more better solutions. However, it is NOT on the highest priority for now!
       */
       UpdateConditionBoxLocation(this.zoom);
+      console.log("487");
     }
 
     if(this.drag_point) {
@@ -658,17 +662,14 @@ class Drawflow {
       if (this.connection_selected && (this.connection_selected.parentElement.classList.length > 1)) {
           /* Generate conditions drop down for selected connections. */
           var conditionbox = document.createElement('div');
-          conditionbox.classList.add('condition-selector');
+          
 
           /* Dropdown menu */
           /* Temporary solution to get it moving, not ideal in the long run. */
           /* Eventually, button contented will be dynamically generated. */
           var connection_id = this.connection_selected.parentElement.className.baseVal;
-          
-          
           let element = this.connection_selected.parentElement.parentElement;
           let drawflowNodes = element.querySelectorAll('.drawflow-node.generic');
-
           let results = [];
 
           drawflowNodes.forEach(node => {
@@ -678,10 +679,10 @@ class Drawflow {
                   results.push(classList[index + 1]);
               }
           });
-
-          current_workspace = results[0];
+          let current_workspace = results[0];
           
           if (current_workspace == "parser"){
+            conditionbox.classList.add('condition-selector');
             conditionbox.innerHTML = `<div class="condition-box"> 
                                           <div class="dropdown" id = "${connection_id}-category">
                                             <button class="dropdown-item" >Menu &#9662;</button>
@@ -695,8 +696,8 @@ class Drawflow {
                                           </div>                                      
                                     </div>`;
           } else {
-            // Design the conditional box so that it is a textbox at the right place in the 
-            conditionalbox.innerHTML = ``;
+            // Outputs nothing... Let's do drag and drop.
+            conditionbox.innerHTML = ``;
           }
           
           // Position the condition box right above the deletebox. */
@@ -715,6 +716,7 @@ class Drawflow {
 
   }
   async contextmenuDel() {
+
     if(this.precanvas.getElementsByClassName("drawflow-delete").length) {
       this.precanvas.getElementsByClassName("drawflow-delete")[0].remove()
     };
@@ -913,7 +915,6 @@ class Drawflow {
   }
 
   updateConnectionNodes(id) {
-
     // Aquí nos quedamos;
     const idSearch = 'node_in_'+id;
     const idSearchOut = 'node_out_'+id;
