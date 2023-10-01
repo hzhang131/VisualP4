@@ -43,6 +43,7 @@ let html_stop = `<p style="text-align:center; font-family:Courier, monospace;">
                     </svg>
                     STOP
                   </p>`;
+
 /* 
   autoCompleteData sources keywords from the following sources:
   1. global_init_header_page_data
@@ -104,10 +105,18 @@ let STYLE_OVERRIDE = {
 };
 /* Do some action style surgery */
 let ACTION_HTMLCONTENT_FIELDS = function (node_id) {
-  return `<div class = "module-element" id = "module-element-top-bar-${global_source_workspace}-${node_id}">
-                                    <p style="justify-content: center; float:left; margin: auto; font-size: 20px; font-family: Courier, monospace;"> Action </p>
-                                    <p style="justify-content: center; float:left; margin: auto; "> <input id = "action-input-field-workspace-${global_source_workspace}-${node_id}" placeholder="Action name" style="background: transparent; font-size: 20px; font-family: Courier, monospace;"> </input> </p>
-                                </div>`;
+  return `<div class="module-element" id="module-element-top-bar-${global_source_workspace}-${node_id}">
+            <p style="flex: 1; display: flex; align-items: center; justify-content: center; margin: 0; font-size: 18px; font-weight: bold;">Action</p>
+            <div style="flex: 2; display: flex; align-items: center; justify-content: center;">
+                <input 
+                    id="action-input-field-workspace-${global_source_workspace}-${node_id}" 
+                    placeholder="Action name" 
+                    style="width: 80%; padding: 5px; background: transparent; border: 1px solid rgba(255,255,255,0.2); border-radius: 5px; font-size: 18px; font-family: Courier, monospace; outline: none; color: #eee; transition: border-color 0.3s;"
+                    onfocus="this.style.borderColor='rgba(255,255,255,0.5)';"
+                    onblur="this.style.borderColor='rgba(255,255,255,0.2)';"
+                >
+            </div>
+          </div>`;
 };
 
 let STATE_HTMLCONTENT_FIELDS = function (node_id) {
@@ -232,6 +241,14 @@ let state_extraction_targets = null;
 let state_condition_targets = null;
 let raw_condition_html = null;
 
+/* pdf reader controls. */
+let pdfDoc = null, 
+    pageNum = 1, 
+    pageRendering = false, 
+    pageNumPending = null,
+    scale = 1.5;
+let canvas, ctx;
+
 /******************************** Main Logic and functions *****************************/
 window.addEventListener("DOMContentLoaded", function () {
   //This section loads up the code editor(s).
@@ -326,16 +343,20 @@ window.addEventListener("DOMContentLoaded", function () {
             node.addEventListener("dragover", (event) => {
               event.preventDefault();
             });
-            node.addEventListener("drop", (_) => {
+            node.addEventListener("drop", (event) => {
               console.log("Something is dropping on me!");
               // Create a new div, and then append it to the svg
               connection_id = node.className.baseVal.replace(/\s+/g, "-");
               outerdiv = attachSVGDisplayBox(connection_id);
               let first_child = outerdiv.querySelector(':first-child');
-              first_child.textContent = "Connection Established";
-              if (!node.parentElement.parentElement.querySelector(`div.${outerdiv.className}`)) {
+              const droppedData = event.dataTransfer.getData('text/plain');
+              first_child.textContent = droppedData;
+              textSVGNode = node.parentElement.parentElement.querySelector(`div.${outerdiv.className}`);
+              if (!textSVGNode) {
                 node.parentElement.parentElement.appendChild(outerdiv);
-                console.log("new insertion");
+                UpdateConditionBoxLocation(global_flow_editors[global_source_workspace].zoom);
+              } else if (textSVGNode.querySelector(`[class$="head"]`) && textSVGNode.querySelector(`[class$="head"]`).innerHTML !== droppedData) {
+                textSVGNode.querySelector(`[class$="head"]`).innerHTML = droppedData;
               }
             });
           }
@@ -560,6 +581,9 @@ window.addEventListener("DOMContentLoaded", function () {
 
   observer.observe(document.body, config);
 
+  // pdf renderer params;
+  canvas = document.getElementById('pdf-renderer');
+  ctx = canvas.getContext('2d');
 });
 
 function reportWindowSize() {
@@ -723,16 +747,15 @@ function dropdownContentItemConnectionHandler(id, category, arg) {
   var query_id = id.replaceAll(" ", "-");
   var query_class_name = id.replaceAll(" ", ".");
   var toplevel_drawflow = document.querySelector(`.drawflow-child.parent-drawflow#drawflow-${global_source_workspace}`);
+  console.log(toplevel_drawflow);
   console.log(
     toplevel_drawflow.querySelectorAll(`div.side-by-side-div-${query_id}`)
       .length
   );
   
-  console.log(query_class_name);
   /* Since I know the id of the thing, I can try grab the location data from it. */
   connection_box = document.querySelector(`svg.${query_class_name}`);
   path_box = connection_box.querySelector("path.main-path");
-  console.log("line 711", connection_box);
   /* Increase the z-index of the paths so that the paths always take priority. */
   connection_box.z_index = 0.5;
   path_pos_data = path_box.getBoundingClientRect();
@@ -752,8 +775,8 @@ function dropdownContentItemConnectionHandler(id, category, arg) {
 
     div1.classList.add(`side-by-side-div-${query_id}-switch-head`);
     div2.classList.add(`side-by-side-div-${query_id}-switch-target`);
-    div3.classList.add("side-by-side-div-field3");
-    div4.classList.add("side-by-side-div-field4");
+    div3.classList.add(`side-by-side-div-${query_id}-field3`);
+    div4.classList.add(`side-by-side-div-${query_id}-field4`);
     subdivs = [div1, div2, div3, div4];
 
     outerdiv.appendChild(div1);
@@ -826,23 +849,47 @@ function CodeDisplaySetting() {
 }
 
 function HeaderDisplaySetting() {
+  document.querySelector(`button#${global_source_workspace}`).style.background = "linear-gradient(to bottom, #91c3e0, #609cb2)";
+  document.querySelector(`button#actions-button`).style.background = "linear-gradient(to bottom, #91c3e0, #609cb2)";
+  document.querySelector(`button#headers-button`).style.background = "linear-gradient(to bottom, #406a7e, #30505e)";
+
   const headersPage = document.querySelector(".headers-page");
+  const actionsPage = document.querySelector(".actions-page");
   // User can toggle a headers page with this
   if (display_headers_page) {
+    if (!display_actions_page) {
+      actionsPage.classList.remove("show");
+      display_actions_page = !display_actions_page;
+      document.querySelector(`button#actions-button`).style.background = "linear-gradient(to bottom, #91c3e0, #609cb2)";
+    }
     headersPage.classList.add("show");
   } else {
     headersPage.classList.remove("show");
+    document.querySelector(`button#${global_source_workspace}`).style.background = "linear-gradient(to bottom, #406a7e, #30505e)";
+    document.querySelector(`button#headers-button`).style.background = "linear-gradient(to bottom, #91c3e0, #609cb2)";
   }
   display_headers_page = !display_headers_page;
 }
 
 function ActionDisplaySetting() {
+  document.querySelector(`button#${global_source_workspace}`).style.background = "linear-gradient(to bottom, #91c3e0, #609cb2)";
+  document.querySelector(`button#headers-button`).style.background = "linear-gradient(to bottom, #91c3e0, #609cb2)";
+  document.querySelector(`button#actions-button`).style.background = "linear-gradient(to bottom, #406a7e, #30505e)";
+
+  const headersPage = document.querySelector(".headers-page");
   const actionsPage = document.querySelector(".actions-page");
   // User can toggle a headers page with this
   if (display_actions_page) {
+    if (!display_headers_page) {
+      headersPage.classList.remove("show");
+      display_headers_page = !display_headers_page;
+      document.querySelector(`button#headers-button`).style.background = "linear-gradient(to bottom, #91c3e0, #609cb2)";
+    }
     actionsPage.classList.add("show");
   } else {
     actionsPage.classList.remove("show");
+    document.querySelector(`button#${global_source_workspace}`).style.background = "linear-gradient(to bottom, #406a7e, #30505e)";
+    document.querySelector(`button#actions-button`).style.background = "linear-gradient(to bottom, #91c3e0, #609cb2)";
   }
   display_actions_page = !display_actions_page;
 }
@@ -1162,9 +1209,14 @@ function addHeaderPageItem(type) {
 /* Exactly the same one as the one in drawflow.js. 
    This function should be able to be cross-imported, but I don't know how :( */
 function UpdateConditionBoxLocation(zoom_level) {
-  var side_by_side_divs = document.querySelectorAll(
-    'div[class^="side-by-side-div"]'
-  );
+  var candidates = document.querySelectorAll('div[class^="side-by-side-div"]');
+
+  var side_by_side_divs = Array.from(candidates).filter(div => {
+    let regex = new RegExp(`side-by-side-div-.*?-${global_source_workspace}`);
+    return regex.test(div.className);
+  });
+
+  console.log("side_by_side_divs content", side_by_side_divs);
   var current_index = 0;
   for (
     current_index = 0;
@@ -1174,7 +1226,7 @@ function UpdateConditionBoxLocation(zoom_level) {
     var child_divs_keyword_list = ["target", "head", "field3", "field4"];
     var child_div_classname = side_by_side_divs[current_index].className;
     var child_div_classname_chunks = child_div_classname.split("-");
-
+    console.log(child_div_classname_chunks, child_div_classname_chunks[child_div_classname_chunks.length - 1]);
     if (
       !child_divs_keyword_list.includes(
         child_div_classname_chunks[child_div_classname_chunks.length - 1]
@@ -1187,6 +1239,8 @@ function UpdateConditionBoxLocation(zoom_level) {
       var svg_elements = document.querySelectorAll(`svg[class^="connection"]`);
       var svg_index = -1;
       for (svg_index = 0; svg_index < svg_elements.length; svg_index++) {
+        console.log("1195", svg_elements[svg_index].className.baseVal.replaceAll(" ", "-"));
+        console.log("1196", child_div_classname_chunks.slice(4).join("-"));
         if (
           svg_elements[svg_index].className.baseVal.replaceAll(" ", "-") ==
           child_div_classname_chunks.slice(4).join("-")
@@ -1195,11 +1249,10 @@ function UpdateConditionBoxLocation(zoom_level) {
           break;
         }
       }
-
       var path_box = svg_elements[svg_index].querySelector("path.main-path");
       var path_pos_data = path_box.getBoundingClientRect();
       
-      if (path_pos_data.width == 0 || path_pos_data.height == 0) {
+      if (path_pos_data.width == 0 && path_pos_data.height == 0) {
         // This is a hacky way to deal with the situation where the path is not rendered yet.
         return;
       }
@@ -2306,7 +2359,13 @@ function enableAllActionModules(){
 }
 
 function controlSwitch(target_workspace){
-  console.log(target_workspace);
+  // Turn off headers and actions before switch. */
+  if (!display_headers_page) {
+    HeaderDisplaySetting();
+  } 
+  if (!display_actions_page) {
+    ActionDisplaySetting();
+  }
   /* General flow: Switches workspace and drawflow editor to the new workspace. */  
   /* If the target workspace has not been initialized, initialize it. */
   if (!(target_workspace in global_flow_editors)) {
@@ -2881,8 +2940,8 @@ function attachSVGDisplayBox(query_id){
 
   div1.classList.add(`side-by-side-div-${query_id}-switch-head`);
   div2.classList.add(`side-by-side-div-${query_id}-switch-target`);
-  div3.classList.add("side-by-side-div-field3");
-  div4.classList.add("side-by-side-div-field4");
+  div3.classList.add(`side-by-side-div-${query_id}-field3`);
+  div4.classList.add(`side-by-side-div-${query_id}-field4`);
   subdivs = [div1, div2, div3, div4];
 
   outerdiv.appendChild(div1);
@@ -2906,4 +2965,15 @@ function attachSVGDisplayBox(query_id){
   outerdiv.style.textAlign = "center";
 
   return outerdiv;
+}
+
+
+function closeIDEHelp() {
+    var element = document.querySelector("div.ide-help-page");
+    element.style.display = "none";
+}
+
+function openIDEHelp() {
+    var element = document.querySelector("div.ide-help-page");
+    element.style.display = "block";
 }

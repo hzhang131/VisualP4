@@ -18,10 +18,10 @@
   display: flex;
   flex-direction: row;
   position: fixed;
-  top: 95%;
+  bottom: 0;
   right: 0;
   width: 100%;
-  height: 15%;
+  height: 5%;
   background-color: #ababab;
   float: left;
   z-index: 5;
@@ -725,4 +725,62 @@ button:hover {
   border-top-right-radius: 5px;
   border-bottom-right-radius: 5px;
   margin-left: 10px;
+}
+
+.action-text {
+  margin: auto 8px;
+  font-size: 20px;
+  text-align: center;
+}
+
+.action-input {
+  flex-grow: 1;
+  margin: auto;
+  background: transparent;
+  font-size: 20px;
+  border: 1px solid #ccc;  /* You can modify this as per your color scheme */
+  padding: 4px 8px;
+  border-radius: 4px;     /* Adds a bit of curvature to the input's border */
+  outline: none;          /* Removes the default browser outline */
+  transition: border-color 0.3s; /* Optional: Smooth transition on focus */
+}
+
+.action-input:focus {
+  border-color: #007BFF;  /* Change color when the input is focused */
+}
+
+.github-logo a:hover img, .p4logo a:hover img {
+  transform: scale(1.1);    /* Scales the image to 110% of its original size */
+  transition: transform 0.3s ease-in-out; /* Smooth transition effect */
+}
+
+/* Ensure the images don't overflow or shift other content while scaling */
+.github-logo, .p4logo {
+  overflow: hidden;
+}
+
+.visualp4-logo {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Sample font */
+  font-size: 24px;
+  color: #008080; /* Matching the color you used for buttons */
+  text-shadow: 2px 2px 4px #aaa; /* Give it a slight shadow for depth */
+  border: 2px solid #008080;
+  padding: 5px 15px;
+  border-radius: 25px;
+  background-color: rgba(255, 255, 255, 0.1); /* Slight white background for visibility */
+  margin-right: 10px; /* Spacing between the logo and the author's name */
+}
+
+.visualp4-img {
+  max-width: 200px; /* Adjust based on your logo's dimensions and how it fits */
+  max-height: 50px; /* Adjust based on your logo's dimensions and how it fits */
+  margin-left: 10px;
+  margin-right: 10px; /* Spacing between the logo and the author's name */
+}
+
+.author-name {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Sample font */
+  font-size: 18px; /* Smaller font size than the logo */
+  color: #008080; /* Matching the color you used for buttons */
+  align-self: center;
 }

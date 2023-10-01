@@ -20,6 +20,8 @@ from myapp import views
 
 urlpatterns = [
     path("", views.index, name="index"),
+    path("VisualP4_logo.png", views.p4logo, name="p4logo"),
+    path("onboarding.pdf", views.onboarding, name="onboarding"),
     path("HPD/", views.header_metadata_pagefile, name="headers_page"),
     path("APD/", views.action_metadata_pagefile, name="actions_page"),
 ]

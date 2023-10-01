@@ -1,6 +1,33 @@
 /* Helper functions. */
-function UpdateConditionBoxLocation(zoom_level){
-  var side_by_side_divs = document.querySelectorAll('div[class^="side-by-side-div"]');
+function checkCurrentWorkspace(element=null){
+  let drawflowNodes;
+  if (element) {
+    drawflowNodes = element.querySelectorAll('div[class^="drawflow-node"]');
+  } else {
+    drawflowNodes = document.querySelectorAll('div[class^="drawflow-node"]');
+  }
+  
+  let results = [];
+
+  drawflowNodes.forEach(node => {
+      let classList = node.className.split(' ');
+      let index = classList.indexOf('generic');
+      if (index !== -1 && classList[index + 1] && (classList[index + 2] === 'prev' || classList[index + 2] === 'post')) {
+          results.push(classList[index + 1]);
+      }
+  });
+  console.log(results[0]);
+  return results[0];
+}
+
+function UpdateConditionBoxLocation(zoom_level, element=null){
+  var candidates = document.querySelectorAll('div[class^="side-by-side-div"]');
+  var element = this.connection_selected.parentElement.parentElement;
+  var side_by_side_divs = Array.from(candidates).filter(div => {
+    let regex = new RegExp(`side-by-side-div-.*?-${checkCurrentWorkspace(element)}`);
+    return regex.test(div.className);
+  });
+
   var current_index = 0;
   for (current_index = 0; current_index < side_by_side_divs.length; current_index++){
     var child_divs_keyword_list = ["target", "head", "field3", "field4"];
@@ -42,8 +69,13 @@ function UpdateConditionBoxLocation(zoom_level){
   }
 }
 
-function CheckStalePathBox(){
-  var side_by_side_divs = document.querySelectorAll('div[class^="side-by-side-div"]');
+function CheckStalePathBox(zoom_level, element=null){
+  var candidates = document.querySelectorAll('div[class^="side-by-side-div"]');
+
+  var side_by_side_divs = Array.from(candidates).filter(div => {
+    let regex = new RegExp(`side-by-side-div-.*?-${checkCurrentWorkspace(element)}`);
+    return regex.test(div.className);
+  });
   var current_index = 0;
   for (current_index = 0; current_index < side_by_side_divs.length; current_index++){
     var child_divs_keyword_list = ["target", "head", "field3", "field4"];
@@ -405,6 +437,7 @@ class Drawflow {
         }
 
         if(this.connection_selected) {
+          console.log("hit line 440!!");
           this.removeConnection();
         }
 
@@ -414,11 +447,11 @@ class Drawflow {
           this.dispatch('nodeUnselected', true);
         }
         if(this.connection_selected != null) {
+          console.log("hit line 450!!!");
           this.connection_selected.classList.remove("selected");
           this.removeReouteConnectionSelected();
           this.connection_selected = null;
         }
-        CheckStalePathBox();
       break;    
 
       default:
@@ -461,7 +494,8 @@ class Drawflow {
       y = this.canvas_y + (-(this.pos_y - e_pos_y))
       this.dispatch('translate', { x: x, y: y});
       this.precanvas.style.transform = "translate("+x+"px, "+y+"px) scale("+this.zoom+")";
-      UpdateConditionBoxLocation(this.zoom);
+      var element = this.editor_selected.parentElement;
+      UpdateConditionBoxLocation(this.zoom, element);
       console.log("466");
     }
     if(this.drag) {
@@ -476,8 +510,8 @@ class Drawflow {
 
       this.drawflow.drawflow[this.module].data[this.ele_selected.id.slice(5)].pos_x = (this.ele_selected.offsetLeft - x);
       this.drawflow.drawflow[this.module].data[this.ele_selected.id.slice(5)].pos_y = (this.ele_selected.offsetTop - y);
-
-      this.updateConnectionNodes(this.ele_selected.id);
+      var element = this.ele_selected.parentElement;
+      this.updateConnectionNodes(this.ele_selected.id, element);
       
       /* To make programming more simple, I am fetching ***EVERY PATH FROM THE HTML FILE***. 
          Of course, there might be many more better solutions. However, it is NOT on the highest priority for now!
@@ -594,6 +628,8 @@ class Drawflow {
           this.connection_ele.classList.add("node_out_"+output_id);
           this.connection_ele.classList.add(output_class);
           this.connection_ele.classList.add(input_class);
+          var element = this.connection_ele.parentElement.parentElement;
+          this.connection_ele.classList.add(checkCurrentWorkspace(element));
           var id_input = input_id.slice(5);
           var id_output = output_id.slice(5);
 
@@ -668,19 +704,9 @@ class Drawflow {
           /* Temporary solution to get it moving, not ideal in the long run. */
           /* Eventually, button contented will be dynamically generated. */
           var connection_id = this.connection_selected.parentElement.className.baseVal;
-          let element = this.connection_selected.parentElement.parentElement;
-          let drawflowNodes = element.querySelectorAll('.drawflow-node.generic');
-          let results = [];
-
-          drawflowNodes.forEach(node => {
-              let classList = node.className.split(' ');
-              let index = classList.indexOf('generic');
-              if (index !== -1 && classList[index + 1] && (classList[index + 2] === 'prev' || classList[index + 2] === 'post')) {
-                  results.push(classList[index + 1]);
-              }
-          });
-          let current_workspace = results[0];
-          
+          var element = this.connection_selected.parentElement.parentElement;
+          let current_workspace = checkCurrentWorkspace(element);
+          console.log("current workspace: " + current_workspace);
           if (current_workspace == "parser"){
             conditionbox.classList.add('condition-selector');
             conditionbox.innerHTML = `<div class="condition-box"> 
@@ -697,7 +723,9 @@ class Drawflow {
                                     </div>`;
           } else {
             // Outputs nothing... Let's do drag and drop.
-            conditionbox.innerHTML = ``;
+            conditionbox.classList.add('condition-selector');
+            conditionbox.innerHTML = "Please select branching conditions from the control variables tab."
+            console.log("Outputs nothing, let's do drag and drop!!!")
           }
           
           // Position the condition box right above the deletebox. */
@@ -841,7 +869,6 @@ class Drawflow {
     var path = document.createElementNS('http://www.w3.org/2000/svg',"path");
     path.classList.add("main-path");
     path.setAttributeNS(null, 'd', '');
-    // path.innerHTML = 'a';
     connection.classList.add("connection");
     connection.appendChild(path);
     this.precanvas.appendChild(connection);
@@ -903,6 +930,7 @@ class Drawflow {
           connection.classList.add("node_out_node-"+id_output);
           connection.classList.add(output_class);
           connection.classList.add(input_class);
+
           connection.appendChild(path);
           this.precanvas.appendChild(connection);
           this.updateConnectionNodes('node-'+id_output);
@@ -1899,6 +1927,9 @@ class Drawflow {
     this.removeConnectionNodeId(id);
     var moduleName = this.getModuleFromNodeId(id.slice(5))
     if(this.module === moduleName) {
+      if (this.container.querySelector(`#${id}`).parentElement.parentElement.nextElementSibling){
+        this.container.querySelector(`#${id}`).parentElement.parentElement.nextElementSibling.remove();
+      }
       this.container.querySelector(`#${id}`).remove();
     }
     delete this.drawflow.drawflow[moduleName].data[id.slice(5)];
@@ -1908,8 +1939,11 @@ class Drawflow {
   removeConnection() {
     if(this.connection_selected != null) {
       var listclass = this.connection_selected.parentElement.classList;
+      let nextSibling = this.connection_selected.parentElement.parentElement.nextElementSibling;
+      if (nextSibling) {
+        nextSibling.remove();
+      }
       this.connection_selected.parentElement.remove();
-      //console.log(listclass);
       var index_out = this.drawflow.drawflow[this.module].data[listclass[2].slice(14)].outputs[listclass[3]].connections.findIndex(function(item,i) {
         return item.node === listclass[1].slice(13) && item.output === listclass[4]
       });

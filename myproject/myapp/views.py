@@ -1,11 +1,25 @@
 from django.shortcuts import render
-from django.http import JsonResponse
+from django.http import FileResponse, JsonResponse
 import os
 
 
 # Create your views here.
 def index(request):
     return render(request, "index.html")
+
+
+def onboarding(request):
+    file_path = "./myapp/templates/onboarding.pdf"
+    response = FileResponse(open(file_path, "rb"), content_type="application/pdf")
+    response["Content-Disposition"] = 'inline; filename="onboarding.pdf"'
+    return response
+
+
+def p4logo(request):
+    file_path = "./myapp/templates/VisualP4_logo.png"
+    response = FileResponse(open(file_path, "rb"), content_type="application/pdf")
+    response["Content-Disposition"] = 'inline; filename="VisualP4_logo.png"'
+    return response
 
 
 def header_metadata_pagefile(request):
