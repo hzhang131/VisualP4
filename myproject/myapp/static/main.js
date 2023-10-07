@@ -22,15 +22,18 @@ let display_actions_page = false;
 let init_load = true;
 let types = ["vars", "structs", "typedefs", "headers"];
 let global_source_workspace = "parser";
-let workspace_status_tracker_class_list = ["module-element", "dropdown-content-item"];
+let workspace_status_tracker_class_list = [
+  "module-element",
+  "dropdown-content-item",
+];
 let workspace_transition_dict = {
-  "parser": ["Begin", "VerifyChecksum", "begin", "verify-checksum"],
+  parser: ["Begin", "VerifyChecksum", "begin", "verify-checksum"],
   "verify-checksum": ["Parser", "Ingress", "parser", "ingress"],
-  "ingress": ["VerifyChecksum", "Egress", "verify-checksum", "egress"],
-  "egress": ["Ingress", "ComputeChecksum", "ingress", "compute-checksum"],
+  ingress: ["VerifyChecksum", "Egress", "verify-checksum", "egress"],
+  egress: ["Ingress", "ComputeChecksum", "ingress", "compute-checksum"],
   "compute-checksum": ["Egress", "Deparser", "egress", "deparser"],
-  "deparser": ["ComputeChecksum", "End", "compute-checksum", "end"],
-}
+  deparser: ["ComputeChecksum", "End", "compute-checksum", "end"],
+};
 let html_begin = `<p style="text-align:center; font-family:Courier, monospace;">
                     <svg width="40" height="40" xmlns="http://www.w3.org/2000/svg" style = "top: 24%; left: 10%;">
                         <image href="https://upload.wikimedia.org/wikipedia/commons/7/7e/Diamond_warning_sign.svg" width="40" height="40"/>
@@ -57,7 +60,7 @@ let highest_node_sequence = new Proxy(
   {},
   {
     get: (target, name) => (name in target ? target[name] : 0),
-  }
+  },
 );
 
 let highest_headers_page_variable_sequence = 0;
@@ -65,38 +68,38 @@ let highest_subfield_sequence_under_headers_page_variables = new Proxy(
   {},
   {
     get: (target, name) => (name in target ? target[name] : 0),
-  }
+  },
 );
 let variable_hub_enabled_dict = new Proxy(
   {},
   {
     get: (target, name) => (name in target ? target[name] : false),
-  }
+  },
 );
 let variable_hub_variable_count = new Proxy(
   {},
   {
     get: (target, name) => (name in target ? target[name] : 0),
-  }
+  },
 );
 
 let ACTION_STYLE_OVERRIDE = [
   "min-width: 400px;",
   "min-height: 100px;",
   "border-radius: 10px;",
-  "background: #DB3A34; align-items: baseline;"
+  "background: #DB3A34; align-items: baseline;",
 ];
 let STATE_STYLE_OVERRIDE = [
   "min-width: 400px;",
   "min-height: 100px;",
   "border-radius: 10px;",
-  "background: #DDCAD9; align-items: baseline;"
+  "background: #DDCAD9; align-items: baseline;",
 ];
 let TABLE_STYLE_OVERRIDE = [
   "min-width: 400px;",
   "min-height: 100px;",
   "border-radius: 10px;",
-  "background: #6A5B6E; align-items: baseline;"
+  "background: #6A5B6E; align-items: baseline;",
 ];
 let STYLE_OVERRIDE = {
   action: ACTION_STYLE_OVERRIDE,
@@ -168,7 +171,6 @@ let HTMLCONTENT_FIELDS = {
   table: TABLE_HTMLCONTENT_FIELDS,
 };
 
-
 let ACTION_STATEMENT = function (node_id, sequence_id) {
   switch (sequence_id) {
     case 0:
@@ -196,7 +198,7 @@ let ACTION_STATEMENT = function (node_id, sequence_id) {
               </button>
               `;
     default:
-      return '';
+      return "";
   }
 };
 
@@ -231,10 +233,10 @@ let STATEMENTS = {
 };
 
 let INJECT_HEADER_FUNCS = {
-  "vars": InjectVars,
-  "typedefs": InjectTypedefs,
-  "structs": InjectStructs,
-  "headers": InjectHeaders,
+  vars: InjectVars,
+  typedefs: InjectTypedefs,
+  structs: InjectStructs,
+  headers: InjectHeaders,
 };
 
 let state_extraction_targets = null;
@@ -242,11 +244,11 @@ let state_condition_targets = null;
 let raw_condition_html = null;
 
 /* pdf reader controls. */
-let pdfDoc = null, 
-    pageNum = 1, 
-    pageRendering = false, 
-    pageNumPending = null,
-    scale = 1.5;
+let pdfDoc = null,
+  pageNum = 1,
+  pageRendering = false,
+  pageNumPending = null,
+  scale = 1.5;
 let canvas, ctx;
 
 /******************************** Main Logic and functions *****************************/
@@ -258,7 +260,8 @@ window.addEventListener("DOMContentLoaded", function () {
   var codeTextArea = document.getElementById("code");
   height = window.innerHeight;
   var minLines = Math.trunc((height * 0.8) / 15) + 3;
-  var startingValue = "/**\nWelcome to the VisualP4 IDE!\nDevelopment Version: 2023.09.15\n**/";
+  var startingValue =
+    "/**\nWelcome to the VisualP4 IDE!\nDevelopment Version: 2023.09.15\n**/";
   for (var i = 0; i < minLines; i++) {
     startingValue += "\n";
   }
@@ -279,8 +282,26 @@ window.addEventListener("DOMContentLoaded", function () {
   global_flow_editor.start();
 
   var html_post = `<p style="text-align:center; font-family:Courier, monospace;">${workspace_transition_dict["parser"][1]}<i class="fa-solid fa-arrow-right fa-beat" style="margin-left: 8px;"></i></p>`;
-  global_flow_editor.addNode("New Node 1", 0, 1, 40, 400, `begin-sign`, {}, html_begin);
-  global_flow_editor.addNode("New Node 2", 1, 0, 1500, 400, "generic parser post", {}, html_post);
+  global_flow_editor.addNode(
+    "New Node 1",
+    0,
+    1,
+    40,
+    400,
+    `begin-sign`,
+    {},
+    html_begin,
+  );
+  global_flow_editor.addNode(
+    "New Node 2",
+    1,
+    0,
+    1500,
+    400,
+    "generic parser post",
+    {},
+    html_post,
+  );
   // put the flowchart editor into a dictionary.
   global_flow_editors[global_source_workspace] = global_flow_editor;
 
@@ -301,23 +322,29 @@ window.addEventListener("DOMContentLoaded", function () {
     .then((INIT_HEADER_PAGE_DATA) => {
       console.log("INIT_HEADER_PAGE_DATA object:", INIT_HEADER_PAGE_DATA);
       // Call other functions passing INIT_HEADER_PAGE_DATA as needed
-      state_extraction_targets = inferStateExtractionTarget(INIT_HEADER_PAGE_DATA);
-      state_condition_targets = inferStateConditionTarget(INIT_HEADER_PAGE_DATA);
+      state_extraction_targets = inferStateExtractionTarget(
+        INIT_HEADER_PAGE_DATA,
+      );
+      state_condition_targets = inferStateConditionTarget(
+        INIT_HEADER_PAGE_DATA,
+      );
     })
     .catch((error) => {
       console.error("Error:", error);
     });
 
-  injectLinkTargets_async().then(init_load = false);
-  
+  injectLinkTargets_async().then((init_load = false));
+
   /* Load ActionPageData */
-  ActionPageData(INIT_ACTION_PAGE_DATA).then((INIT_ACTION_PAGE_DATA) => {
-    // Automatically populate the action page with the data.
-    console.log("INIT_ACTION_PAGE_DATA object:", INIT_ACTION_PAGE_DATA)
-    populateActionPage(INIT_ACTION_PAGE_DATA);
-  }).catch((error) => {
-    console.error("Error:", error);
-  });
+  ActionPageData(INIT_ACTION_PAGE_DATA)
+    .then((INIT_ACTION_PAGE_DATA) => {
+      // Automatically populate the action page with the data.
+      console.log("INIT_ACTION_PAGE_DATA object:", INIT_ACTION_PAGE_DATA);
+      populateActionPage(INIT_ACTION_PAGE_DATA);
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+    });
 
   /* Listen to action search bar submit events. */
   let action_search_bar = document.querySelector(".actions-page-search-bar");
@@ -325,7 +352,7 @@ window.addEventListener("DOMContentLoaded", function () {
   action_search_bar_input.addEventListener("input", function (event) {
     event.preventDefault();
     let search_term = action_search_bar_input.value;
-    if (search_term == ""){
+    if (search_term == "") {
       enableAllActionModules();
     } else {
       searchActionPage(search_term);
@@ -337,9 +364,13 @@ window.addEventListener("DOMContentLoaded", function () {
   /* Observer to observe DOM changes. */
   const observer = new MutationObserver((mutationsList, observer) => {
     for (let mutation of mutationsList) {
-      if (mutation.type === 'childList') {
-        mutation.addedNodes.forEach(node => {
-          if (node.className instanceof SVGAnimatedString && node.className.baseVal === 'connection' && global_source_workspace !== "parser") {
+      if (mutation.type === "childList") {
+        mutation.addedNodes.forEach((node) => {
+          if (
+            node.className instanceof SVGAnimatedString &&
+            node.className.baseVal === "connection" &&
+            global_source_workspace !== "parser"
+          ) {
             node.addEventListener("dragover", (event) => {
               event.preventDefault();
             });
@@ -348,147 +379,217 @@ window.addEventListener("DOMContentLoaded", function () {
               // Create a new div, and then append it to the svg
               connection_id = node.className.baseVal.replace(/\s+/g, "-");
               outerdiv = attachSVGDisplayBox(connection_id);
-              let first_child = outerdiv.querySelector(':first-child');
-              const droppedData = event.dataTransfer.getData('text/plain');
+              let first_child = outerdiv.querySelector(":first-child");
+              const droppedData = event.dataTransfer.getData("text/plain");
               first_child.textContent = droppedData;
-              textSVGNode = node.parentElement.parentElement.querySelector(`div.${outerdiv.className}`);
+              textSVGNode = node.parentElement.parentElement.querySelector(
+                `div.${outerdiv.className}`,
+              );
               if (!textSVGNode) {
                 node.parentElement.parentElement.appendChild(outerdiv);
-                UpdateConditionBoxLocation(global_flow_editors[global_source_workspace].zoom);
-              } else if (textSVGNode.querySelector(`[class$="head"]`) && textSVGNode.querySelector(`[class$="head"]`).innerHTML !== droppedData) {
-                textSVGNode.querySelector(`[class$="head"]`).innerHTML = droppedData;
+                UpdateConditionBoxLocation(
+                  global_flow_editors[global_source_workspace].zoom,
+                );
+              } else if (
+                textSVGNode.querySelector(`[class$="head"]`) &&
+                textSVGNode.querySelector(`[class$="head"]`).innerHTML !==
+                  droppedData
+              ) {
+                textSVGNode.querySelector(`[class$="head"]`).innerHTML =
+                  droppedData;
               }
             });
           }
           // Override click default behavior for the non-parser workspaces.
-          if (node.className == "condition-selector" && global_source_workspace != "parser") {
+          if (
+            node.className == "condition-selector" &&
+            global_source_workspace != "parser"
+          ) {
             node.addEventListener("click", (event) => {
               event.preventDefault();
             });
           }
           if (workspace_status_tracker_class_list.includes(node.className)) {
             // Update status light  to yellow --> In progress
-            if (this.document.querySelector(`div#${global_source_workspace}-status-circle-lime`) != null){
-              this.document.querySelector(`div#${global_source_workspace}-status-circle-lime`).style.display = "none"
-              this.document.querySelector(`div#${global_source_workspace}-status-circle-yellow`).style.display = "inline-block";
-              this.document.querySelector(`div#${global_source_workspace}-status-circle-red`).style.display = "none";
-              this.document.querySelector(`div#${global_source_workspace}-status-circle-blue`).style.display = "none";
+            if (
+              this.document.querySelector(
+                `div#${global_source_workspace}-status-circle-lime`,
+              ) != null
+            ) {
+              this.document.querySelector(
+                `div#${global_source_workspace}-status-circle-lime`,
+              ).style.display = "none";
+              this.document.querySelector(
+                `div#${global_source_workspace}-status-circle-yellow`,
+              ).style.display = "inline-block";
+              this.document.querySelector(
+                `div#${global_source_workspace}-status-circle-red`,
+              ).style.display = "none";
+              this.document.querySelector(
+                `div#${global_source_workspace}-status-circle-blue`,
+              ).style.display = "none";
             }
           }
           // Add mutation event listener to the new action node.
-          if (node.className == "module-element" && 
-              node.id.includes("module-element-top-bar") &&
-              node.textContent.includes("Action") && !node.textContent.includes("Actions")) {
-              // Do something hehe
-              console.log(document.querySelector(`div.actions-page-items`));
-              let node_parent = node.parentElement;
-              node.addEventListener('input', function (e) {
-                var display = false;
-                // Look for all actions on the action page and try to find a match.
-                for (let index = 0; index < document.querySelectorAll(`input#action-input-field`).length; index++){
-                  element = document.querySelectorAll(`input#action-input-field`)[index];
-                  if (element.value.trim() == e.target.value) {
-                    // Match found. Extract the inputs of this action.
-                    action_match_head = element.parentElement.parentElement.parentElement;
-                    inputs = action_match_head.querySelectorAll(`div.formatable-input-field .input_argument-line`);
-                    var list_of_inputs = [];
-                    inputs.forEach((input) => {
-                      input.querySelectorAll('span').forEach((elem) => {list_of_inputs.push(elem.textContent)});
+          if (
+            node.className == "module-element" &&
+            node.id.includes("module-element-top-bar") &&
+            node.textContent.includes("Action") &&
+            !node.textContent.includes("Actions")
+          ) {
+            // Do something hehe
+            console.log(document.querySelector(`div.actions-page-items`));
+            let node_parent = node.parentElement;
+            node.addEventListener("input", function (e) {
+              var display = false;
+              // Look for all actions on the action page and try to find a match.
+              for (
+                let index = 0;
+                index <
+                document.querySelectorAll(`input#action-input-field`).length;
+                index++
+              ) {
+                element = document.querySelectorAll(`input#action-input-field`)[
+                  index
+                ];
+                if (element.value.trim() == e.target.value) {
+                  // Match found. Extract the inputs of this action.
+                  action_match_head =
+                    element.parentElement.parentElement.parentElement;
+                  inputs = action_match_head.querySelectorAll(
+                    `div.formatable-input-field .input_argument-line`,
+                  );
+                  var list_of_inputs = [];
+                  inputs.forEach((input) => {
+                    input.querySelectorAll("span").forEach((elem) => {
+                      list_of_inputs.push(elem.textContent);
                     });
-                    console.log(list_of_inputs);
-                    for (let i = 0; i < list_of_inputs.length; i = i + 2) {
-                      let type = list_of_inputs[i];
-                      let arg = list_of_inputs[i + 1];
-                      new_div = document.createElement("div");
-                      new_div.className = "module-element dropbox";
-                      new_div.id = `module-${node.id}-${type}-${arg}`;
-                      new_div.innerHTML = `${type} ${arg}`;
-                      new_div.style.fontSize = "20px";
-                      // This is a long and a messy onclick function. I am sorry.
-                      new_div.onclick = function() {
-                        const currentText = this.textContent;
-                        const inputElement = document.createElement('input');
-                        if (this.className.includes("complete-dropbox")) {
-                          this.className = this.className.replace("complete-dropbox", "dropbox");
+                  });
+                  console.log(list_of_inputs);
+                  for (let i = 0; i < list_of_inputs.length; i = i + 2) {
+                    let type = list_of_inputs[i];
+                    let arg = list_of_inputs[i + 1];
+                    new_div = document.createElement("div");
+                    new_div.className = "module-element dropbox";
+                    new_div.id = `module-${node.id}-${type}-${arg}`;
+                    new_div.innerHTML = `${type} ${arg}`;
+                    new_div.style.fontSize = "20px";
+                    // This is a long and a messy onclick function. I am sorry.
+                    new_div.onclick = function () {
+                      const currentText = this.textContent;
+                      const inputElement = document.createElement("input");
+                      if (this.className.includes("complete-dropbox")) {
+                        this.className = this.className.replace(
+                          "complete-dropbox",
+                          "dropbox",
+                        );
+                      }
+                      inputElement.type = "text";
+                      inputElement.value = currentText;
+                      const computedStyle = getComputedStyle(this);
+                      inputElement.style.width = computedStyle.width;
+                      inputElement.style.height = computedStyle.height;
+                      inputElement.style.fontSize = "20px";
+                      inputElement.style.backgroundColor = "transparent";
+                      inputElement.style.border = "none";
+                      inputElement.style.outline = "none";
+                      this.innerHTML = "";
+                      this.appendChild(inputElement);
+                      inputElement.focus();
+                      inputElement.select();
+                      inputElement.addEventListener("blur", revertToDiv);
+                      inputElement.addEventListener("keydown", function (e) {
+                        if (e.key === "Enter") {
+                          revertToDiv.call(this);
                         }
-                        inputElement.type = 'text';
-                        inputElement.value = currentText;
-                        const computedStyle = getComputedStyle(this);
-                        inputElement.style.width = computedStyle.width;
-                        inputElement.style.height = computedStyle.height;
-                        inputElement.style.fontSize = '20px';
-                        inputElement.style.backgroundColor = 'transparent';
-                        inputElement.style.border = 'none';
-                        inputElement.style.outline = 'none';
-                        this.innerHTML = '';
-                        this.appendChild(inputElement);
-                        inputElement.focus();
-                        inputElement.select();
-                        inputElement.addEventListener('blur', revertToDiv);
-                        inputElement.addEventListener('keydown', function(e) {
-                          if (e.key === 'Enter') {
-                            revertToDiv.call(this);
-                          }
-                        });
-                        function revertToDiv() {
-                          this.removeEventListener('blur', revertToDiv);
-                          const newText = this.value;
-                          const parentDiv = this.parentNode;
-                          
-                          // Create a new text node
-                          const textNode = document.createTextNode(newText);
-                          parentDiv.replaceChild(textNode, this);
-                          
-                          // Update class and event handlers as before
-                          parentDiv.className = 'module-element complete-dropbox data-is-set';
-                          parentDiv.onclick = this.onclick;
-                        }
-                      };                      
+                      });
+                      function revertToDiv() {
+                        this.removeEventListener("blur", revertToDiv);
+                        const newText = this.value;
+                        const parentDiv = this.parentNode;
 
-                      /* Dragover event when variable hub variables drags over individual elements. */
-                      new_div.addEventListener('dragover', function (event) {
-                        event.preventDefault();
-                        this.classList.add('hovering');
-                        if (this.className.includes("complete-dropbox")) {
-                          this.className = this.className.replace("complete-dropbox", "dropbox");
-                        }
-                      });
-                      
-                      // Remove the CSS class when drag leaves the element
-                      new_div.addEventListener('dragleave', function (event) {
-                        event.preventDefault();
-                        this.classList.remove('hovering');
-                        if (!this.className.includes("data-is-set") && this.className.includes("dropbox")){
-                          this.className = this.className.replace("dropbox", "complete-dropbox");
-                        }
-                      });
+                        // Create a new text node
+                        const textNode = document.createTextNode(newText);
+                        parentDiv.replaceChild(textNode, this);
 
-                      /* After dragover, we modify the content on that stuff. */
-                      new_div.addEventListener('drop', function (event) {
-                        event.preventDefault();
-                        if (this.className.includes("hovering")){
-                          this.classList.remove('hovering');
-                        }
-                        const droppedData = event.dataTransfer.getData('text/plain');
-                        this.innerHTML = droppedData;
-                        if (this.className.includes("dropbox")){
-                          this.className = this.className.replace("dropbox", "complete-dropbox");
-                        }
-                      });
-                      node_parent.appendChild(new_div);
-                    }
-                    display = true;
-                    break;
-                 } 
+                        // Update class and event handlers as before
+                        parentDiv.className =
+                          "module-element complete-dropbox data-is-set";
+                        parentDiv.onclick = this.onclick;
+                      }
+                    };
+
+                    /* Dragover event when variable hub variables drags over individual elements. */
+                    new_div.addEventListener("dragover", function (event) {
+                      event.preventDefault();
+                      this.classList.add("hovering");
+                      if (this.className.includes("complete-dropbox")) {
+                        this.className = this.className.replace(
+                          "complete-dropbox",
+                          "dropbox",
+                        );
+                      }
+                    });
+
+                    // Remove the CSS class when drag leaves the element
+                    new_div.addEventListener("dragleave", function (event) {
+                      event.preventDefault();
+                      this.classList.remove("hovering");
+                      if (
+                        !this.className.includes("data-is-set") &&
+                        this.className.includes("dropbox")
+                      ) {
+                        this.className = this.className.replace(
+                          "dropbox",
+                          "complete-dropbox",
+                        );
+                      }
+                    });
+
+                    /* After dragover, we modify the content on that stuff. */
+                    new_div.addEventListener("drop", function (event) {
+                      event.preventDefault();
+                      if (this.className.includes("hovering")) {
+                        this.classList.remove("hovering");
+                      }
+                      const droppedData =
+                        event.dataTransfer.getData("text/plain");
+                      this.innerHTML = droppedData;
+                      if (this.className.includes("dropbox")) {
+                        this.className = this.className.replace(
+                          "dropbox",
+                          "complete-dropbox",
+                        );
+                      }
+                    });
+                    node_parent.appendChild(new_div);
+                  }
+                  display = true;
+                  break;
                 }
-                if (display == false && node_parent.querySelectorAll(`div[id^="module-${node.id}-"]`).length > 0) {
-                  node_parent.querySelectorAll(`div[id^="module-${node.id}-"]`).forEach((elem) => {elem.remove();});
-                }
-              });
-            }
-          if (node.childNodes[0] && node.childNodes[0].className == "action-statement") {
+              }
+              if (
+                display == false &&
+                node_parent.querySelectorAll(`div[id^="module-${node.id}-"]`)
+                  .length > 0
+              ) {
+                node_parent
+                  .querySelectorAll(`div[id^="module-${node.id}-"]`)
+                  .forEach((elem) => {
+                    elem.remove();
+                  });
+              }
+            });
+          }
+          if (
+            node.childNodes[0] &&
+            node.childNodes[0].className == "action-statement"
+          ) {
             // Add event listener once the code statement is added
-            if (node.childNodes[4] && node.childNodes[4].id.slice(0, 4) == "code") {
+            if (
+              node.childNodes[4] &&
+              node.childNodes[4].id.slice(0, 4) == "code"
+            ) {
               codeTextArea = node.childNodes[4];
               editor = CodeMirror.fromTextArea(codeTextArea, {
                 lineNumbers: false,
@@ -500,16 +601,18 @@ window.addEventListener("DOMContentLoaded", function () {
             // Add event listener to the highlighted input text
             // Wait for the highlighted input text to be added first
             ((current_node) => {
-              waitForElement(() => node.querySelectorAll(`span.highlighted-type`))
-                .then(() => { 
-                  attachHighlightEventListener(current_node);
-                 });
+              waitForElement(() =>
+                node.querySelectorAll(`span.highlighted-type`),
+              ).then(() => {
+                attachHighlightEventListener(current_node);
+              });
             })(node);
 
             // Add event listener to the new input
-            node.addEventListener('input', function (e) {
+            node.addEventListener("input", function (e) {
               // Ensure the event is from an input element you want to autocomplete
-              if (e.target.className === 'autocompleteInput') { // I'm using a class name to identify relevant input elements
+              if (e.target.className === "autocompleteInput") {
+                // I'm using a class name to identify relevant input elements
                 let inputValue = e.target.value;
 
                 if (inputValue.includes(" ")) {
@@ -536,9 +639,9 @@ window.addEventListener("DOMContentLoaded", function () {
                   }
                 }
 
-                let span = node.querySelectorAll('span')[0];
+                let span = node.querySelectorAll("span")[0];
                 let span_id = span.id;
-                let span_id_split = span_id.split(' ');
+                let span_id_split = span_id.split(" ");
                 let node_id = span_id_split[1];
                 let sequence_id = span_id_split[2];
                 console.log(node_id, sequence_id);
@@ -546,25 +649,44 @@ window.addEventListener("DOMContentLoaded", function () {
                 for (let word of autoCompleteData) {
                   if (word.startsWith(inputValue)) {
                     // Only set the suggestion part to the span (subtracting what the user already typed)
-                    span.textContent = "↹ " + inputValue + word.substring(inputValue.length);
+                    span.textContent =
+                      "↹ " + inputValue + word.substring(inputValue.length);
                     break;
                   } else {
-                    span.textContent = "";  // If no match, show only the user's input
+                    span.textContent = ""; // If no match, show only the user's input
                   }
                 }
               }
-            }
-            );
-            node.addEventListener('input', function (event) {
-              if (event.target.tagName.toLowerCase() === 'textarea' && event.target.className.toLowerCase() == 'autocompleteinput') {
+            });
+            node.addEventListener("input", function (event) {
+              if (
+                event.target.tagName.toLowerCase() === "textarea" &&
+                event.target.className.toLowerCase() == "autocompleteinput"
+              ) {
                 const textarea = event.target;
                 if (textarea.selectionStart % 38 == 0) {
                   if (!textarea.style.height) {
-                    textarea.style.height = 64 + parseInt(window.getComputedStyle(textarea, null).getPropertyValue('line-height').slice(0, -2)) + "px";
+                    textarea.style.height =
+                      64 +
+                      parseInt(
+                        window
+                          .getComputedStyle(textarea, null)
+                          .getPropertyValue("line-height")
+                          .slice(0, -2),
+                      ) +
+                      "px";
                   } else {
-                    textarea.style.height = 64 + parseInt(window.getComputedStyle(textarea, null).getPropertyValue('line-height').slice(0, -2)) * parseInt(textarea.selectionStart / 38) + "px";
+                    textarea.style.height =
+                      64 +
+                      parseInt(
+                        window
+                          .getComputedStyle(textarea, null)
+                          .getPropertyValue("line-height")
+                          .slice(0, -2),
+                      ) *
+                        parseInt(textarea.selectionStart / 38) +
+                      "px";
                   }
-
                 }
               }
             });
@@ -576,14 +698,10 @@ window.addEventListener("DOMContentLoaded", function () {
 
   const config = {
     childList: true,
-    subtree: true
+    subtree: true,
   };
 
   observer.observe(document.body, config);
-
-  // pdf renderer params;
-  canvas = document.getElementById('pdf-renderer');
-  ctx = canvas.getContext('2d');
 });
 
 function reportWindowSize() {
@@ -634,19 +752,28 @@ function createFileTabs() {
 function createNewModule(type = null) {
   /* TODO: (Lower Priority) This function creates a new module and dump that module to a less cluttered area. */
   var html = `<p style="text-align:center; font-family:Courier, monospace;">Right click to select type</p>`;
-  node_id = global_flow_editors[global_source_workspace].addNode("New Node", 1, 1, 100, 300, `generic ${global_source_workspace}`, {}, html);
+  node_id = global_flow_editors[global_source_workspace].addNode(
+    "New Node",
+    1,
+    1,
+    100,
+    300,
+    `generic ${global_source_workspace}`,
+    {},
+    html,
+  );
   current_node = `node-${node_id}`;
   switch (global_source_workspace) {
     /* Mocking the existing workflow that we have. Could be completely streamlined!! */
     case "parser":
-      changeModuleType(current_node, 'state');
+      changeModuleType(current_node, "state");
       break;
 
     case "compute-checksum":
     case "verify-checksum":
     case "deparser":
       /* Default to action only for low activity controls */
-      changeModuleType(current_node, 'action');
+      changeModuleType(current_node, "action");
       break;
 
     case "ingress":
@@ -656,10 +783,10 @@ function createNewModule(type = null) {
         changeModuleType(current_node, type);
       } else {
         /* Fall back to table */
-        changeModuleType(current_node, 'table');
+        changeModuleType(current_node, "table");
       }
       break;
-  
+
     default:
       throw new Error("Not implemented yet.");
   }
@@ -673,7 +800,9 @@ function zoomLevelAdjust() {
 
 function changeModuleType(node_id, type) {
   // matches = document.getElementById(node_id);
-  matches = document.querySelector(`div#${node_id}.drawflow-node.generic.${global_source_workspace}`);
+  matches = document.querySelector(
+    `div#${node_id}.drawflow-node.generic.${global_source_workspace}`,
+  );
   /* Modify the node id to prevent further collisions down the road. */
   var class_name = matches.getAttribute("class");
   myArray = class_name.split(" ");
@@ -693,7 +822,7 @@ function changeModuleType(node_id, type) {
   /* Change drawflow-content-node to flex and flex-direction: column for better visuability. */
   matches.childNodes[1].setAttribute(
     "style",
-    "display: flex; flex-direction: column;"
+    "display: flex; flex-direction: column;",
   );
 }
 
@@ -735,7 +864,7 @@ function dropdownContentItemHandler(node_id, sequence_id, type, arg) {
   console.log(node_id, sequence_id, type, arg);
   // Update the button display.
   dropdown_button_info = document.getElementById(
-    `${type}-${node_id}-${sequence_id}`
+    `${type}-${node_id}-${sequence_id}`,
   );
   // Match statement id here.
   lala = dropdown_button_info.querySelector(".dropdown .dropdown-item");
@@ -746,13 +875,15 @@ function dropdownContentItemConnectionHandler(id, category, arg) {
   // Place an id here.
   var query_id = id.replaceAll(" ", "-");
   var query_class_name = id.replaceAll(" ", ".");
-  var toplevel_drawflow = document.querySelector(`.drawflow-child.parent-drawflow#drawflow-${global_source_workspace}`);
+  var toplevel_drawflow = document.querySelector(
+    `.drawflow-child.parent-drawflow#drawflow-${global_source_workspace}`,
+  );
   console.log(toplevel_drawflow);
   console.log(
     toplevel_drawflow.querySelectorAll(`div.side-by-side-div-${query_id}`)
-      .length
+      .length,
   );
-  
+
   /* Since I know the id of the thing, I can try grab the location data from it. */
   connection_box = document.querySelector(`svg.${query_class_name}`);
   path_box = connection_box.querySelector("path.main-path");
@@ -791,7 +922,8 @@ function dropdownContentItemConnectionHandler(id, category, arg) {
     outerdiv.style.height = "auto";
     outerdiv.style.padding = "5px 10px";
     outerdiv.style.display = "inline-flex";
-    outerdiv.style.fontFamily = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
+    outerdiv.style.fontFamily =
+      "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
     outerdiv.style.fontSize = "14px";
     outerdiv.style.fontWeight = "normal";
     outerdiv.style.position = "absolute";
@@ -803,10 +935,10 @@ function dropdownContentItemConnectionHandler(id, category, arg) {
 
   /* Update display content.*/
   current_side_by_side = toplevel_drawflow.querySelector(
-    `div.side-by-side-div-${query_id}`
+    `div.side-by-side-div-${query_id}`,
   );
   category_level_div = current_side_by_side.querySelector(
-    `div.side-by-side-div-${query_id}-${category}`
+    `div.side-by-side-div-${query_id}-${category}`,
   );
   if (category_level_div) {
     category_level_div.innerHTML = `<p>${arg}&nbsp;</p>`;
@@ -833,7 +965,7 @@ function dropdownContentItemConnectionHandler(id, category, arg) {
 function dropdownDivRemove(node_id, sequence_id) {
   // Get an element from the div stack and remove it from the div stack.
   const element_to_remove = document.getElementById(
-    `statement-${node_id}-${sequence_id}`
+    `statement-${node_id}-${sequence_id}`,
   );
   element_to_remove.remove();
   // TODO: Every onclick requires updating data in a persistant data storage.
@@ -849,9 +981,12 @@ function CodeDisplaySetting() {
 }
 
 function HeaderDisplaySetting() {
-  document.querySelector(`button#${global_source_workspace}`).style.background = "linear-gradient(to bottom, #91c3e0, #609cb2)";
-  document.querySelector(`button#actions-button`).style.background = "linear-gradient(to bottom, #91c3e0, #609cb2)";
-  document.querySelector(`button#headers-button`).style.background = "linear-gradient(to bottom, #406a7e, #30505e)";
+  document.querySelector(`button#${global_source_workspace}`).style.background =
+    "linear-gradient(to bottom, #91c3e0, #609cb2)";
+  document.querySelector(`button#actions-button`).style.background =
+    "linear-gradient(to bottom, #91c3e0, #609cb2)";
+  document.querySelector(`button#headers-button`).style.background =
+    "linear-gradient(to bottom, #406a7e, #30505e)";
 
   const headersPage = document.querySelector(".headers-page");
   const actionsPage = document.querySelector(".actions-page");
@@ -860,21 +995,28 @@ function HeaderDisplaySetting() {
     if (!display_actions_page) {
       actionsPage.classList.remove("show");
       display_actions_page = !display_actions_page;
-      document.querySelector(`button#actions-button`).style.background = "linear-gradient(to bottom, #91c3e0, #609cb2)";
+      document.querySelector(`button#actions-button`).style.background =
+        "linear-gradient(to bottom, #91c3e0, #609cb2)";
     }
     headersPage.classList.add("show");
   } else {
     headersPage.classList.remove("show");
-    document.querySelector(`button#${global_source_workspace}`).style.background = "linear-gradient(to bottom, #406a7e, #30505e)";
-    document.querySelector(`button#headers-button`).style.background = "linear-gradient(to bottom, #91c3e0, #609cb2)";
+    document.querySelector(
+      `button#${global_source_workspace}`,
+    ).style.background = "linear-gradient(to bottom, #406a7e, #30505e)";
+    document.querySelector(`button#headers-button`).style.background =
+      "linear-gradient(to bottom, #91c3e0, #609cb2)";
   }
   display_headers_page = !display_headers_page;
 }
 
 function ActionDisplaySetting() {
-  document.querySelector(`button#${global_source_workspace}`).style.background = "linear-gradient(to bottom, #91c3e0, #609cb2)";
-  document.querySelector(`button#headers-button`).style.background = "linear-gradient(to bottom, #91c3e0, #609cb2)";
-  document.querySelector(`button#actions-button`).style.background = "linear-gradient(to bottom, #406a7e, #30505e)";
+  document.querySelector(`button#${global_source_workspace}`).style.background =
+    "linear-gradient(to bottom, #91c3e0, #609cb2)";
+  document.querySelector(`button#headers-button`).style.background =
+    "linear-gradient(to bottom, #91c3e0, #609cb2)";
+  document.querySelector(`button#actions-button`).style.background =
+    "linear-gradient(to bottom, #406a7e, #30505e)";
 
   const headersPage = document.querySelector(".headers-page");
   const actionsPage = document.querySelector(".actions-page");
@@ -883,13 +1025,17 @@ function ActionDisplaySetting() {
     if (!display_headers_page) {
       headersPage.classList.remove("show");
       display_headers_page = !display_headers_page;
-      document.querySelector(`button#headers-button`).style.background = "linear-gradient(to bottom, #91c3e0, #609cb2)";
+      document.querySelector(`button#headers-button`).style.background =
+        "linear-gradient(to bottom, #91c3e0, #609cb2)";
     }
     actionsPage.classList.add("show");
   } else {
     actionsPage.classList.remove("show");
-    document.querySelector(`button#${global_source_workspace}`).style.background = "linear-gradient(to bottom, #406a7e, #30505e)";
-    document.querySelector(`button#actions-button`).style.background = "linear-gradient(to bottom, #91c3e0, #609cb2)";
+    document.querySelector(
+      `button#${global_source_workspace}`,
+    ).style.background = "linear-gradient(to bottom, #406a7e, #30505e)";
+    document.querySelector(`button#actions-button`).style.background =
+      "linear-gradient(to bottom, #91c3e0, #609cb2)";
   }
   display_actions_page = !display_actions_page;
 }
@@ -905,12 +1051,15 @@ function ActionPageData(initialData) {
       .then((actions) => {
         actions = JSON.parse(actions);
         console.log("actions:", actions);
-        for (let action_index in actions){
+        for (let action_index in actions) {
           for (let index = 0; index < actions[action_index].length; index++) {
             const FileObj = actions[action_index][index];
             const key = Object.keys(FileObj)[0];
             const value = Object.values(FileObj)[0];
-            actionPageData[key] = {"code": value, "metadata": extractActionCore(value)};
+            actionPageData[key] = {
+              code: value,
+              metadata: extractActionCore(value),
+            };
             autoCompleteData.push(actionPageData[key]["metadata"]["name"]);
           }
         }
@@ -925,7 +1074,6 @@ function ActionPageData(initialData) {
       });
   });
 }
-
 
 function HeaderPageData(INIT_HEADER_PAGE_DATA) {
   // Reads the initial header data stored in './HPD/'
@@ -943,11 +1091,16 @@ function HeaderPageData(INIT_HEADER_PAGE_DATA) {
           var raw_json = files[i][file_name];
           var jsonData = JSON.parse(raw_json);
           INJECT_HEADER_FUNCS[file_name.slice(0, -5)](
-            document.querySelector(`.headers-page-item#${file_name.slice(0, -5)}`),
-            jsonData
+            document.querySelector(
+              `.headers-page-item#${file_name.slice(0, -5)}`,
+            ),
+            jsonData,
           );
           INIT_HEADER_PAGE_DATA[file_name.slice(0, -5)] = jsonData;
-          console.log("JSON data stored in INIT_HEADER_PAGE_DATA:", file_name.slice(0, -5));
+          console.log(
+            "JSON data stored in INIT_HEADER_PAGE_DATA:",
+            file_name.slice(0, -5),
+          );
         }
       })
       .then(() => {
@@ -1030,7 +1183,9 @@ function InjectVars(html_block, vars) {
       </div>
     `;
     }
-    highest_subfield_sequence_under_headers_page_variables[highest_headers_page_variable_sequence] += 1;
+    highest_subfield_sequence_under_headers_page_variables[
+      highest_headers_page_variable_sequence
+    ] += 1;
     highest_headers_page_variable_sequence += 1;
   }
 
@@ -1051,9 +1206,15 @@ function InjectHeaders(html_block, headers) {
       <div class="data-container" id = "${highest_headers_page_variable_sequence}">
         <div class="data-name">
           ${item.name}
-          <button class="btn" style="float:right; padding:0px; margin-right: 0px; top: -3px; position: relative;" onclick="changeDataContainerState('delete', '${highest_headers_page_variable_sequence}', 'headers', '${item.name}')"> <i class="fa-solid fa-circle-xmark fa-lg" style="color: #1f2551;"></i> </button>
-          <button class="btn" style="float:right; padding:0px; margin-right: 2px; top: -3px; position: relative;" onclick="changeDataContainerState('add', '${highest_headers_page_variable_sequence}', 'headers', '${item.name}')"> <i class="fa-solid fa-circle-plus fa-lg" style="color: #1f2551;"></i> </button>
-          <button class="btn" style="float:right; padding:0px; margin-right: 2px; top: -3px; position: relative;" onclick="changeDataContainerState('edit', '${highest_headers_page_variable_sequence}', 'headers', '${item.name}')"> <i class="fa-solid fa-pen-to-square fa-lg" style="color: #1f2551;"></i> </button>
+          <button class="btn" style="float:right; padding:0px; margin-right: 0px; top: -3px; position: relative;" onclick="changeDataContainerState('delete', '${highest_headers_page_variable_sequence}', 'headers', '${
+            item.name
+          }')"> <i class="fa-solid fa-circle-xmark fa-lg" style="color: #1f2551;"></i> </button>
+          <button class="btn" style="float:right; padding:0px; margin-right: 2px; top: -3px; position: relative;" onclick="changeDataContainerState('add', '${highest_headers_page_variable_sequence}', 'headers', '${
+            item.name
+          }')"> <i class="fa-solid fa-circle-plus fa-lg" style="color: #1f2551;"></i> </button>
+          <button class="btn" style="float:right; padding:0px; margin-right: 2px; top: -3px; position: relative;" onclick="changeDataContainerState('edit', '${highest_headers_page_variable_sequence}', 'headers', '${
+            item.name
+          }')"> <i class="fa-solid fa-pen-to-square fa-lg" style="color: #1f2551;"></i> </button>
       </div>
         ${generateFieldsHTML(item.fields)}
       </div>
@@ -1064,7 +1225,7 @@ function InjectHeaders(html_block, headers) {
   html_block.innerHTML = tempHTML;
 
   function generateFieldsHTML(fields) {
-    var fieldsHTML = '';
+    var fieldsHTML = "";
     for (let i = 0; i < fields.length; i++) {
       var field = fields[i];
       fieldsHTML += `
@@ -1075,7 +1236,9 @@ function InjectHeaders(html_block, headers) {
           <button class="btn" style="float:right; padding:0px; margin-right: 5px; position: relative;" onclick = "editDataItem(${highest_headers_page_variable_sequence}, ${highest_subfield_sequence_under_headers_page_variables[highest_headers_page_variable_sequence]}, '${item.name}', 'headers')"> <i class="fa-solid fa-pen-to-square fa-lg" style="color: #1f2551;"></i> </button>
         </div>
       `;
-      highest_subfield_sequence_under_headers_page_variables[highest_headers_page_variable_sequence] += 1;
+      highest_subfield_sequence_under_headers_page_variables[
+        highest_headers_page_variable_sequence
+      ] += 1;
     }
     return fieldsHTML;
   }
@@ -1094,9 +1257,15 @@ function InjectStructs(html_block, structs) {
       <div class="data-container" id = "${highest_headers_page_variable_sequence}">
         <div class="data-name">
             ${item.name}
-            <button class="btn" style="float:right; padding:0px; margin-right: 0px; top: -3px; position: relative;" onclick="changeDataContainerState('delete', '${highest_headers_page_variable_sequence}', 'structs', '${item.name}')"> <i class="fa-solid fa-circle-xmark fa-lg" style="color: #1f2551;"></i> </button>
-            <button class="btn" style="float:right; padding:0px; margin-right: 2px; top: -3px; position: relative;" onclick="changeDataContainerState('add', '${highest_headers_page_variable_sequence}', 'structs', '${item.name}')"> <i class="fa-solid fa-circle-plus fa-lg" style="color: #1f2551;"></i> </button>
-            <button class="btn" style="float:right; padding:0px; margin-right: 2px; top: -3px; position: relative;" onclick="changeDataContainerState('edit', '${highest_headers_page_variable_sequence}', 'structs', '${item.name}')"> <i class="fa-solid fa-pen-to-square fa-lg" style="color: #1f2551;"></i> </button>
+            <button class="btn" style="float:right; padding:0px; margin-right: 0px; top: -3px; position: relative;" onclick="changeDataContainerState('delete', '${highest_headers_page_variable_sequence}', 'structs', '${
+              item.name
+            }')"> <i class="fa-solid fa-circle-xmark fa-lg" style="color: #1f2551;"></i> </button>
+            <button class="btn" style="float:right; padding:0px; margin-right: 2px; top: -3px; position: relative;" onclick="changeDataContainerState('add', '${highest_headers_page_variable_sequence}', 'structs', '${
+              item.name
+            }')"> <i class="fa-solid fa-circle-plus fa-lg" style="color: #1f2551;"></i> </button>
+            <button class="btn" style="float:right; padding:0px; margin-right: 2px; top: -3px; position: relative;" onclick="changeDataContainerState('edit', '${highest_headers_page_variable_sequence}', 'structs', '${
+              item.name
+            }')"> <i class="fa-solid fa-pen-to-square fa-lg" style="color: #1f2551;"></i> </button>
         </div>
         ${generateContentHTML(item.content)}
       </div>
@@ -1118,11 +1287,12 @@ function InjectStructs(html_block, structs) {
             <button class="btn" style="float:right; padding:0px; margin-right: 5px; position: relative;" onclick = "editDataItem(${highest_headers_page_variable_sequence}, ${highest_subfield_sequence_under_headers_page_variables[highest_headers_page_variable_sequence]}, '${item.name}', 'structs')"> <i class="fa-solid fa-pen-to-square fa-lg" style="color: #1f2551;"></i> </button>
           </div>
       `;
-      highest_subfield_sequence_under_headers_page_variables[highest_headers_page_variable_sequence] += 1;
+      highest_subfield_sequence_under_headers_page_variables[
+        highest_headers_page_variable_sequence
+      ] += 1;
     }
     return contentHTML;
   }
-
 }
 
 function InjectTypedefs(html_block, typedefs) {
@@ -1148,11 +1318,12 @@ function InjectTypedefs(html_block, typedefs) {
       </div>
     </div>
   `;
-    highest_subfield_sequence_under_headers_page_variables[highest_headers_page_variable_sequence] += 1;
+    highest_subfield_sequence_under_headers_page_variables[
+      highest_headers_page_variable_sequence
+    ] += 1;
     highest_headers_page_variable_sequence += 1;
   }
   html_block.innerHTML = tempHTML;
-
 }
 
 function addHeaderPageItem(type) {
@@ -1160,7 +1331,8 @@ function addHeaderPageItem(type) {
   /* To be replaced later. */
   var random_name_for_testing_only = Math.random().toString(36).slice(2, 7);
   switch (type) {
-    case "headers": selector.innerHTML += `
+    case "headers":
+      selector.innerHTML += `
                                           <div class="data-container" id = "${highest_headers_page_variable_sequence}">
                                             <div class="data-name">
                                                 ${random_name_for_testing_only}
@@ -1170,7 +1342,8 @@ function addHeaderPageItem(type) {
                                             </div>
                                           `;
       break;
-    case "typedefs": selector.innerHTML += `
+    case "typedefs":
+      selector.innerHTML += `
                                             <div class="data-container" id = "${highest_headers_page_variable_sequence}">
                                               <div class="data-name">
                                                   ${random_name_for_testing_only}
@@ -1180,7 +1353,8 @@ function addHeaderPageItem(type) {
                                               </div>
                                             `;
       break;
-    case "structs": selector.innerHTML += ` 
+    case "structs":
+      selector.innerHTML += ` 
                                             <div class="data-container" id = "${highest_headers_page_variable_sequence}">
                                             <div class="data-name">
                                                 ${random_name_for_testing_only}
@@ -1190,7 +1364,8 @@ function addHeaderPageItem(type) {
                                             </div>
                                           `;
       break;
-    case "vars": selector.innerHTML += ` 
+    case "vars":
+      selector.innerHTML += ` 
                                           <div class="data-container" id = "${highest_headers_page_variable_sequence}">
                                           <div class="data-name">
                                               ${random_name_for_testing_only}
@@ -1201,8 +1376,18 @@ function addHeaderPageItem(type) {
                                         `;
       break;
   }
-  console.log("add", highest_headers_page_variable_sequence, type, random_name_for_testing_only);
-  changeDataContainerState("add", highest_headers_page_variable_sequence, type, random_name_for_testing_only);
+  console.log(
+    "add",
+    highest_headers_page_variable_sequence,
+    type,
+    random_name_for_testing_only,
+  );
+  changeDataContainerState(
+    "add",
+    highest_headers_page_variable_sequence,
+    type,
+    random_name_for_testing_only,
+  );
   highest_headers_page_variable_sequence += 1;
 }
 
@@ -1211,7 +1396,7 @@ function addHeaderPageItem(type) {
 function UpdateConditionBoxLocation(zoom_level) {
   var candidates = document.querySelectorAll('div[class^="side-by-side-div"]');
 
-  var side_by_side_divs = Array.from(candidates).filter(div => {
+  var side_by_side_divs = Array.from(candidates).filter((div) => {
     let regex = new RegExp(`side-by-side-div-.*?-${global_source_workspace}`);
     return regex.test(div.className);
   });
@@ -1226,10 +1411,13 @@ function UpdateConditionBoxLocation(zoom_level) {
     var child_divs_keyword_list = ["target", "head", "field3", "field4"];
     var child_div_classname = side_by_side_divs[current_index].className;
     var child_div_classname_chunks = child_div_classname.split("-");
-    console.log(child_div_classname_chunks, child_div_classname_chunks[child_div_classname_chunks.length - 1]);
+    console.log(
+      child_div_classname_chunks,
+      child_div_classname_chunks[child_div_classname_chunks.length - 1],
+    );
     if (
       !child_divs_keyword_list.includes(
-        child_div_classname_chunks[child_div_classname_chunks.length - 1]
+        child_div_classname_chunks[child_div_classname_chunks.length - 1],
       )
     ) {
       // This indicates that this block is the block that we are looking for.
@@ -1239,7 +1427,10 @@ function UpdateConditionBoxLocation(zoom_level) {
       var svg_elements = document.querySelectorAll(`svg[class^="connection"]`);
       var svg_index = -1;
       for (svg_index = 0; svg_index < svg_elements.length; svg_index++) {
-        console.log("1195", svg_elements[svg_index].className.baseVal.replaceAll(" ", "-"));
+        console.log(
+          "1195",
+          svg_elements[svg_index].className.baseVal.replaceAll(" ", "-"),
+        );
         console.log("1196", child_div_classname_chunks.slice(4).join("-"));
         if (
           svg_elements[svg_index].className.baseVal.replaceAll(" ", "-") ==
@@ -1251,21 +1442,42 @@ function UpdateConditionBoxLocation(zoom_level) {
       }
       var path_box = svg_elements[svg_index].querySelector("path.main-path");
       var path_pos_data = path_box.getBoundingClientRect();
-      
+
       if (path_pos_data.width == 0 && path_pos_data.height == 0) {
         // This is a hacky way to deal with the situation where the path is not rendered yet.
         return;
       }
 
-      const coords = path_box.getAttribute('d').trim().split(' ').filter(coord => coord !== 'M' && coord !== 'C');
-      const filtered_coords = coords.filter(value => value.trim() !== '');
+      const coords = path_box
+        .getAttribute("d")
+        .trim()
+        .split(" ")
+        .filter((coord) => coord !== "M" && coord !== "C");
+      const filtered_coords = coords.filter((value) => value.trim() !== "");
       // Extract the four points
-      const point1 = { x: parseFloat(filtered_coords[0]), y: parseFloat(filtered_coords[1]) };
-      const point2 = { x: parseFloat(filtered_coords[2]), y: parseFloat(filtered_coords[3]) };
-      const point3 = { x: parseFloat(filtered_coords[4]), y: parseFloat(filtered_coords[5]) };
-      const point4 = { x: parseFloat(filtered_coords[6]), y: parseFloat(filtered_coords[7]) };
+      const point1 = {
+        x: parseFloat(filtered_coords[0]),
+        y: parseFloat(filtered_coords[1]),
+      };
+      const point2 = {
+        x: parseFloat(filtered_coords[2]),
+        y: parseFloat(filtered_coords[3]),
+      };
+      const point3 = {
+        x: parseFloat(filtered_coords[4]),
+        y: parseFloat(filtered_coords[5]),
+      };
+      const point4 = {
+        x: parseFloat(filtered_coords[6]),
+        y: parseFloat(filtered_coords[7]),
+      };
 
-      var near_horizontal_regions = findHorizontalRegions(point1, point2, point3, point4);
+      var near_horizontal_regions = findHorizontalRegions(
+        point1,
+        point2,
+        point3,
+        point4,
+      );
 
       var centerX, centerY, width, height, left, top;
       if (near_horizontal_regions.length == 0) {
@@ -1278,10 +1490,18 @@ function UpdateConditionBoxLocation(zoom_level) {
         left = centerX - width / 2; // Calculate the left position
         top = centerY - height / 2; // Calculate the top position
       } else {
-        var near_horizontal_region_x = near_horizontal_regions[near_horizontal_regions.length - 1].x;
-        var near_horizontal_region_y = near_horizontal_regions[near_horizontal_regions.length - 1].y;
-        centerX = path_pos_data.left + path_pos_data.width / 2 + near_horizontal_region_x;
-        centerY = path_pos_data.top + path_pos_data.height / 2 + near_horizontal_region_y;
+        var near_horizontal_region_x =
+          near_horizontal_regions[near_horizontal_regions.length - 1].x;
+        var near_horizontal_region_y =
+          near_horizontal_regions[near_horizontal_regions.length - 1].y;
+        centerX =
+          path_pos_data.left +
+          path_pos_data.width / 2 +
+          near_horizontal_region_x;
+        centerY =
+          path_pos_data.top +
+          path_pos_data.height / 2 +
+          near_horizontal_region_y;
 
         width = side_by_side_divs[current_index].offsetWidth;
         height = side_by_side_divs[current_index].offsetHeight;
@@ -1312,13 +1532,22 @@ function inferStateExtractionTarget(INIT_HEADER_PAGE_DATA) {
   for (let i = 0; i < state_target_header_info["content"].length; i++) {
     var type = state_target_header_info["content"][i]["type"];
     var name = state_target_header_info["content"][i]["name"];
+    extraction_targets.push(`hdr.${name}`);
     /* dive into all options under header `type` */
     for (let j = 0; j < INIT_HEADER_PAGE_DATA["headers"].length; j++) {
       if (type == INIT_HEADER_PAGE_DATA["headers"][j]["name"]) {
-        for (let k = 0; k < INIT_HEADER_PAGE_DATA["headers"][j]["fields"].length; k++) {
+        for (
+          let k = 0;
+          k < INIT_HEADER_PAGE_DATA["headers"][j]["fields"].length;
+          k++
+        ) {
           /* TODO: change it later!!!!! We should not hardcode hdr to extraction targets. */
-          extraction_targets.push(`hdr.${name}.${INIT_HEADER_PAGE_DATA["headers"][j]["fields"][k]["name"]}`);
-          autoCompleteData.push(`hdr.${name}.${INIT_HEADER_PAGE_DATA["headers"][j]["fields"][k]["name"]}`);
+          extraction_targets.push(
+            `hdr.${name}.${INIT_HEADER_PAGE_DATA["headers"][j]["fields"][k]["name"]}`,
+          );
+          autoCompleteData.push(
+            `hdr.${name}.${INIT_HEADER_PAGE_DATA["headers"][j]["fields"][k]["name"]}`,
+          );
         }
       }
     }
@@ -1343,15 +1572,25 @@ function updateStateExtractionTarget() {
   for (let i = 0; i < state_target_header_info["content"].length; i++) {
     var type = state_target_header_info["content"][i]["type"];
     var name = state_target_header_info["content"][i]["name"];
-    console.log("haha", type, name);
+    extraction_targets.push(`hdr.${name}`);
     /* dive into all options under header `type` */
     for (let j = 0; j < global_init_header_page_data["headers"].length; j++) {
-      console.log(type, global_init_header_page_data["headers"][j]["name"], type == global_init_header_page_data["headers"][j]["name"])
+      console.log(
+        type,
+        global_init_header_page_data["headers"][j]["name"],
+        type == global_init_header_page_data["headers"][j]["name"],
+      );
       if (type == global_init_header_page_data["headers"][j]["name"]) {
-        for (let k = 0; k < global_init_header_page_data["headers"][j]["fields"].length; k++) {
+        for (
+          let k = 0;
+          k < global_init_header_page_data["headers"][j]["fields"].length;
+          k++
+        ) {
           /* TODO: change it later!!!!! We should not hardcode hdr to extraction targets.*/
-          console.log(`hdr.${name}.${global_init_header_page_data["headers"][j]["fields"][k]["name"]}`);
-          extraction_targets.push(`hdr.${name}.${global_init_header_page_data["headers"][j]["fields"][k]["name"]}`);
+          // console.log(`hdr.${name}.${global_init_header_page_data["headers"][j]["fields"][k]["name"]}`);
+          extraction_targets.push(
+            `hdr.${name}.${global_init_header_page_data["headers"][j]["fields"][k]["name"]}`,
+          );
         }
       }
     }
@@ -1382,7 +1621,10 @@ function updateStateConditionTarget() {
 function resolveExtractionTargets() {
   return new Promise((resolve) => {
     const checkVariableType = setInterval(() => {
-      if (Array.isArray(state_extraction_targets) && Array.isArray(state_condition_targets)) {
+      if (
+        Array.isArray(state_extraction_targets) &&
+        Array.isArray(state_condition_targets)
+      ) {
         clearInterval(checkVariableType);
         resolve();
       }
@@ -1393,7 +1635,9 @@ function resolveExtractionTargets() {
 function resolveConditionHTML() {
   return new Promise((resolve, reject) => {
     const checkVariableType = setInterval(() => {
-      const dropdownElements = document.querySelectorAll('.condition-selector .dropdown');
+      const dropdownElements = document.querySelectorAll(
+        ".condition-selector .dropdown",
+      );
       console.log(dropdownElements);
       if (dropdownElements.length) {
         raw_condition_html = dropdownElements;
@@ -1407,17 +1651,16 @@ function resolveConditionHTML() {
       clearInterval(checkVariableType);
       reject();
     }, 100); // Set a timeout value for the rejection (e.g., 5 seconds)
-  })
-    .catch(() => {
-      // Do nothing if the promise is rejected
-    });
+  }).catch(() => {
+    // Do nothing if the promise is rejected
+  });
 }
 
 function replaceLastOccurrence(str, find, replaceWith) {
   let lastIndex = str.lastIndexOf(find);
 
   if (lastIndex === -1) {
-    return str;  // The substring was not found, return original string
+    return str; // The substring was not found, return original string
   }
 
   let beginning = str.substring(0, lastIndex);
@@ -1426,7 +1669,6 @@ function replaceLastOccurrence(str, find, replaceWith) {
   return beginning + replaceWith + ending;
 }
 
-
 async function injectLinkTargets_async() {
   await resolveExtractionTargets();
   await resolveConditionHTML();
@@ -1434,8 +1676,14 @@ async function injectLinkTargets_async() {
   injectLinkTargets_sync();
 }
 
-function injectLinkTargets_sync(init = true) {  
-  console.log("inside injectLinkTargets", init, raw_condition_html, state_condition_targets, state_extraction_targets);
+function injectLinkTargets_sync(init = true) {
+  console.log(
+    "inside injectLinkTargets",
+    init,
+    raw_condition_html,
+    state_condition_targets,
+    state_extraction_targets,
+  );
 
   if (state_condition_targets && state_extraction_targets) {
     /* Extract Link Target Menus */
@@ -1444,28 +1692,44 @@ function injectLinkTargets_sync(init = true) {
       temp_menu_html = "";
       temp_target_html = "";
       /* Extract ID */
-      var connection_id = raw_condition_html[0].querySelector(".dropdown-content").id;
+      var connection_id =
+        raw_condition_html[0].querySelector(".dropdown-content").id;
       console.log("line 1132, connection_id", connection_id);
       /* Inject menu functions. */
       for (let i = 0; i < state_extraction_targets.length; i++) {
-        temp_menu_html += `<button class="dropdown-content-item" onclick = 'dropdownContentItemConnectionHandler("${connection_id.slice(0, -9)}", "switch-head", "${state_extraction_targets[i]}: ")' style = "z-index: 2;">${state_extraction_targets[i]}</button>\n`;
+        temp_menu_html += `<button class="dropdown-content-item" onclick = 'dropdownContentItemConnectionHandler("${connection_id.slice(
+          0,
+          -9,
+        )}", "switch-head", "${
+          state_extraction_targets[i]
+        }: ")' style = "z-index: 2;">${state_extraction_targets[i]}</button>\n`;
       }
       /* Inject Conditions */
       for (let i = 0; i < state_condition_targets.length; i++) {
-        temp_target_html += `<button class="dropdown-content-item" onclick = 'dropdownContentItemConnectionHandler("${connection_id.slice(0, -9)}", "switch-target", "${state_condition_targets[i]}")' style = "z-index: 2;">${state_condition_targets[i]}</button>\n`;
+        temp_target_html += `<button class="dropdown-content-item" onclick = 'dropdownContentItemConnectionHandler("${connection_id.slice(
+          0,
+          -9,
+        )}", "switch-target", "${
+          state_condition_targets[i]
+        }")' style = "z-index: 2;">${state_condition_targets[i]}</button>\n`;
       }
 
-      raw_condition_html[0].querySelector(".dropdown-content").innerHTML = temp_menu_html;
-      raw_condition_html[1].querySelector(".dropdown-content").innerHTML = temp_target_html;
+      raw_condition_html[0].querySelector(".dropdown-content").innerHTML =
+        temp_menu_html;
+      raw_condition_html[1].querySelector(".dropdown-content").innerHTML =
+        temp_target_html;
     } else {
       /* Update dropdown extraction targets */
-      dropdownElements = document.querySelectorAll('div.dropdown[id^="target-node-"]');
+      dropdownElements = document.querySelectorAll(
+        'div.dropdown[id^="target-node-"]',
+      );
       for (let i = 0; i < dropdownElements.length; i++) {
         dropdownElement = dropdownElements[i];
         id = dropdownElement.id;
         node_id = id.split("-")[2];
         field_id = 0;
-        dropdownElementContent = dropdownElement.querySelector(".dropdown-content");
+        dropdownElementContent =
+          dropdownElement.querySelector(".dropdown-content");
         tempHTML = "";
         for (let i = 0; i < state_extraction_targets.length; i++) {
           tempHTML += `<button class="dropdown-content-item" onclick = 'dropdownContentItemConnectionHandler("node-${node_id}", "0", "target", "${state_extraction_targets[i]}: ")' style = "z-index: 2;">${state_extraction_targets[i]}</button>\n`;
@@ -1473,18 +1737,35 @@ function injectLinkTargets_sync(init = true) {
         dropdownElementContent.innerHTML = tempHTML;
       }
       /* Update dropdown condition targets */
-      const category_dropboxes = Array.from(document.querySelectorAll('[id$="-category"]'))
-                       .filter(el => el.id.startsWith('connection') && el.classList.contains('dropdown-content'));
-      const target_dropboxes = Array.from(document.querySelectorAll('[id$="-target"]'))
-                       .filter(el => el.id.startsWith('connection') && el.classList.contains('dropdown-content'));
-      
+      const category_dropboxes = Array.from(
+        document.querySelectorAll('[id$="-category"]'),
+      ).filter(
+        (el) =>
+          el.id.startsWith("connection") &&
+          el.classList.contains("dropdown-content"),
+      );
+      const target_dropboxes = Array.from(
+        document.querySelectorAll('[id$="-target"]'),
+      ).filter(
+        (el) =>
+          el.id.startsWith("connection") &&
+          el.classList.contains("dropdown-content"),
+      );
+
       /* Populate category */
       category_dropboxes.forEach((category_dropdown) => {
         connection_id = category_dropdown.id;
         tempHTML = "";
         // TODO: Let me find which onclick function to call, will be back real quick!!
         for (let i = 0; i < state_extraction_targets.length; i++) {
-          tempHTML += `<button class="dropdown-content-item" onclick = 'dropdownContentItemConnectionHandler("${connection_id.slice(0, -9)}", "switch-head", "${state_extraction_targets[i]}: ")' style = "z-index: 2;">${state_extraction_targets[i]}</button>\n`;
+          tempHTML += `<button class="dropdown-content-item" onclick = 'dropdownContentItemConnectionHandler("${connection_id.slice(
+            0,
+            -9,
+          )}", "switch-head", "${
+            state_extraction_targets[i]
+          }: ")' style = "z-index: 2;">${
+            state_extraction_targets[i]
+          }</button>\n`;
         }
         category_dropdown.innerHTML = tempHTML;
       });
@@ -1494,25 +1775,39 @@ function injectLinkTargets_sync(init = true) {
         tempHTML = "";
         /* Inject Conditions */
         for (let i = 0; i < state_condition_targets.length; i++) {
-          tempHTML += `<button class="dropdown-content-item" onclick = 'dropdownContentItemConnectionHandler("${connection_id.slice(0, -7)}", "switch-target", "${state_condition_targets[i]}")' style = "z-index: 2;">${state_condition_targets[i]}</button>\n`;
+          tempHTML += `<button class="dropdown-content-item" onclick = 'dropdownContentItemConnectionHandler("${connection_id.slice(
+            0,
+            -7,
+          )}", "switch-target", "${
+            state_condition_targets[i]
+          }")' style = "z-index: 2;">${state_condition_targets[i]}</button>\n`;
         }
         target_dropdown.innerHTML = tempHTML;
       });
-
     }
-    autoCompleteData = extractValues(global_init_header_page_data, autoCompleteData);
+    autoCompleteData = extractValues(
+      global_init_header_page_data,
+      autoCompleteData,
+    );
   } else {
     // Update value in global_init_header_page_data
     console.log("hits `else` in injectLinkTargets_sync");
   }
 }
 
-
-function changeDataContainerState(action, sequence_id, type, name = null, subfield = null) {
+function changeDataContainerState(
+  action,
+  sequence_id,
+  type,
+  name = null,
+  subfield = null,
+) {
   /* Planning to take in subfield as a string, exact format has not been decided yet... */
   switch (action) {
     case "add":
-      var element = document.querySelector(`.data-container[id="${sequence_id}"]`);
+      var element = document.querySelector(
+        `.data-container[id="${sequence_id}"]`,
+      );
       if (type == "headers" || type == "structs" || type == "vars") {
         temp_display_string = `temp-${sequence_id}-${highest_subfield_sequence_under_headers_page_variables[sequence_id]}  temp-${sequence_id}-${highest_subfield_sequence_under_headers_page_variables[sequence_id]}`;
       } else {
@@ -1523,17 +1818,26 @@ function changeDataContainerState(action, sequence_id, type, name = null, subfie
                                         <span> </span>
                                         <button class="btn" style="float:right; padding:0px; margin-right: 10px; position: relative;" onclick = "deleteDataItem(${sequence_id}, ${highest_subfield_sequence_under_headers_page_variables[sequence_id]}, '${name}', '${type}')"> <i class="fa-solid fa-circle-xmark fa-lg" style="color: #1f2551;"></i> </button>
                                         <button class="btn" style="float:right; padding:0px; margin-right: 5px; position: relative;" onclick = "editDataItem(${sequence_id}, ${highest_subfield_sequence_under_headers_page_variables[sequence_id]}, '${name}', '${type}')"> <i class="fa-solid fa-pen-to-square fa-lg" style="color: #1f2551;"></i> </button>
-                                      </div>`
+                                      </div>`;
       /* Add extraction targets to dropdown menus */
       if (name) {
         /* If name is not defined, that indicates changeDataContainerState is called from initial html injection. */
         console.log("add", type, sequence_id, name, `'${temp_display_string}'`);
 
-        syncDropdownContent("add", type, sequence_id, name, temp_display_string);
+        syncDropdownContent(
+          "add",
+          type,
+          sequence_id,
+          name,
+          temp_display_string,
+        );
       }
       highest_subfield_sequence_under_headers_page_variables[sequence_id] += 1;
       break;
-    case "delete": var element = document.querySelector(`.data-container[id="${sequence_id}"]`);
+    case "delete":
+      var element = document.querySelector(
+        `.data-container[id="${sequence_id}"]`,
+      );
       element.remove();
       /* Remove extraction targets to dropdown menus */
       syncDropdownContent("remove", type, sequence_id, name);
@@ -1541,16 +1845,20 @@ function changeDataContainerState(action, sequence_id, type, name = null, subfie
     case "edit":
       /* Edit the name of the main component. */
       /* Same logic as editing data items, for edit, then reformulate. */
-      var element = document.querySelector(`.data-container[id="${sequence_id}"]`);
+      var element = document.querySelector(
+        `.data-container[id="${sequence_id}"]`,
+      );
       var name_div = element.querySelector(`.data-name`);
       var divs_under_subfield = name_div.children;
 
       var string = name_div.textContent.trim();
-      divs_under_subfield[divs_under_subfield.length - 1].children[0].setAttribute('class', 'fa-solid fa-check fa-lg');
+      divs_under_subfield[
+        divs_under_subfield.length - 1
+      ].children[0].setAttribute("class", "fa-solid fa-check fa-lg");
       /* Convert something to a textbox with the option of an onclick. */
       /* Hacky solution... Modify the innerHTML of the thing directly. */
       // Create a regular expression using the variable
-      const regex = new RegExp(string, 'g');
+      const regex = new RegExp(string, "g");
       counter = 0;
       // Replace the first occurrence of the pattern with a specific value
       name_div.innerHTML = name_div.innerHTML.replace(regex, (match) => {
@@ -1561,65 +1869,106 @@ function changeDataContainerState(action, sequence_id, type, name = null, subfie
         return match;
       });
 
-      console.log(`reformulateDataName(${sequence_id}, "${type}", "${name}", "${subfield}")`);
-      divs_under_subfield[divs_under_subfield.length - 1].setAttribute('onclick', `reformulateDataName(${sequence_id}, "${type}", "${name}", "${subfield}")`);
+      console.log(
+        `reformulateDataName(${sequence_id}, "${type}", "${name}", "${subfield}")`,
+      );
+      divs_under_subfield[divs_under_subfield.length - 1].setAttribute(
+        "onclick",
+        `reformulateDataName(${sequence_id}, "${type}", "${name}", "${subfield}")`,
+      );
 
       break;
   }
 }
 
-function syncDropdownContent(mode, type, sequence_id, name = null, subfield = null, target = null) {
-  console.log('syncDropdownContent', mode, type, sequence_id, name, subfield, target);
+function syncDropdownContent(
+  mode,
+  type,
+  sequence_id,
+  name = null,
+  subfield = null,
+  target = null,
+) {
+  console.log(
+    "syncDropdownContent",
+    mode,
+    type,
+    sequence_id,
+    name,
+    subfield,
+    target,
+  );
   /* Modify extraction targets and condition targets. */
   subfield_list = subfield.trim().split("  ");
   console.log(subfield_list);
   switch (mode) {
-    case "add": if (subfield != null) {
-      /* To be completed whenever subfield additions are completed. */
-      /* 1. Search for names, if they already have been inserted before. */
-      /* 2. Do insertion. */
-      /* Not activated for now because everything is a mess. */
-      if (!window.header_name_dict.hasOwnProperty(name)) {
-        /* This means that the name has not been added before. */
+    case "add":
+      if (subfield != null) {
+        /* To be completed whenever subfield additions are completed. */
+        /* 1. Search for names, if they already have been inserted before. */
+        /* 2. Do insertion. */
+        /* Not activated for now because everything is a mess. */
+        if (!window.header_name_dict.hasOwnProperty(name)) {
+          /* This means that the name has not been added before. */
+          switch (type) {
+            case "headers":
+              global_init_header_page_data[type].push({
+                name: name,
+                fields: [],
+              });
+              break;
+            case "structs":
+              global_init_header_page_data[type].push({
+                name: name,
+                content: [],
+              });
+              break;
+            default:
+              global_init_header_page_data[type].push({ name: name });
+          }
+          window.header_name_dict[name] =
+            global_init_header_page_data[type].length - 1;
+        }
+        /* Add the subfield to the corresponding data structure. */
+        /* TODO: Don't forget to change the hardcoding!!!! */
         switch (type) {
           case "headers":
-            global_init_header_page_data[type].push({ "name": name, "fields": [] });
+            global_init_header_page_data[type][window.header_name_dict[name]][
+              "fields"
+            ].push({ name: subfield_list[0], type: subfield_list[1] });
             break;
           case "structs":
-            global_init_header_page_data[type].push({ "name": name, "content": [] });
+            global_init_header_page_data[type][window.header_name_dict[name]][
+              "content"
+            ].push({ name: subfield_list[0], type: subfield_list[1] });
             break;
-          default:
-            global_init_header_page_data[type].push({ "name": name });
+          case "vars":
+            global_init_header_page_data[type][window.header_name_dict[name]][
+              "type"
+            ] = subfield_list[subfield_list.length - 2];
+            global_init_header_page_data[type][window.header_name_dict[name]][
+              "value"
+            ] = subfield_list[subfield_list.length - 1];
+            global_init_header_page_data[type][window.header_name_dict[name]][
+              "const"
+            ] = subfield_list.length == 3 ? 1 : 0;
+            break;
+          case "typedef":
+            global_init_header_page_data[type][window.header_name_dict[name]][
+              "bit"
+            ] = parseInt(subfield_list[0].trim().slice(4, -1));
+            break;
         }
-        window.header_name_dict[name] = global_init_header_page_data[type].length - 1;
+      } else {
+        console.log("added", name);
+        global_init_header_page_data[type].push({ name: name });
+        window.header_name_dict[name] =
+          global_init_header_page_data[type].length - 1;
       }
-      /* Add the subfield to the corresponding data structure. */
-      /* TODO: Don't forget to change the hardcoding!!!! */
-      switch (type) {
-        case "headers":
-          global_init_header_page_data[type][window.header_name_dict[name]]["fields"].push({ "name": subfield_list[0], "type": subfield_list[1] });
-          break;
-        case "structs":
-          global_init_header_page_data[type][window.header_name_dict[name]]["content"].push({ "name": subfield_list[0], "type": subfield_list[1] });
-          break;
-        case "vars":
-          global_init_header_page_data[type][window.header_name_dict[name]]["type"] = subfield_list[subfield_list.length - 2];
-          global_init_header_page_data[type][window.header_name_dict[name]]["value"] = subfield_list[subfield_list.length - 1];
-          global_init_header_page_data[type][window.header_name_dict[name]]["const"] = (subfield_list.length == 3) ? 1 : 0;
-          break;
-        case "typedef":
-          global_init_header_page_data[type][window.header_name_dict[name]]["bit"] = parseInt(subfield_list[0].trim().slice(4, -1));
-          break;
-      }
-    } else {
-      console.log("added", name);
-      global_init_header_page_data[type].push({ "name": name });
-      window.header_name_dict[name] = global_init_header_page_data[type].length - 1;
-    }
       break;
     case "remove":
       for (let doc in global_init_header_page_data[type]) {
-        console.log(global_init_header_page_data[type][doc]["name"], name)
+        console.log(global_init_header_page_data[type][doc]["name"], name);
         if (global_init_header_page_data[type][doc]["name"] == name) {
           global_init_header_page_data[type].splice(doc, 1);
           break;
@@ -1628,14 +1977,15 @@ function syncDropdownContent(mode, type, sequence_id, name = null, subfield = nu
       break;
     case "edit":
       if (subfield == null || subfield == "null") {
-        // This means that we are modifying the name of existing thing. 
+        // This means that we are modifying the name of existing thing.
         if (!window.header_name_dict.hasOwnProperty(target)) {
           // There should be a check in place that detects duplicate entries, preferrably a popup window.
           // I will just block this thing from happening whenever this situation arises...
           if (!window.header_name_dict.hasOwnProperty(name)) {
-            // This means that we need to add the name into the thing. 
-            global_init_header_page_data[type].push({ "name": name });
-            window.header_name_dict[name] = global_init_header_page_data[type].length - 1;
+            // This means that we need to add the name into the thing.
+            global_init_header_page_data[type].push({ name: name });
+            window.header_name_dict[name] =
+              global_init_header_page_data[type].length - 1;
           }
           var origin_index = window.header_name_dict[name];
           global_init_header_page_data[type][origin_index]["name"] = target;
@@ -1645,11 +1995,16 @@ function syncDropdownContent(mode, type, sequence_id, name = null, subfield = nu
           }
 
           // Change the params of the onclick field.
-          var element = document.querySelector(`.data-container[id="${sequence_id}"]`);
+          var element = document.querySelector(
+            `.data-container[id="${sequence_id}"]`,
+          );
           const buttonElement = element.querySelectorAll(".btn")[2];
           const onclickAttributeValue = buttonElement.getAttribute("onclick");
           const currentText = onclickAttributeValue.match(/'([^']*)'/g)[3];
-          const newText = onclickAttributeValue.replace(currentText, `'${target}'`);
+          const newText = onclickAttributeValue.replace(
+            currentText,
+            `'${target}'`,
+          );
           // Update the onclick attribute with the new text
           buttonElement.setAttribute("onclick", newText);
         }
@@ -1659,7 +2014,8 @@ function syncDropdownContent(mode, type, sequence_id, name = null, subfield = nu
         console.log(global_init_header_page_data[type][origin_index]["name"]);
       }
       break;
-    default: break;
+    default:
+      break;
   }
 
   /* Regenerate existing dropdown menus, if there is any out there. */
@@ -1670,11 +2026,12 @@ function syncDropdownContent(mode, type, sequence_id, name = null, subfield = nu
 function deleteDataItem(sequence_id, subfield_sequence, name, type) {
   /* Also need to port in parent name also in addition to these sequences. */
   var seq_div = document.querySelector(`.data-container[id="${sequence_id}"]`);
-  var subfield_div = seq_div.querySelector(`.data-item[id="${subfield_sequence}"]`);
-
+  var subfield_div = seq_div.querySelector(
+    `.data-item[id="${subfield_sequence}"]`,
+  );
 
   /* Short circuit the logic so that we don't waste anytime serving variables and typedefs. */
-  if (type != 'headers' && type != 'structs') {
+  if (type != "headers" && type != "structs") {
     return;
   }
 
@@ -1686,7 +2043,10 @@ function deleteDataItem(sequence_id, subfield_sequence, name, type) {
       break;
     case 2:
       /* We should be only removing headers and structs entries.  */
-      unique_identifier = ['name', subfield_div.querySelectorAll("span")[1].innerText.trim()];
+      unique_identifier = [
+        "name",
+        subfield_div.querySelectorAll("span")[1].innerText.trim(),
+      ];
       break;
     case 3:
       /* It makes no sense to actually remove variables entry by entry... 
@@ -1700,7 +2060,11 @@ function deleteDataItem(sequence_id, subfield_sequence, name, type) {
   for (let doc in global_init_header_page_data[type]) {
     if (global_init_header_page_data[type][doc]["name"] == name) {
       for (let index in global_init_header_page_data[type][doc]["fields"]) {
-        if (global_init_header_page_data[type][doc]["fields"][index][unique_identifier[0]] == unique_identifier[1]) {
+        if (
+          global_init_header_page_data[type][doc]["fields"][index][
+            unique_identifier[0]
+          ] == unique_identifier[1]
+        ) {
           global_init_header_page_data[type][doc]["fields"].splice(index, 1);
           break;
         }
@@ -1717,10 +2081,23 @@ function deleteDataItem(sequence_id, subfield_sequence, name, type) {
   for (let doc in global_init_header_page_data["structs"]) {
     console.log(global_init_header_page_data["structs"][doc]);
     if (global_init_header_page_data["structs"][doc]["name"] == "headers") {
-      for (let index in global_init_header_page_data["structs"][doc]["content"]) {
-        console.log(global_init_header_page_data["structs"][doc]["content"], global_init_header_page_data["structs"][doc]["content"][index]["type"] == name)
-        if (global_init_header_page_data["structs"][doc]["content"][index]["type"] == name) {
-          nukeButtonsByInnerText(`.${global_init_header_page_data["structs"][doc]["content"][index]["name"]}.${unique_identifier[1]}`);
+      for (let index in global_init_header_page_data["structs"][doc][
+        "content"
+      ]) {
+        console.log(
+          global_init_header_page_data["structs"][doc]["content"],
+          global_init_header_page_data["structs"][doc]["content"][index][
+            "type"
+          ] == name,
+        );
+        if (
+          global_init_header_page_data["structs"][doc]["content"][index][
+            "type"
+          ] == name
+        ) {
+          nukeButtonsByInnerText(
+            `.${global_init_header_page_data["structs"][doc]["content"][index]["name"]}.${unique_identifier[1]}`,
+          );
         }
       }
     }
@@ -1728,14 +2105,28 @@ function deleteDataItem(sequence_id, subfield_sequence, name, type) {
 }
 
 function editDataItem(sequence_id, subfield_sequence, name, type) {
-  console.log("editDataItem is here!, of type: ", sequence_id, subfield_sequence, name, type);
+  console.log(
+    "editDataItem is here!, of type: ",
+    sequence_id,
+    subfield_sequence,
+    name,
+    type,
+  );
   var seq_div = document.querySelector(`.data-container[id="${sequence_id}"]`);
-  var subfield_div = seq_div.querySelector(`.data-item[id="${subfield_sequence}"]`);
+  var subfield_div = seq_div.querySelector(
+    `.data-item[id="${subfield_sequence}"]`,
+  );
   // Extract all textual components into a formatted string and display that string in a text box.
   var divs_under_subfield = subfield_div.children;
   var subfields = [];
-  divs_under_subfield[divs_under_subfield.length - 1].children[0].setAttribute('class', 'fa-solid fa-check fa-lg');
-  divs_under_subfield[divs_under_subfield.length - 1].setAttribute('onclick', `reformulateDataItem(${sequence_id}, ${subfield_sequence}, '${name}', '${type}', null)`);
+  divs_under_subfield[divs_under_subfield.length - 1].children[0].setAttribute(
+    "class",
+    "fa-solid fa-check fa-lg",
+  );
+  divs_under_subfield[divs_under_subfield.length - 1].setAttribute(
+    "onclick",
+    `reformulateDataItem(${sequence_id}, ${subfield_sequence}, '${name}', '${type}', null)`,
+  );
   var string = "";
   while (divs_under_subfield.length > 2) {
     string += divs_under_subfield[0].innerHTML;
@@ -1748,41 +2139,70 @@ function editDataItem(sequence_id, subfield_sequence, name, type) {
   var text_bar = `<input id = "i-${sequence_id}-${subfield_sequence}" type="text" value="${string}">\n`;
 
   subfield_div.innerHTML = text_bar + cached_html;
-  subfield_div.innerHTML = subfield_div.innerHTML.replace(/null/g, `'${string}'`);
+  subfield_div.innerHTML = subfield_div.innerHTML.replace(
+    /null/g,
+    `'${string}'`,
+  );
   console.log("subfield_div.innerHTML: ", subfield_div.innerHTML);
-
 }
 
-function reformulateDataItem(sequence_id, subfield_sequence, name, type, args = null) {
-  console.log("reformulateDataItem is here!: ", sequence_id, subfield_sequence, name, type, args);
+function reformulateDataItem(
+  sequence_id,
+  subfield_sequence,
+  name,
+  type,
+  args = null,
+) {
+  console.log(
+    "reformulateDataItem is here!: ",
+    sequence_id,
+    subfield_sequence,
+    name,
+    type,
+    args,
+  );
   var seq_div = document.querySelector(`.data-container[id="${sequence_id}"]`);
-  var subfield_div = seq_div.querySelector(`.data-item[id="${subfield_sequence}"]`);
-  var input_element = document.querySelector(`input#i-${sequence_id}-${subfield_sequence}`);
+  var subfield_div = seq_div.querySelector(
+    `.data-item[id="${subfield_sequence}"]`,
+  );
+  var input_element = document.querySelector(
+    `input#i-${sequence_id}-${subfield_sequence}`,
+  );
   var divs_under_subfield = subfield_div.children;
-  old_value = args
-  old_fields = old_value.replace(/\s+/g, ' ').trim().split(" ");
+  old_value = args;
+  old_fields = old_value.replace(/\s+/g, " ").trim().split(" ");
   input_value = input_element.value;
-  input_fields = input_value.replace(/\s+/g, ' ').trim().split(" ");
+  input_fields = input_value.replace(/\s+/g, " ").trim().split(" ");
   returned_div = null;
   unique_identifier = null;
   console.log(old_fields, input_fields);
   switch (input_fields.length) {
-    case 1: returned_div = `<span style = "color: #007BFF">${input_fields[0]} </span>\n`
+    case 1:
+      returned_div = `<span style = "color: #007BFF">${input_fields[0]} </span>\n`;
       break;
-    case 2: returned_div = `<span style = "color: #007BFF">${input_fields[0]} </span>
-             <span>${input_fields[1]}</span>\n`
+    case 2:
+      returned_div = `<span style = "color: #007BFF">${input_fields[0]} </span>
+             <span>${input_fields[1]}</span>\n`;
       break;
-    case 3: returned_div = `<span style = "color: #DC3545">${input_fields[0]}</span>
+    case 3:
+      returned_div = `<span style = "color: #DC3545">${input_fields[0]}</span>
              <span style = "color: #007BFF">${input_fields[1]} </span>
-             <span>${input_fields[2]}</span>\n`
+             <span>${input_fields[2]}</span>\n`;
       break;
-    default: break;
+    default:
+      break;
   }
   divs_under_subfield[0].remove();
   var cached_html = subfield_div.innerHTML;
   subfield_div.innerHTML = returned_div + cached_html;
-  divs_under_subfield[divs_under_subfield.length - 1].children[0].setAttribute('class', 'fa-solid fa-pen-to-square fa-lg');
-  divs_under_subfield[divs_under_subfield.length - 1].setAttribute('onclick', `editDataItem(${sequence_id}, ${subfield_sequence}, '${name}', '${type}')`);
+  divs_under_subfield[divs_under_subfield.length - 1].children[0].setAttribute(
+    "class",
+    "fa-solid fa-pen-to-square fa-lg",
+  );
+  divs_under_subfield[divs_under_subfield.length - 1].setAttribute(
+    "onclick",
+    `editDataItem(${sequence_id}, ${subfield_sequence}, '${name}', '${type}')`,
+  );
 
   console.log(subfield_div, subfield_div.querySelectorAll("span").length);
   /* TODO: Sync up the global dictionary */
@@ -1790,12 +2210,16 @@ function reformulateDataItem(sequence_id, subfield_sequence, name, type, args = 
   switch (subfield_div.querySelectorAll("span").length) {
     case 1:
       /* typedefs only */
-      new_value = subfield_div.querySelectorAll("span")[0].innerText.trim().slice(4, -1);
+      new_value = subfield_div
+        .querySelectorAll("span")[0]
+        .innerText.trim()
+        .slice(4, -1);
       /* dive into the dictionary and change */
       for (let doc in global_init_header_page_data["typedefs"]) {
         if (global_init_header_page_data["typedefs"][doc]["name"] == name) {
           console.log("case 1 typedefs: found it");
-          global_init_header_page_data["typedefs"][doc]["bit"] = parseInt(new_value);
+          global_init_header_page_data["typedefs"][doc]["bit"] =
+            parseInt(new_value);
         }
       }
       unique_identifier = old_fields[0];
@@ -1806,7 +2230,7 @@ function reformulateDataItem(sequence_id, subfield_sequence, name, type, args = 
       new_type = subfield_div.querySelectorAll("span")[0].innerText.trim();
       new_value = subfield_div.querySelectorAll("span")[1].innerText.trim();
       console.log(type, new_type, new_value);
-      if (type == 'vars') {
+      if (type == "vars") {
         for (let doc in global_init_header_page_data["vars"]) {
           if (global_init_header_page_data["vars"][doc]["name"] == name) {
             console.log("case 2 vars: found it");
@@ -1816,16 +2240,32 @@ function reformulateDataItem(sequence_id, subfield_sequence, name, type, args = 
             global_init_header_page_data["vars"][doc]["const"] = 0;
           }
         }
-      } else if (type == 'headers') {
+      } else if (type == "headers") {
         for (let doc in global_init_header_page_data[type]) {
           if (global_init_header_page_data[type][doc]["name"] == name) {
-            for (let index in global_init_header_page_data[type][doc]["fields"]) {
-              console.log(global_init_header_page_data[type][doc]["fields"][index]["type"] == old_fields[0]);
-              if (global_init_header_page_data[type][doc]["fields"][index]["type"] == old_fields[0] &&
-                global_init_header_page_data[type][doc]["fields"][index]["name"] == old_fields[1]) {
+            for (let index in global_init_header_page_data[type][doc][
+              "fields"
+            ]) {
+              console.log(
+                global_init_header_page_data[type][doc]["fields"][index][
+                  "type"
+                ] == old_fields[0],
+              );
+              if (
+                global_init_header_page_data[type][doc]["fields"][index][
+                  "type"
+                ] == old_fields[0] &&
+                global_init_header_page_data[type][doc]["fields"][index][
+                  "name"
+                ] == old_fields[1]
+              ) {
                 console.log("case 2 headers: found it");
-                global_init_header_page_data[type][doc]["fields"][index]["type"] = input_fields[0];
-                global_init_header_page_data[type][doc]["fields"][index]["name"] = input_fields[1];
+                global_init_header_page_data[type][doc]["fields"][index][
+                  "type"
+                ] = input_fields[0];
+                global_init_header_page_data[type][doc]["fields"][index][
+                  "name"
+                ] = input_fields[1];
               }
             }
           }
@@ -1834,11 +2274,23 @@ function reformulateDataItem(sequence_id, subfield_sequence, name, type, args = 
         // structs
         for (let doc in global_init_header_page_data[type]) {
           if (global_init_header_page_data[type][doc]["name"] == name) {
-            for (let index in global_init_header_page_data[type][doc]["content"]) {
-              if (global_init_header_page_data[type][doc]["content"][index]["type"] == old_fields[0] &&
-                global_init_header_page_data[type][doc]["content"][index]["name"] == old_fields[1]) {
-                global_init_header_page_data[type][doc]["content"][index]["type"] = input_fields[0];
-                global_init_header_page_data[type][doc]["content"][index]["name"] = input_fields[1];
+            for (let index in global_init_header_page_data[type][doc][
+              "content"
+            ]) {
+              if (
+                global_init_header_page_data[type][doc]["content"][index][
+                  "type"
+                ] == old_fields[0] &&
+                global_init_header_page_data[type][doc]["content"][index][
+                  "name"
+                ] == old_fields[1]
+              ) {
+                global_init_header_page_data[type][doc]["content"][index][
+                  "type"
+                ] = input_fields[0];
+                global_init_header_page_data[type][doc]["content"][index][
+                  "name"
+                ] = input_fields[1];
               }
             }
           }
@@ -1866,14 +2318,19 @@ function reformulateDataItem(sequence_id, subfield_sequence, name, type, args = 
   state_extraction_targets = updateStateExtractionTarget();
   state_condition_targets = updateStateConditionTarget();
 
-  injectLinkTargets_sync(init = false);
+  injectLinkTargets_sync((init = false));
 }
 
-function reformulateDataName(sequence_id, type = null, name = null, subfield = null) {
+function reformulateDataName(
+  sequence_id,
+  type = null,
+  name = null,
+  subfield = null,
+) {
   console.log("reformulate Data name");
   var input_element = document.querySelector(`input#dataname-${sequence_id}`);
   input_value = input_element.value.trim();
-  returned_div = input_value + '\n';
+  returned_div = input_value + "\n";
   input_element.remove();
 
   var element = document.querySelector(`.data-container[id="${sequence_id}"]`);
@@ -1881,9 +2338,15 @@ function reformulateDataName(sequence_id, type = null, name = null, subfield = n
   name_div.innerHTML = returned_div + name_div.innerHTML;
   divs_under_subfield = name_div.children;
 
-  divs_under_subfield[divs_under_subfield.length - 1].children[0].setAttribute('class', 'fa-solid fa-pen-to-square fa-lg');
+  divs_under_subfield[divs_under_subfield.length - 1].children[0].setAttribute(
+    "class",
+    "fa-solid fa-pen-to-square fa-lg",
+  );
 
-  divs_under_subfield[divs_under_subfield.length - 1].setAttribute('onclick', `changeDataContainerState('edit', '${sequence_id}', '${type}', '${name}', '${subfield}')`);
+  divs_under_subfield[divs_under_subfield.length - 1].setAttribute(
+    "onclick",
+    `changeDataContainerState('edit', '${sequence_id}', '${type}', '${name}', '${subfield}')`,
+  );
 
   /* Edit name to dropdown menus. */
   console.log("edit", type, sequence_id, name, typeof subfield, input_value);
@@ -1899,7 +2362,12 @@ function nukeButtonsByInnerText(pattern) {
   }
 }
 
-function replaceButtonsByInnerText(pattern, sequence_id, subfield_id, input_fields) {
+function replaceButtonsByInnerText(
+  pattern,
+  sequence_id,
+  subfield_id,
+  input_fields,
+) {
   const buttons = document.querySelectorAll("button.dropdown-content-item");
   reformulated_text = input_fields[0] + " " + input_fields[1];
   for (let i = 0; i < buttons.length; i++) {
@@ -1917,29 +2385,41 @@ window.addEventListener("resize", reportWindowSize);
 window.addEventListener("keydown", captureCode);
 document.addEventListener("keydown", function (e) {
   // Ensure the event is from an input element you want to autocomplete
-  if (e.target.className == 'autocompleteInput') {
-    if (e.key == 'Tab' && e.target.dataset.suggestedWord && e.target.value.trim() != e.target.dataset.suggestedWord) {
+  if (e.target.className == "autocompleteInput") {
+    if (
+      e.key == "Tab" &&
+      e.target.dataset.suggestedWord &&
+      e.target.value.trim() != e.target.dataset.suggestedWord
+    ) {
       e.preventDefault();
-      splitValue = e.target.value.split(' ');
-      console.log(e.target.value, splitValue[splitValue.length - 1], e.target.dataset.suggestedWord);
-      e.target.value = replaceLastOccurrence(e.target.value, splitValue[splitValue.length - 1], e.target.dataset.suggestedWord);
+      splitValue = e.target.value.split(" ");
+      console.log(
+        e.target.value,
+        splitValue[splitValue.length - 1],
+        e.target.dataset.suggestedWord,
+      );
+      e.target.value = replaceLastOccurrence(
+        e.target.value,
+        splitValue[splitValue.length - 1],
+        e.target.dataset.suggestedWord,
+      );
       console.log("target value", e.target.value);
     }
   }
 });
 // window.addEventListener("contextmenu", injectLinkTargets_sync(false));
-window.addEventListener("contextmenu", function(e) {
+window.addEventListener("contextmenu", function (e) {
   injectLinkTargets_sync(false);
 });
-window.addEventListener("keydown", function(event) {
-  if((event.ctrlKey || event.metaKey) && event.key === 's') { 
+window.addEventListener("keydown", function (event) {
+  if ((event.ctrlKey || event.metaKey) && event.key === "s") {
     console.log("Hey! Ctrl+S or Command+S event captured!");
-    event.preventDefault(); 
+    event.preventDefault();
     checkWorkspaceSyntaxStatus();
   }
-  if((event.ctrlKey || event.metaKey) && event.key === 'f') { 
+  if ((event.ctrlKey || event.metaKey) && event.key === "f") {
     console.log("Hey! Ctrl+F or Command+F event captured!");
-    event.preventDefault(); 
+    event.preventDefault();
     ToggleWorkspaceSearchBar();
   }
 });
@@ -1951,12 +2431,12 @@ function addActionModuleStatements(node_id) {
   }
   actions_page_items = document.querySelector(".actions-page-items");
   matches = actions_page_items.querySelectorAll(`#${node_id}`);
-  node_display_content = matches[0].childNodes[1]
+  node_display_content = matches[0].childNodes[1];
   const newDiv = document.createElement("div");
   newDiv.classList.add("module-element");
   newDiv.setAttribute(
     "id",
-    `statement-${node_id}-${highest_node_sequence[node_id]}-action-only`
+    `statement-${node_id}-${highest_node_sequence[node_id]}-action-only`,
   );
   newDiv.innerHTML =
     STATEMENTS["action"](node_id, highest_node_sequence[node_id]) + "<br>";
@@ -1978,7 +2458,7 @@ async function addStateModuleStatements(node_id) {
   newDiv.classList.add("module-element");
   newDiv.setAttribute(
     "id",
-    `statement-${node_id}-${highest_node_sequence[node_id]}-state-${global_source_workspace}`
+    `statement-${node_id}-${highest_node_sequence[node_id]}-state-${global_source_workspace}`,
   );
   newDiv.innerHTML =
     STATEMENTS["state"](node_id, highest_node_sequence[node_id]) + "<br>";
@@ -1987,7 +2467,7 @@ async function addStateModuleStatements(node_id) {
   dropdownDivs = newDiv.getElementsByClassName("dropdown-content");
   console.log(dropdownDivs);
   const target_div = dropdownDivs[1];
-  var tempHTML = ""
+  var tempHTML = "";
   for (let i = 0; i < state_extraction_targets.length; i++) {
     tempHTML += `<button class="dropdown-content-item" onclick="dropdownContentItemHandler('${node_id}', '${highest_node_sequence[node_id]}', 'target', '${state_extraction_targets[i]}')">${state_extraction_targets[i]}</button>\n`;
   }
@@ -2029,7 +2509,7 @@ function addActionModule() {
                          style = "display: flex; flex-direction: row;"> 
                         </div>
                       </div>
-                    </div>`
+                    </div>`;
   new_html_element = document.createElement("div");
   new_html_element.innerHTML = raw_html_string;
   document.querySelector(`.actions-page-items`).appendChild(new_html_element);
@@ -2038,10 +2518,16 @@ function addActionModule() {
 
 function expandActionCode(node_id, sequence_id) {
   /* toggle on blur, and bring up the code block */
-  document.querySelector(`.blur-filter.${node_id}-${sequence_id}`).style.display = 'block';
+  document.querySelector(
+    `.blur-filter.${node_id}-${sequence_id}`,
+  ).style.display = "block";
   console.log(document.querySelector(`.blur-filter.${node_id}-${sequence_id}`));
-  document.querySelector(`#statement-${node_id}-${sequence_id}-action-only.module-element .CodeMirror.cm-s-default`).style.display = 'block';
-  document.getElementById(`action-code-hide-${node_id}-${sequence_id}`).style.display = 'flex';
+  document.querySelector(
+    `#statement-${node_id}-${sequence_id}-action-only.module-element .CodeMirror.cm-s-default`,
+  ).style.display = "block";
+  document.getElementById(
+    `action-code-hide-${node_id}-${sequence_id}`,
+  ).style.display = "flex";
   /* Keep code blocks un-blurred */
   return;
 }
@@ -2049,9 +2535,15 @@ function expandActionCode(node_id, sequence_id) {
 function hideActionCode(node_id, sequence_id) {
   /* Do the reverse of expandActionCode */
   /* toggle on blur, and bring up the code block */
-  document.querySelector(`.blur-filter.${node_id}-${sequence_id}`).style.display = 'none';
-  document.querySelector(`#statement-${node_id}-${sequence_id}-action-only.module-element .CodeMirror.cm-s-default`).style.display = 'none';
-  document.getElementById(`action-code-hide-${node_id}-${sequence_id}`).style.display = 'none';
+  document.querySelector(
+    `.blur-filter.${node_id}-${sequence_id}`,
+  ).style.display = "none";
+  document.querySelector(
+    `#statement-${node_id}-${sequence_id}-action-only.module-element .CodeMirror.cm-s-default`,
+  ).style.display = "none";
+  document.getElementById(
+    `action-code-hide-${node_id}-${sequence_id}`,
+  ).style.display = "none";
   /* Keep code blocks un-blurred */
   return;
 }
@@ -2076,13 +2568,14 @@ function extractActionCore(input) {
 
   const raw_content = contentRegex.exec(input);
   const content = raw_content ? raw_content[2].trim() : null;
-  
+
   console.log("Captured body:", content);
   let labels = [];
   let actionVariableUsage = [];
 
-  if (content !== null) { // Ensure there's a match
-    let variables = ['hdr', 'meta', 'standard_metadata', 'packet'];
+  if (content !== null) {
+    // Ensure there's a match
+    let variables = ["hdr", "meta", "standard_metadata", "packet"];
 
     const variableRegex1 = /(\w+)\.\w+/g;
     const variableRegex2 = /\b(\w+)\b/g;
@@ -2107,37 +2600,50 @@ function extractActionCore(input) {
     }
     actionVariableUsage = Array.from(intersection);
   }
-  
-  if (!actionVariableUsage.includes('standard_metadata') && !actionVariableUsage.includes('packet')) {
-    if (!labels.includes('checksum')) {labels.push('Checksum');}
-  } 
-  if (!actionVariableUsage.includes('packet') && actionVariableUsage.includes('standard_metadata')) {
-    if (!labels.includes('ingress/egress')) {labels.push('Ingress / Egress');}
+
+  if (
+    !actionVariableUsage.includes("standard_metadata") &&
+    !actionVariableUsage.includes("packet")
+  ) {
+    if (!labels.includes("checksum")) {
+      labels.push("Checksum");
+    }
   }
-  if (!actionVariableUsage.includes('meta') && actionVariableUsage.includes('standard_metadata')) {
-    if (!labels.includes('deparser')) {labels.push('Deparser');}
+  if (
+    !actionVariableUsage.includes("packet") &&
+    actionVariableUsage.includes("standard_metadata")
+  ) {
+    if (!labels.includes("ingress/egress")) {
+      labels.push("Ingress / Egress");
+    }
   }
-  if (actionVariableUsage.length == 0){
-    labels = ['Ingress / Egress', 'Deparser', 'Checksum'];
+  if (
+    !actionVariableUsage.includes("meta") &&
+    actionVariableUsage.includes("standard_metadata")
+  ) {
+    if (!labels.includes("deparser")) {
+      labels.push("Deparser");
+    }
   }
-  
+  if (actionVariableUsage.length == 0) {
+    labels = ["Ingress / Egress", "Deparser", "Checksum"];
+  }
+
   if (!match) {
     /* In this case, there is no argument that is passed into the action. */
     /* Which is fine for now. */
-    return {name: input.match(nameRegex)[0].trim(), args: [], labels};
+    return { name: input.match(nameRegex)[0].trim(), args: [], labels };
   }
 
   const name = match[1];
-  const args = match[2].split(',').map(arg => arg.trim());
+  const args = match[2].split(",").map((arg) => arg.trim());
 
   return {
     name,
     args,
-    labels
+    labels,
   };
 }
-
-
 
 function waitForElement(elementFn) {
   return new Promise((resolve) => {
@@ -2153,7 +2659,7 @@ function waitForElement(elementFn) {
   });
 }
 
-function populateActionPage(INIT_ACTION_PAGE_DATA){
+function populateActionPage(INIT_ACTION_PAGE_DATA) {
   /* Do something here haha */
   /* Create action page items on the action Page */
   Object.keys(INIT_ACTION_PAGE_DATA).forEach((key) => {
@@ -2164,7 +2670,7 @@ function populateActionPage(INIT_ACTION_PAGE_DATA){
       name_ = "";
       labels = [];
     } else {
-      args = ("args" in value) ? value["args"] : [];;
+      args = "args" in value ? value["args"] : [];
       name_ = value["name"];
       labels = value["labels"];
     }
@@ -2173,21 +2679,32 @@ function populateActionPage(INIT_ACTION_PAGE_DATA){
     console.log(assigned_node_id);
     addActionModule();
     // Name
-    document.querySelector(`div#${assigned_node_id}.drawflow-node.action-only`).querySelector(`#action-input-field`).value = name_;
+    document
+      .querySelector(`div#${assigned_node_id}.drawflow-node.action-only`)
+      .querySelector(`#action-input-field`).value = name_;
     // Description
     addActionModuleStatements(assigned_node_id);
-    textarea = document.querySelector(`div#statement-${assigned_node_id}-0-action-only`).querySelector(`textarea`);
+    textarea = document
+      .querySelector(`div#statement-${assigned_node_id}-0-action-only`)
+      .querySelector(`textarea`);
     textarea.value = "User should supply the value in some way, shape, or form";
     // Inputs
     addActionModuleStatements(assigned_node_id);
     // TODO: Modify this to be dynamic.
-    textarea = document.querySelector(`div#formatable-input-field-${assigned_node_id}`);
+    textarea = document.querySelector(
+      `div#formatable-input-field-${assigned_node_id}`,
+    );
     textarea.innerHTML = highlightTypes(args);
     // Code
     addActionModuleStatements(assigned_node_id);
     ((current_node_id, code) => {
-      waitForElement(() => document.getElementById(`statement-${current_node_id}-2-action-only`).querySelector(`.CodeMirror-code`))
-        .then(() => { formatCodeToCodeMirror(current_node_id, code); });
+      waitForElement(() =>
+        document
+          .getElementById(`statement-${current_node_id}-2-action-only`)
+          .querySelector(`.CodeMirror-code`),
+      ).then(() => {
+        formatCodeToCodeMirror(current_node_id, code);
+      });
     })(assigned_node_id, code);
     // Labels
     label_space = document.querySelector(`div#${assigned_node_id}-labels`);
@@ -2195,7 +2712,7 @@ function populateActionPage(INIT_ACTION_PAGE_DATA){
     for (let i = 0; i < labels.length; i++) {
       label_space.innerHTML += `<button style = "margin-left: 3px;">
                                   ${labels[i]}
-                                </button>`
+                                </button>`;
     }
   });
 }
@@ -2204,7 +2721,7 @@ function formatCodeToCodeMirror(node_id, code) {
   action_code_editor[`statement-${node_id}-2-action-only`].setValue(code);
 }
 
-function fetchCodeFromCodeMirror(node_id){
+function fetchCodeFromCodeMirror(node_id) {
   return action_code_editor[`statement-${node_id}-2-action-only`].getValue();
 }
 
@@ -2213,16 +2730,22 @@ function populateActionModuleByCode(node_id) {
   let code = fetchCodeFromCodeMirror(node_id);
   metadata = extractActionCore(code);
   // put the metadata back to where they were.
-  document.querySelector(`div#${node_id}.drawflow-node.action-only`).querySelector(`#action-input-field`).value = metadata["name"];
+  document
+    .querySelector(`div#${node_id}.drawflow-node.action-only`)
+    .querySelector(`#action-input-field`).value = metadata["name"];
   // Description
-  textarea = document.querySelector(`div#statement-${node_id}-0-action-only`).querySelector(`textarea`);
+  textarea = document
+    .querySelector(`div#statement-${node_id}-0-action-only`)
+    .querySelector(`textarea`);
   textarea.value = "User should supply the value in some way, shape, or form";
   // Inputs
   textarea = document.querySelector(`div#formatable-input-field-${node_id}`);
   // Reattach the event listener for inputs.
   lalala = highlightTypes(metadata["args"]);
   textarea.innerHTML = lalala;
-  attachHighlightEventListener(document.querySelector(`div#statement-${node_id}-1-action-only`));
+  attachHighlightEventListener(
+    document.querySelector(`div#statement-${node_id}-1-action-only`),
+  );
   // Labels
   label_space = document.querySelector(`div#${node_id}-labels`);
   // Now we hardcode the number of labels, but we should be able to do this dynamically.
@@ -2230,12 +2753,12 @@ function populateActionModuleByCode(node_id) {
   for (let i = 0; i < metadata["labels"].length; i++) {
     label_space.innerHTML += `<button style = "margin-left: 3px;">
                                 ${metadata["labels"][i]}
-                              </button>`
+                              </button>`;
   }
   return;
 }
 
-function highlightTypes(args){
+function highlightTypes(args) {
   let raw_html_data = "";
   // global_init_header_page_data;
   for (let i = 0; i < args.length; i++) {
@@ -2246,46 +2769,48 @@ function highlightTypes(args){
                       <span style = "color: teal;" class = "highlighted-type" id = "highlighted-type-${type}" ><strong>${type} </strong></span> 
                       <span>${name_} </span>
                       </div>`;
-  }   
+  }
   return raw_html_data;
 }
 
 function findDataContainerByDataName(data_name) {
   // Returns a copy of the data container.
-  const dataNameElements = document.querySelectorAll('.data-name');
+  const dataNameElements = document.querySelectorAll(".data-name");
 
   let dataContainer = null;
 
   for (const element of dataNameElements) {
     if (element.textContent.trim().includes(data_name)) {
-      dataContainer = element.closest('.data-container');
+      dataContainer = element.closest(".data-container");
       break;
     }
   }
 
   if (dataContainer) {
-    return dataContainer.cloneNode(true);  // Clone the node and its children
+    return dataContainer.cloneNode(true); // Clone the node and its children
   } else {
     return null;
   }
 }
 
-function attachHighlightEventListener(node){
+function attachHighlightEventListener(node) {
   let highlighted_types = node.querySelectorAll(`span.highlighted-type`); // get the div element
-  for (let [index, highlighted_type] of Array.from(highlighted_types).entries()) {
+  for (let [index, highlighted_type] of Array.from(
+    highlighted_types,
+  ).entries()) {
     console.log("line 1917 highlighted_type", highlighted_type);
-    highlighted_type.addEventListener('mouseover', function (e) {
+    highlighted_type.addEventListener("mouseover", function (e) {
       /* Fetch the type information from the header page. */
       text_content = highlighted_type.textContent.trim();
-      global_init_header_page_data["typedefs"].forEach(element => {
+      global_init_header_page_data["typedefs"].forEach((element) => {
         console.log(element["name"], text_content);
-        if (element["name"] == text_content) {       
+        if (element["name"] == text_content) {
           /* Copy over the box from the header page. */
           cloned_container = findDataContainerByDataName(text_content);
-          const buttons = cloned_container.querySelectorAll('button'); // Find all button elements within the cloned container
+          const buttons = cloned_container.querySelectorAll("button"); // Find all button elements within the cloned container
 
           buttons.forEach((button) => {
-            button.remove();  // Remove each button
+            button.remove(); // Remove each button
           });
 
           // Position the cloned container absolutely and directly under body.
@@ -2296,8 +2821,8 @@ function attachHighlightEventListener(node){
           // Set the style for cloned_container
           cloned_container.id = `cloned-${node.id}-${index}`;
           cloned_container.style.position = "absolute";
-          cloned_container.style.top = top + 10 + 'px';
-          cloned_container.style.left = left + 20 + 'px';
+          cloned_container.style.top = top + 10 + "px";
+          cloned_container.style.left = left + 20 + "px";
           cloned_container.style.zIndex = 200;
 
           // Append it to body
@@ -2306,67 +2831,67 @@ function attachHighlightEventListener(node){
       });
     });
 
-    highlighted_type.addEventListener('mouseout', function (e) {
+    highlighted_type.addEventListener("mouseout", function (e) {
       /* Remove the type information from the header page. */
       document.getElementById(`cloned-${node.id}-${index}`).remove();
     });
   }
 }
 
-function removeActionModule(node_id){
+function removeActionModule(node_id) {
   console.log("line 1959", document.getElementById(node_id).parentNode);
   document.getElementById(node_id).parentNode.remove();
 }
 
-function searchActionPage(keyword){
+function searchActionPage(keyword) {
   // This is a naive implementation of the search function.
   // We could have supported elasticsearch or something, but that's not the main point of this project.
   // 1. Search by name, type, label, description, code
   /* General flow: get a set of ids, and then disable all the ids that are not in the set. */
   let disabled_divs = new Set();
-  document.querySelectorAll(".actions-page-items > div").forEach(elem => {
-    all_divs = elem.querySelectorAll('div');
-    
+  document.querySelectorAll(".actions-page-items > div").forEach((elem) => {
+    all_divs = elem.querySelectorAll("div");
+
     // Loop through all div elements
-    all_divs.forEach(div => {
+    all_divs.forEach((div) => {
       const nodeRegex = /^node-\d+$/;
       // Check if the div's ID matches the node-X pattern and contains the keyword
       if (nodeRegex.test(div.id)) {
         if (!div.textContent.toLowerCase().includes(keyword)) {
           disabled_divs.add(div);
         }
-      } 
+      }
     });
   });
-  disabled_divs.forEach(div => {
-    div.parentNode.style.display = 'none';
-  })
+  disabled_divs.forEach((div) => {
+    div.parentNode.style.display = "none";
+  });
   return;
 }
 
-function enableAllActionModules(){
-  document.querySelectorAll(".actions-page-items > div").forEach(elem => {
-    all_divs = elem.querySelectorAll('div');
+function enableAllActionModules() {
+  document.querySelectorAll(".actions-page-items > div").forEach((elem) => {
+    all_divs = elem.querySelectorAll("div");
     // Loop through all div elements
-    all_divs.forEach(div => {
+    all_divs.forEach((div) => {
       const nodeRegex = /^node-\d+$/;
       if (nodeRegex.test(div.id)) {
-        div.parentNode.style.display = 'block';
+        div.parentNode.style.display = "block";
       }
     });
   });
   return;
 }
 
-function controlSwitch(target_workspace){
+function controlSwitch(target_workspace) {
   // Turn off headers and actions before switch. */
   if (!display_headers_page) {
     HeaderDisplaySetting();
-  } 
+  }
   if (!display_actions_page) {
     ActionDisplaySetting();
   }
-  /* General flow: Switches workspace and drawflow editor to the new workspace. */  
+  /* General flow: Switches workspace and drawflow editor to the new workspace. */
   /* If the target workspace has not been initialized, initialize it. */
   if (!(target_workspace in global_flow_editors)) {
     var example = document.getElementById(`drawflow-${target_workspace}`);
@@ -2378,36 +2903,117 @@ function controlSwitch(target_workspace){
     var html_post = `<p style="text-align:center; font-family:Courier, monospace;">${workspace_transition_dict[target_workspace][1]}<i class="fa-solid fa-arrow-right fa-beat" style="margin-left: 8px;"></i></p>`;
 
     if (target_workspace != "parser" && target_workspace != "deparser") {
-      global_flow_editors[target_workspace].addNode("New Node 1", 0, 1, 40, 400, `generic ${target_workspace} prev`, {}, html_prev);
-      global_flow_editors[target_workspace].addNode("New Node 2", 1, 0, 1500, 400, `generic ${target_workspace} post`, {}, html_post);
-      addWorkspaceTransitionButtonClickHandler("prev", target_workspace, workspace_transition_dict[target_workspace][2]);
-      addWorkspaceTransitionButtonClickHandler("post", target_workspace, workspace_transition_dict[target_workspace][3]);
+      global_flow_editors[target_workspace].addNode(
+        "New Node 1",
+        0,
+        1,
+        40,
+        400,
+        `generic ${target_workspace} prev`,
+        {},
+        html_prev,
+      );
+      global_flow_editors[target_workspace].addNode(
+        "New Node 2",
+        1,
+        0,
+        1500,
+        400,
+        `generic ${target_workspace} post`,
+        {},
+        html_post,
+      );
+      addWorkspaceTransitionButtonClickHandler(
+        "prev",
+        target_workspace,
+        workspace_transition_dict[target_workspace][2],
+      );
+      addWorkspaceTransitionButtonClickHandler(
+        "post",
+        target_workspace,
+        workspace_transition_dict[target_workspace][3],
+      );
     } else if (target_workspace == "parser") {
-      global_flow_editors[target_workspace].addNode("New Node 1", 0, 1, 40, 400, `begin-sign`, {}, html_begin);
-      global_flow_editors[target_workspace].addNode("New Node 2", 1, 0, 1500, 400, `generic ${target_workspace} post`, {}, html_post);
-      addWorkspaceTransitionButtonClickHandler("post", target_workspace, workspace_transition_dict[target_workspace][3]);
+      global_flow_editors[target_workspace].addNode(
+        "New Node 1",
+        0,
+        1,
+        40,
+        400,
+        `begin-sign`,
+        {},
+        html_begin,
+      );
+      global_flow_editors[target_workspace].addNode(
+        "New Node 2",
+        1,
+        0,
+        1500,
+        400,
+        `generic ${target_workspace} post`,
+        {},
+        html_post,
+      );
+      addWorkspaceTransitionButtonClickHandler(
+        "post",
+        target_workspace,
+        workspace_transition_dict[target_workspace][3],
+      );
     } else {
-      global_flow_editors[target_workspace].addNode("New Node 1", 0, 1, 40, 400, `generic ${target_workspace} prev`, {}, html_prev);
-      global_flow_editors[target_workspace].addNode("New Node 2", 1, 0, 1500, 400, `stop-sign`, {}, html_stop);
-      addWorkspaceTransitionButtonClickHandler("prev", target_workspace, workspace_transition_dict[target_workspace][2]);
+      global_flow_editors[target_workspace].addNode(
+        "New Node 1",
+        0,
+        1,
+        40,
+        400,
+        `generic ${target_workspace} prev`,
+        {},
+        html_prev,
+      );
+      global_flow_editors[target_workspace].addNode(
+        "New Node 2",
+        1,
+        0,
+        1500,
+        400,
+        `stop-sign`,
+        {},
+        html_stop,
+      );
+      addWorkspaceTransitionButtonClickHandler(
+        "prev",
+        target_workspace,
+        workspace_transition_dict[target_workspace][2],
+      );
     }
   }
 
   /* Hide the original workspace and expose the new one. */
-  document.getElementById(`drawflow-${global_source_workspace}`).style.display = "none";
-  document.getElementById(`drawflow-${target_workspace}`).style.display = "block";
+  document.getElementById(`drawflow-${global_source_workspace}`).style.display =
+    "none";
+  document.getElementById(`drawflow-${target_workspace}`).style.display =
+    "block";
   /* Switch tab color. */
-  document.querySelector(`button#${global_source_workspace}`).style.background = "linear-gradient(to bottom, #91c3e0, #609cb2)";
-  document.querySelector(`button#${target_workspace}`).style.background = "linear-gradient(to bottom, #406a7e, #30505e)";
+  document.querySelector(`button#${global_source_workspace}`).style.background =
+    "linear-gradient(to bottom, #91c3e0, #609cb2)";
+  document.querySelector(`button#${target_workspace}`).style.background =
+    "linear-gradient(to bottom, #406a7e, #30505e)";
   /* Update previous workspace syntax status. */
   checkWorkspaceSyntaxStatus(global_source_workspace);
   /* Switch off the current variable hub, if there is any. */
-  if (document.querySelector(`div#variable-hub-${global_source_workspace}`)){
-    document.querySelector(`div#variable-hub-${global_source_workspace}`).style.display = "none";
+  if (document.querySelector(`div#variable-hub-${global_source_workspace}`)) {
+    document.querySelector(
+      `div#variable-hub-${global_source_workspace}`,
+    ).style.display = "none";
   }
   /* Switch on the target variable hub, if it is toggled on. */
-  if (variable_hub_enabled_dict[target_workspace] == true && document.querySelector(`div#variable-hub-${target_workspace}`)) {
-    document.querySelector(`div#variable-hub-${target_workspace}`).style.display = "flex";
+  if (
+    variable_hub_enabled_dict[target_workspace] == true &&
+    document.querySelector(`div#variable-hub-${target_workspace}`)
+  ) {
+    document.querySelector(
+      `div#variable-hub-${target_workspace}`,
+    ).style.display = "flex";
   }
   /* Update global source workspace to the target workspace. */
   global_source_workspace = target_workspace;
@@ -2416,7 +3022,7 @@ function controlSwitch(target_workspace){
   return;
 }
 
-function checkWorkspaceSyntaxStatus(){
+function checkWorkspaceSyntaxStatus() {
   /* 
      Mainly looking for the following errors:
      1. Unconnected nodes
@@ -2425,57 +3031,94 @@ function checkWorkspaceSyntaxStatus(){
      TODO: Shouldn't worry about it right NOW... We still have bigger fish to fry... 
   */
   current_workspace = global_flow_editors[global_source_workspace];
-  current_workspace_content = document.querySelector(`div#drawflow-${global_source_workspace}`)
-                              .querySelector(`.drawflow`);
-  if (current_workspace_content === null || current_workspace_content.innerHTML == "") {
-     /* Short circuit if we haven't made any changes to the workspace. 
+  current_workspace_content = document
+    .querySelector(`div#drawflow-${global_source_workspace}`)
+    .querySelector(`.drawflow`);
+  if (
+    current_workspace_content === null ||
+    current_workspace_content.innerHTML == ""
+  ) {
+    /* Short circuit if we haven't made any changes to the workspace. 
         Or all the changes have been removed. 
         In that case we ALWAYS switch the status light to green. */
-    document.querySelector(`div#${global_source_workspace}-status-circle-lime`).style.display = 'inline-block';
-    document.querySelector(`div#${global_source_workspace}-status-circle-yellow`).style.display = 'none';
-    document.querySelector(`div#${global_source_workspace}-status-circle-red`).style.display = 'none';
-    document.querySelector(`div#${global_source_workspace}-status-circle-blue`).style.display = "none";
+    document.querySelector(
+      `div#${global_source_workspace}-status-circle-lime`,
+    ).style.display = "inline-block";
+    document.querySelector(
+      `div#${global_source_workspace}-status-circle-yellow`,
+    ).style.display = "none";
+    document.querySelector(
+      `div#${global_source_workspace}-status-circle-red`,
+    ).style.display = "none";
+    document.querySelector(
+      `div#${global_source_workspace}-status-circle-blue`,
+    ).style.display = "none";
     return;
   }
   /* TODO: Check for unconnected nodes. */
-  
+
   /* Check for unnamed and duplicate-named modules */
-  let node_module_top_bars = document.querySelectorAll(`[id^="module-element-top-bar-${global_source_workspace}"]`);
+  let node_module_top_bars = document.querySelectorAll(
+    `[id^="module-element-top-bar-${global_source_workspace}"]`,
+  );
   let class_name_set = new Set();
   let early_exit = false;
-  node_module_top_bars.forEach(node_module_top_bar => {
-    if (class_name_set.has(node_module_top_bar.querySelector('input').value) || node_module_top_bar.querySelector(`input`).value == "") {
-      document.querySelector(`div#${global_source_workspace}-status-circle-lime`).style.display = 'none';
-      document.querySelector(`div#${global_source_workspace}-status-circle-yellow`).style.display = 'none';
-      document.querySelector(`div#${global_source_workspace}-status-circle-red`).style.display = 'inline-block';
-      document.querySelector(`div#${global_source_workspace}-status-circle-blue`).style.display = "none";
+  node_module_top_bars.forEach((node_module_top_bar) => {
+    if (
+      class_name_set.has(node_module_top_bar.querySelector("input").value) ||
+      node_module_top_bar.querySelector(`input`).value == ""
+    ) {
+      document.querySelector(
+        `div#${global_source_workspace}-status-circle-lime`,
+      ).style.display = "none";
+      document.querySelector(
+        `div#${global_source_workspace}-status-circle-yellow`,
+      ).style.display = "none";
+      document.querySelector(
+        `div#${global_source_workspace}-status-circle-red`,
+      ).style.display = "inline-block";
+      document.querySelector(
+        `div#${global_source_workspace}-status-circle-blue`,
+      ).style.display = "none";
       early_exit = true;
     }
     class_name_set.add(node_module_top_bar.querySelector(`input`).value);
-  });  
-  if (early_exit) { return; }
+  });
+  if (early_exit) {
+    return;
+  }
   /* TODO: Check for undefined transition conditions */
 
   /* Everything passes, update the status light to blue. */
-  document.querySelector(`div#${global_source_workspace}-status-circle-lime`).style.display = 'none';
-  document.querySelector(`div#${global_source_workspace}-status-circle-yellow`).style.display = 'none';
-  document.querySelector(`div#${global_source_workspace}-status-circle-red`).style.display = 'none';
-  document.querySelector(`div#${global_source_workspace}-status-circle-blue`).style.display = "inline-block";
+  document.querySelector(
+    `div#${global_source_workspace}-status-circle-lime`,
+  ).style.display = "none";
+  document.querySelector(
+    `div#${global_source_workspace}-status-circle-yellow`,
+  ).style.display = "none";
+  document.querySelector(
+    `div#${global_source_workspace}-status-circle-red`,
+  ).style.display = "none";
+  document.querySelector(
+    `div#${global_source_workspace}-status-circle-blue`,
+  ).style.display = "inline-block";
   return;
 }
 
-function adjustWorkspaceWidth(){
+function adjustWorkspaceWidth() {
   if (!display_code) {
     document.querySelector(".code-block-div").style.display = "none";
-    document.getElementById(`drawflow-${global_source_workspace}`).style.width = "100%";
+    document.getElementById(`drawflow-${global_source_workspace}`).style.width =
+      "100%";
   } else {
     document.querySelector(".code-block-div").style.display = "block";
-    document.getElementById(`drawflow-${global_source_workspace}`).style.width = "70%";
+    document.getElementById(`drawflow-${global_source_workspace}`).style.width =
+      "70%";
   }
   return;
 }
 
-function ToggleWorkspaceSearchBar(){
+function ToggleWorkspaceSearchBar() {
   /* 
      TODO:
      I am not doing anything for now, but my long term vision is 
@@ -2488,25 +3131,30 @@ function ToggleWorkspaceSearchBar(){
 }
 
 function ToggleControlVariables() {
-    /* Turn off current variable hub and instantiate new ones, if needed. */
-    if (variable_hub_enabled_dict[global_source_workspace]) {
-      /* Turn off the current variable hub. */
-      if (document.querySelector(`div#variable-hub-${global_source_workspace}`)){
-        document.querySelector(`div#variable-hub-${global_source_workspace}`).style.display = "none";
-      }
-    } else {
-      /* Turn on the current variable hub. */
-      if (document.querySelector(`div#variable-hub-${global_source_workspace}`)){
-        document.querySelector(`div#variable-hub-${global_source_workspace}`).style.display = "flex";
-      }
+  /* Turn off current variable hub and instantiate new ones, if needed. */
+  if (variable_hub_enabled_dict[global_source_workspace]) {
+    /* Turn off the current variable hub. */
+    if (document.querySelector(`div#variable-hub-${global_source_workspace}`)) {
+      document.querySelector(
+        `div#variable-hub-${global_source_workspace}`,
+      ).style.display = "none";
     }
-    variable_hub_enabled_dict[global_source_workspace] = !variable_hub_enabled_dict[global_source_workspace];
+  } else {
+    /* Turn on the current variable hub. */
+    if (document.querySelector(`div#variable-hub-${global_source_workspace}`)) {
+      document.querySelector(
+        `div#variable-hub-${global_source_workspace}`,
+      ).style.display = "flex";
+    }
+  }
+  variable_hub_enabled_dict[global_source_workspace] =
+    !variable_hub_enabled_dict[global_source_workspace];
 }
 
-function addVariableToVariableHub(){
+function addVariableToVariableHub() {
   /* Add a new variable to the variable hub. */
   /* We start with an empty variable element. */
-  
+
   // Create the div element for a new variable
   const divElement = document.createElement("div");
   const workspace = global_source_workspace;
@@ -2514,15 +3162,21 @@ function addVariableToVariableHub(){
   divElement.className = "variable-hub-variables draggable";
   divElement.id = `variable-hub-variable-${global_source_workspace}-${variable_hub_variable_count[global_source_workspace]}`;
   divElement.draggable = true;
-  divElement.addEventListener('dragstart', function(event) {
-    event.dataTransfer.setData('text/plain', this.querySelector('input').value);
+  divElement.addEventListener("dragstart", function (event) {
+    event.dataTransfer.setData("text/plain", this.querySelector("input").value);
   });
   // Attach an event listener to the div element
-  divElement.addEventListener('click', function(event) {
+  divElement.addEventListener("click", function (event) {
     console.log(event.target.classList, event.target);
-    if (event.target.classList.contains('fa-times-circle') && event.target.id === `variable-hub-variable-delete-icon-${workspace}-${variable_count}`) {
+    if (
+      event.target.classList.contains("fa-times-circle") &&
+      event.target.id ===
+        `variable-hub-variable-delete-icon-${workspace}-${variable_count}`
+    ) {
       editVariableHubVariableHandler(this.id, event, "delete");
-    } else if (event.target.classList.contains('variable-hub-variable-text-field')) {
+    } else if (
+      event.target.classList.contains("variable-hub-variable-text-field")
+    ) {
       editVariableHubVariableHandler(this.id, event, "text");
     } else {
       editVariableHubVariableHandler(this.id, event);
@@ -2567,16 +3221,19 @@ function addVariableToVariableHub(){
 
   // Add another button to hide the function window.
   const hideButtonElement = document.createElement("button");
-  hideButtonElement.className = "variable-hub-variable-function-window-hide-button";
+  hideButtonElement.className =
+    "variable-hub-variable-function-window-hide-button";
   hideButtonElement.style.position = "absolute";
   hideButtonElement.innerHTML = `<i class="fa fa-times-circle" style="font-size:24px;color:red"></i>`;
   hideButtonElement.style.backgroundColor = "grey";
   hideButtonElement.style.padding = "0px";
   hideButtonElement.style.top = "-6%";
   hideButtonElement.style.right = "-3%";
-  hideButtonElement.onclick = function(event) {
-    document.querySelector(`div#variable-hub-variable-function-window-${workspace}-${variable_count}`).style.display = "none";
-  }
+  hideButtonElement.onclick = function (event) {
+    document.querySelector(
+      `div#variable-hub-variable-function-window-${workspace}-${variable_count}`,
+    ).style.display = "none";
+  };
   functionWindowElement.appendChild(hideButtonElement);
 
   // Append the icon to the button
@@ -2588,53 +3245,64 @@ function addVariableToVariableHub(){
   divElement.appendChild(functionWindowElement);
 
   // Append the div element to the variable hub
-  document.querySelector(`div#variable-hub-${global_source_workspace}`).appendChild(divElement);
+  document
+    .querySelector(`div#variable-hub-${global_source_workspace}`)
+    .appendChild(divElement);
 
   // Convert functionWindowElement into a CodeMirror instance.
-  codeTextArea = document.getElementById(`variable-hub-variable-function-window-${global_source_workspace}-${variable_hub_variable_count[global_source_workspace]}-textarea`);
+  codeTextArea = document.getElementById(
+    `variable-hub-variable-function-window-${global_source_workspace}-${variable_hub_variable_count[global_source_workspace]}-textarea`,
+  );
   var editor = CodeMirror.fromTextArea(codeTextArea, {
     lineNumbers: true,
     tabSize: 2,
   });
   editor.setSize(null, "100%");
-  editor.setFontSize = function(size) {
+  editor.setFontSize = function (size) {
     var editorDiv = this.getWrapperElement();
-    editorDiv.style.fontSize = size + 'px';
+    editorDiv.style.fontSize = size + "px";
   };
-  
+
   editor.setFontSize(24);
 
-  editor.setCaretColor = function(color) {
-    var cursorStyle = document.createElement('style');
+  editor.setCaretColor = function (color) {
+    var cursorStyle = document.createElement("style");
     document.head.appendChild(cursorStyle);
-    cursorStyle.sheet.insertRule(`.CodeMirror-cursor { border-left: 1.4px solid ${color} !important; }`, 0);
+    cursorStyle.sheet.insertRule(
+      `.CodeMirror-cursor { border-left: 1.4px solid ${color} !important; }`,
+      0,
+    );
   };
 
-  editor.setCaretColor('lime');
-  editor.getWrapperElement().classList.add('custom-codemirror-text-color');
-  editor.getWrapperElement().classList.add('custom-background');
+  editor.setCaretColor("lime");
+  editor.getWrapperElement().classList.add("custom-codemirror-text-color");
+  editor.getWrapperElement().classList.add("custom-background");
 
-  var gutterElement = editor.getWrapperElement().querySelector('.CodeMirror-gutters');
+  var gutterElement = editor
+    .getWrapperElement()
+    .querySelector(".CodeMirror-gutters");
   if (gutterElement) {
-    gutterElement.style.backgroundColor = 'grey';
+    gutterElement.style.backgroundColor = "grey";
   }
 
   editor.refresh();
   local_variable_code_editor[codeTextArea.id] = editor;
 
-  divElement.addEventListener('contextmenu', function(event) {
+  divElement.addEventListener("contextmenu", function (event) {
     // Prevent default action from triggering.
     event.preventDefault();
     // Bring up a new code window if the user `right clicks` on a variable.
-    document.querySelector(`div#variable-hub-variable-function-window-${workspace}-${variable_count}`).style.display = "block";
+    document.querySelector(
+      `div#variable-hub-variable-function-window-${workspace}-${variable_count}`,
+    ).style.display = "block";
   });
-  
+
   // Increment the variable count
   variable_hub_variable_count[global_source_workspace] += 1;
   return;
 }
 
-function editVariableHubVariableHandler(variable_id, event, type = null){
+function editVariableHubVariableHandler(variable_id, event, type = null) {
   if (type === "delete") {
     document.querySelector(`div#${variable_id}`).remove();
   }
@@ -2652,8 +3320,10 @@ function sizeInputHandler(inputElement, workspace, selected_node_id) {
       return;
     }
     const maxLevel = 10;
-    const batteryElement = document.getElementById(`battery-level-${workspace}-${selected_node_id}`);
-    const percentage = Math.log2(level) / maxLevel * 100;
+    const batteryElement = document.getElementById(
+      `battery-level-${workspace}-${selected_node_id}`,
+    );
+    const percentage = (Math.log2(level) / maxLevel) * 100;
     batteryElement.style.width = `${percentage}%`;
   }
   setBatteryLevel(parseInt(inputElement.value), workspace, selected_node_id);
@@ -2662,34 +3332,42 @@ function sizeInputHandler(inputElement, workspace, selected_node_id) {
 function resizeDiv(inputValue, new_div, type = "Keys") {
   const inputLength = inputValue.length;
   if (type == "Keys") {
-    new_div.style.width = Math.min(Math.max(300, inputLength * 15), 340) + 'px'; // Updated maximum width to 340
+    new_div.style.width = Math.min(Math.max(300, inputLength * 15), 340) + "px"; // Updated maximum width to 340
   } else {
-    new_div.style.width = Math.min(Math.max(300, inputLength * 15), 340) + 'px';  // Updated maximum width to 340
+    new_div.style.width = Math.min(Math.max(300, inputLength * 15), 340) + "px"; // Updated maximum width to 340
   }
 }
 
 function addTableElements(element, workspace, variable_count, type = "Keys") {
   if (!element.dataset.hasListener) {
-    element.addEventListener('keydown', function(event) {
-      if (event.key === 'Enter') {
+    element.addEventListener("keydown", function (event) {
+      if (event.key === "Enter") {
         event.preventDefault();
         addTableElements(element, workspace, variable_count, type);
-        const inputs = Array.from(element.querySelectorAll('input'));
+        const inputs = Array.from(element.querySelectorAll("input"));
         const currentIndex = inputs.indexOf(event.target);
         if (currentIndex !== -1 && currentIndex < inputs.length - 1) {
           inputs[currentIndex + 1].focus();
         }
       }
     });
-    element.dataset.hasListener = 'true';
+    element.dataset.hasListener = "true";
   }
 
   if (type == "Keys" && !element.dataset.hasOwnProperty(`numberOf${type}`)) {
     element.dataset.numberOfKeys = 0;
-  } else if (type == "Actions" && !element.dataset.hasOwnProperty(`numberOf${type}`)) {
+  } else if (
+    type == "Actions" &&
+    !element.dataset.hasOwnProperty(`numberOf${type}`)
+  ) {
     element.dataset.numberOfActions = 0;
   }
-  console.log("line 2540", type, element.dataset.numberOfKeys, element.dataset.numberOfActions);
+  console.log(
+    "line 2540",
+    type,
+    element.dataset.numberOfKeys,
+    element.dataset.numberOfActions,
+  );
   if (type == "Keys") {
     selection_number = element.dataset.numberOfKeys;
   } else {
@@ -2701,46 +3379,46 @@ function addTableElements(element, workspace, variable_count, type = "Keys") {
 
   new_div.className = "table-key";
   new_div.style.backgroundColor = "#4682B4";
-  new_div.style.width = (type == "Keys") ? '300px': '300px';  
-  new_div.style.maxWidth = (type == "Keys") ? '340px': '340px';  
-  new_div.style.height = '40px';
-  new_div.style.margin = '5px';
-  new_div.style.borderRadius = '5px';
-  new_div.style.display = 'flex';
-  new_div.style.alignItems = 'center';
-  new_div.style.justifyContent = 'space-between';
+  new_div.style.width = type == "Keys" ? "300px" : "300px";
+  new_div.style.maxWidth = type == "Keys" ? "340px" : "340px";
+  new_div.style.height = "40px";
+  new_div.style.margin = "5px";
+  new_div.style.borderRadius = "5px";
+  new_div.style.display = "flex";
+  new_div.style.alignItems = "center";
+  new_div.style.justifyContent = "space-between";
   new_div.id = `table-${type}-${workspace}-${variable_count}-${frozen_number}`;
 
-  input_element.style.flexGrow = '1';
-  input_element.style.height = '80%';
-  input_element.style.minWidth = '75px';
-  input_element.style.backgroundColor = 'transparent';
-  input_element.style.color = '#c8c8c8';
-  input_element.style.border = 'none';
-  input_element.style.fontFamily = 'Courier, monospace';
+  input_element.style.flexGrow = "1";
+  input_element.style.height = "80%";
+  input_element.style.minWidth = "75px";
+  input_element.style.backgroundColor = "transparent";
+  input_element.style.color = "#c8c8c8";
+  input_element.style.border = "none";
+  input_element.style.fontFamily = "Courier, monospace";
 
   // Create Default tab, initially hidden
   const defaultTab = document.createElement("div");
-  defaultTab.style.display = 'none'; // Initially hidden
-  defaultTab.textContent = 'Default';
-  defaultTab.className = 'default-tab';
+  defaultTab.style.display = "none"; // Initially hidden
+  defaultTab.textContent = "Default";
+  defaultTab.className = "default-tab";
 
   // Listen for the 'Tab' key press for auto-completion.
-  element.addEventListener('keydown', function(event) {
-    if (event.key === 'Tab') {
+  element.addEventListener("keydown", function (event) {
+    if (event.key === "Tab") {
       event.preventDefault(); // Prevent the default tab key behavior
-      
+
       const suggestedWord = event.target.dataset.suggestedWord;
-      
+
       if (suggestedWord) {
         let inputValue = event.target.value;
 
         // If there are spaces in the input, keep everything before the last space
         if (inputValue.includes(" ")) {
           let splitValues = inputValue.split(" ");
-          splitValues.pop();  // Remove the last element, which we will replace with the suggested word
-          splitValues.push(suggestedWord);  // Add the suggested word as the last element
-          event.target.value = splitValues.join(" ");  // Join the array back into a string
+          splitValues.pop(); // Remove the last element, which we will replace with the suggested word
+          splitValues.push(suggestedWord); // Add the suggested word as the last element
+          event.target.value = splitValues.join(" "); // Join the array back into a string
         } else {
           // If no spaces, simply replace the entire input value
           event.target.value = suggestedWord;
@@ -2748,15 +3426,15 @@ function addTableElements(element, workspace, variable_count, type = "Keys") {
       }
 
       // Turn off auto-suggest
-      autoCompleteSpan.style.display = 'none';
+      autoCompleteSpan.style.display = "none";
 
       // Resize the div after auto-completing
       resizeDiv(event.target.value, new_div, type);
     }
   });
-  
+
   // Listen to input suggestions, and offer auto-suggest if necessary.
-  element.addEventListener('input', function(event) {
+  element.addEventListener("input", function (event) {
     let inputValue = event.target.value;
     if (inputValue.includes(" ")) {
       splitValues = inputValue.split(" ");
@@ -2777,51 +3455,54 @@ function addTableElements(element, workspace, variable_count, type = "Keys") {
         event.target.dataset.suggestedWord = word;
         // Display the suggestion in some manner (e.g., as a placeholder)
         event.target.placeholder = word;
-        console.log("in here!", event.target.dataset.suggestedWord, event.target.placeholder);
+        console.log(
+          "in here!",
+          event.target.dataset.suggestedWord,
+          event.target.placeholder,
+        );
         break;
       }
     }
 
-    
     if (!new_div.dataset.hasContextListener) {
-      new_div.addEventListener('contextmenu', function(event) {
+      new_div.addEventListener("contextmenu", function (event) {
         event.preventDefault();
-        if (type === 'Actions') {
-          const tab = this.querySelector('.default-tab');
-          if (tab.style.display === 'none') {
+        if (type === "Actions") {
+          const tab = this.querySelector(".default-tab");
+          if (tab.style.display === "none") {
             // Cancel all other tabs from displaying, if applicable.
-            const tabs = document.querySelectorAll('.default-tab');
+            const tabs = document.querySelectorAll(".default-tab");
             tabs.forEach((tab) => {
               // find parent div of tab and change width back to where it was.
               const parent_div = tab.parentNode;
-              if (tab.style.display == 'flex') {
+              if (tab.style.display == "flex") {
                 parent_div.style.width = `${parent_div.style.width - 50}px`;
-                tab.style.display = 'none';
+                tab.style.display = "none";
               }
             });
-            tab.style.display = 'flex'; 
-            new_div.style.width = `${new_div.style.width + 50}px`;  
+            tab.style.display = "flex";
+            new_div.style.width = `${new_div.style.width + 50}px`;
           } else {
-            tab.style.display = 'none';
-            new_div.style.width = `${new_div.style.width - 50}px`;  
+            tab.style.display = "none";
+            new_div.style.width = `${new_div.style.width - 50}px`;
           }
         }
       });
-      new_div.dataset.hasContextListener = 'true';
+      new_div.dataset.hasContextListener = "true";
     }
 
     const suggestedWord = event.target.dataset.suggestedWord;
 
     if (suggestedWord && event.target.value != suggestedWord) {
-      autoCompleteSpan.style.display = 'inline-block';
+      autoCompleteSpan.style.display = "inline-block";
       autoCompleteSpan.textContent = "↹ " + suggestedWord;
     } else {
-      autoCompleteSpan.style.display = 'none';  // Hide if no suggestion
+      autoCompleteSpan.style.display = "none"; // Hide if no suggestion
     }
   });
 
   // Dynamically adjust the width of the div based on the input length
-  input_element.addEventListener('input', function() {
+  input_element.addEventListener("input", function () {
     // Resize the div after auto-completing
     resizeDiv(this.value, new_div, type);
   });
@@ -2832,10 +3513,14 @@ function addTableElements(element, workspace, variable_count, type = "Keys") {
   const buttonElement = document.createElement("button");
   buttonElement.className = `table-${type}-delete-button`;
   buttonElement.style.backgroundColor = "transparent";
-  buttonElement.style.border = 'none';
-  buttonElement.onclick = function(){
-    document.querySelector(`div#table-${type}-${workspace}-${variable_count}-${frozen_number}`).remove();
-  }
+  buttonElement.style.border = "none";
+  buttonElement.onclick = function () {
+    document
+      .querySelector(
+        `div#table-${type}-${workspace}-${variable_count}-${frozen_number}`,
+      )
+      .remove();
+  };
   // Create the Font Awesome icon for delete
   const iconElement = document.createElement("i");
   iconElement.className = "fa fa-times-circle";
@@ -2849,17 +3534,17 @@ function addTableElements(element, workspace, variable_count, type = "Keys") {
   new_div.appendChild(defaultTab);
 
   // Create a span element for autocomplete suggestions
-  const autoCompleteSpan = document.createElement('span');
+  const autoCompleteSpan = document.createElement("span");
   autoCompleteSpan.className = "auto-complete-span";
-  autoCompleteSpan.style.position = 'absolute';
-  autoCompleteSpan.style.left = '0';
-  autoCompleteSpan.style.bottom = '0';
-  autoCompleteSpan.style.backgroundColor = '#ccc'; 
-  autoCompleteSpan.style.display = 'none';  
+  autoCompleteSpan.style.position = "absolute";
+  autoCompleteSpan.style.left = "0";
+  autoCompleteSpan.style.bottom = "0";
+  autoCompleteSpan.style.backgroundColor = "#ccc";
+  autoCompleteSpan.style.display = "none";
   new_div.appendChild(autoCompleteSpan);
 
   // Add an event listener to the div element for on clicks.
-  new_div.addEventListener('click', function(event) {
+  new_div.addEventListener("click", function (event) {
     event.stopPropagation();
   });
 
@@ -2872,20 +3557,26 @@ function addTableElements(element, workspace, variable_count, type = "Keys") {
   return;
 }
 
-function addWorkspaceTransitionButtonClickHandler(mode, source_workspace, target_workspace){
+function addWorkspaceTransitionButtonClickHandler(
+  mode,
+  source_workspace,
+  target_workspace,
+) {
   // Listen to html_post node by adding an event listener.
   var isDragging = false;
 
-  transition_node = document.querySelector(`div.drawflow-node.generic.${source_workspace}.${mode}`);
-  transition_node.addEventListener("mousedown", function() {
+  transition_node = document.querySelector(
+    `div.drawflow-node.generic.${source_workspace}.${mode}`,
+  );
+  transition_node.addEventListener("mousedown", function () {
     isDragging = false; // reset the dragging flag on mousedown
   });
 
-  transition_node.addEventListener("mousemove", function() {
+  transition_node.addEventListener("mousemove", function () {
     isDragging = true; // if mouse moved, set the dragging flag
   });
 
-  transition_node.addEventListener("mouseup", function(event) {
+  transition_node.addEventListener("mouseup", function (event) {
     if (!isDragging) {
       // If the mouse hasn't moved much, treat it as a click
       controlSwitch(target_workspace);
@@ -2893,43 +3584,60 @@ function addWorkspaceTransitionButtonClickHandler(mode, source_workspace, target
     }
   });
 
-  transition_node.style.cursor = "pointer";  // Use 'cursor' instead of 'cursorStyle'
-
+  transition_node.style.cursor = "pointer"; // Use 'cursor' instead of 'cursorStyle'
 }
 
 function bezierDerivative(t, P0, P1, P2, P3) {
   // Calculate the derivative of Bézier curve
-  const dBx_dt = 3 * Math.pow(1 - t, 2) * (P1.x - P0.x) + 6 * (1 - t) * t * (P2.x - P1.x) + 3 * t * t * (P3.x - P2.x);
-  const dBy_dt = 3 * Math.pow(1 - t, 2) * (P1.y - P0.y) + 6 * (1 - t) * t * (P2.y - P1.y) + 3 * t * t * (P3.y - P2.y);
+  const dBx_dt =
+    3 * Math.pow(1 - t, 2) * (P1.x - P0.x) +
+    6 * (1 - t) * t * (P2.x - P1.x) +
+    3 * t * t * (P3.x - P2.x);
+  const dBy_dt =
+    3 * Math.pow(1 - t, 2) * (P1.y - P0.y) +
+    6 * (1 - t) * t * (P2.y - P1.y) +
+    3 * t * t * (P3.y - P2.y);
   return dBy_dt / dBx_dt;
 }
 
 function bezierPoint(t, P0, P1, P2, P3) {
-  
-  const x = Math.pow(1-t, 3) * P0.x + 3 * Math.pow(1-t, 2) * t * P1.x + 3 * (1-t) * t * t * P2.x + t * t * t * P3.x;
-  const y = Math.pow(1-t, 3) * P0.y + 3 * Math.pow(1-t, 2) * t * P1.y + 3 * (1-t) * t * t * P2.y + t * t * t * P3.y;
-  return {x, y};
+  const x =
+    Math.pow(1 - t, 3) * P0.x +
+    3 * Math.pow(1 - t, 2) * t * P1.x +
+    3 * (1 - t) * t * t * P2.x +
+    t * t * t * P3.x;
+  const y =
+    Math.pow(1 - t, 3) * P0.y +
+    3 * Math.pow(1 - t, 2) * t * P1.y +
+    3 * (1 - t) * t * t * P2.y +
+    t * t * t * P3.y;
+  return { x, y };
 }
 
 function bezierPointCenterDiff(t, P0, P1, P2, P3) {
-  let {x, y} = bezierPoint(t, P0, P1, P2, P3);
-  let {x: center_x, y: center_y} = bezierPoint(0.5, P0, P1, P2, P3);
-  return {x: x - center_x, y: y - center_y};
+  let { x, y } = bezierPoint(t, P0, P1, P2, P3);
+  let { x: center_x, y: center_y } = bezierPoint(0.5, P0, P1, P2, P3);
+  return { x: x - center_x, y: y - center_y };
 }
 
 function findHorizontalRegions(P0, P1, P2, P3, samples = 10) {
   // find the difference between t and t=0.5
-  const tValues = Array(samples).fill(0).map((_, i) => i / (samples - 1));
+  const tValues = Array(samples)
+    .fill(0)
+    .map((_, i) => i / (samples - 1));
   const horizontalRegions = [];
   for (let t of tValues) {
-      if (Math.abs(bezierDerivative(t, P0, P1, P2, P3)) > 0 && Math.abs(bezierDerivative(t, P0, P1, P2, P3)) < 0.5) {
-          horizontalRegions.push(t);
-      }
+    if (
+      Math.abs(bezierDerivative(t, P0, P1, P2, P3)) > 0 &&
+      Math.abs(bezierDerivative(t, P0, P1, P2, P3)) < 0.5
+    ) {
+      horizontalRegions.push(t);
+    }
   }
-  return horizontalRegions.map(t => bezierPointCenterDiff(t, P0, P1, P2, P3));
+  return horizontalRegions.map((t) => bezierPointCenterDiff(t, P0, P1, P2, P3));
 }
 
-function attachSVGDisplayBox(query_id){
+function attachSVGDisplayBox(query_id) {
   let outerdiv = document.createElement("div");
   outerdiv.classList.add(`side-by-side-div-${query_id}`);
 
@@ -2967,13 +3675,12 @@ function attachSVGDisplayBox(query_id){
   return outerdiv;
 }
 
-
 function closeIDEHelp() {
-    var element = document.querySelector("div.ide-help-page");
-    element.style.display = "none";
+  var element = document.querySelector("div.ide-help-page");
+  element.style.display = "none";
 }
 
 function openIDEHelp() {
-    var element = document.querySelector("div.ide-help-page");
-    element.style.display = "block";
+  var element = document.querySelector("div.ide-help-page");
+  element.style.display = "block";
 }
