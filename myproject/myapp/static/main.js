@@ -53,6 +53,7 @@ let html_stop = `<p style="text-align:center; font-family:Courier, monospace;">
   2. global_init_action_page_data
   3. There might be more, but I don't remember. Let's add as we go.
 */
+let keyMatchingConditions = ["lpm", "exact", "ternary", "range", "optional"];
 let autoCompleteData = ["lpm", "exact", "ternary", "range", "optional"];
 window.header_name_dict = [];
 /* This thing is Javascript's equivalent of a defaultdict. */
@@ -216,7 +217,7 @@ let STATE_STATEMENT = function (node_id, sequence_id) {
                 <div class="dropdown-content">
                 </div>               
             </div>
-            <button class="btn" onclick="dropdownDivRemove('${node_id}', '${sequence_id}')"> 
+            <button class="btn" onclick="dropdownDivRemove('${node_id}', '${sequence_id}', 'state')"> 
                 <i class="fa-sharp fa-solid fa-times-circle fa-lg" style="color: #1f2551;"></i> 
             </button> 
         </div>`;
@@ -453,6 +454,8 @@ window.addEventListener("DOMContentLoaded", function () {
                   index
                 ];
                 if (element.value.trim() == e.target.value) {
+                  console.log(node);
+                  node.dataset.matchFound = true;
                   // Match found. Extract the inputs of this action.
                   action_match_head =
                     element.parentElement.parentElement.parentElement;
@@ -566,6 +569,8 @@ window.addEventListener("DOMContentLoaded", function () {
                   }
                   display = true;
                   break;
+                } else {
+                  node.dataset.matchFound = false;
                 }
               }
               if (
@@ -962,10 +967,10 @@ function dropdownContentItemConnectionHandler(id, category, arg) {
   // TODO: Every onclick requires updating data in a persistant data storage.
 }
 
-function dropdownDivRemove(node_id, sequence_id) {
+function dropdownDivRemove(node_id, sequence_id, type) {
   // Get an element from the div stack and remove it from the div stack.
   const element_to_remove = document.getElementById(
-    `statement-${node_id}-${sequence_id}`,
+    `statement-${node_id}-${sequence_id}-${type}-${global_source_workspace}`,
   );
   element_to_remove.remove();
   // TODO: Every onclick requires updating data in a persistant data storage.
@@ -2407,15 +2412,16 @@ document.addEventListener("keydown", function (e) {
     }
   }
 });
-// window.addEventListener("contextmenu", injectLinkTargets_sync(false));
+
 window.addEventListener("contextmenu", function (e) {
   injectLinkTargets_sync(false);
 });
+
 window.addEventListener("keydown", function (event) {
   if ((event.ctrlKey || event.metaKey) && event.key === "s") {
     console.log("Hey! Ctrl+S or Command+S event captured!");
     event.preventDefault();
-    checkWorkspaceSyntaxStatus();
+    let errors_returned = checkWorkspaceSyntaxStatus();
   }
   if ((event.ctrlKey || event.metaKey) && event.key === "f") {
     console.log("Hey! Ctrl+F or Command+F event captured!");
@@ -2737,7 +2743,7 @@ function populateActionModuleByCode(node_id) {
   textarea = document
     .querySelector(`div#statement-${node_id}-0-action-only`)
     .querySelector(`textarea`);
-  textarea.value = "User should supply the value in some way, shape, or form";
+  textarea.placeholder = "";
   // Inputs
   textarea = document.querySelector(`div#formatable-input-field-${node_id}`);
   // Reattach the event listener for inputs.
@@ -3031,6 +3037,8 @@ function checkWorkspaceSyntaxStatus() {
      TODO: Shouldn't worry about it right NOW... We still have bigger fish to fry... 
   */
   current_workspace = global_flow_editors[global_source_workspace];
+  var errors_returned = new Set();
+  let syntax_check_failed = false;
   current_workspace_content = document
     .querySelector(`div#drawflow-${global_source_workspace}`)
     .querySelector(`.drawflow`);
@@ -3041,68 +3049,404 @@ function checkWorkspaceSyntaxStatus() {
     /* Short circuit if we haven't made any changes to the workspace. 
         Or all the changes have been removed. 
         In that case we ALWAYS switch the status light to green. */
-    document.querySelector(
-      `div#${global_source_workspace}-status-circle-lime`,
-    ).style.display = "inline-block";
-    document.querySelector(
-      `div#${global_source_workspace}-status-circle-yellow`,
-    ).style.display = "none";
-    document.querySelector(
-      `div#${global_source_workspace}-status-circle-red`,
-    ).style.display = "none";
-    document.querySelector(
-      `div#${global_source_workspace}-status-circle-blue`,
-    ).style.display = "none";
+    updateStatusLight("lime");
     return;
   }
-  /* TODO: Check for unconnected nodes. */
 
-  /* Check for unnamed and duplicate-named modules */
+  let workplace_nodes = document
+    .querySelectorAll(
+      `div.drawflow-child#drawflow-${global_source_workspace}`,
+    )[0]
+    .querySelector("div.drawflow")
+    .querySelectorAll("div.parent-node");
+
+  let detectable_inputs = new Set();
+  let detectable_outputs = new Set();
+  let connections_with_repeated_outputs = new Set();
+
+  for (let node of workplace_nodes) {
+    // Finds whether these nodes have open inputs and outputs!!!
+    if (node.childNodes.length == 0) {
+      // There are orphaned nodes. It's an oversight that I have no time to fix.
+      continue;
+    }
+
+    let child_node = node.childNodes[0];
+    let child_id = child_node.id;
+    let input_receptors = child_node.querySelector("div.inputs").childNodes;
+    let output_receptors = child_node.querySelector("div.outputs").childNodes;
+
+    if (input_receptors.length) {
+      // Each node only has one input receptor.
+      let input_receptor = input_receptors[0];
+      let input_receptor_class_name = input_receptor.className;
+      detectable_inputs.add(`${child_id} ${input_receptor_class_name}`);
+    }
+    if (output_receptors.length) {
+      // Each node only has one output receptor.
+      let output_receptor = output_receptors[0];
+      let output_receptor_class_name = output_receptor.className;
+      detectable_outputs.add(`${child_id} ${output_receptor_class_name}`);
+    }
+  }
+
+  let workplace_connections = document
+    .querySelectorAll(
+      `div.drawflow-child#drawflow-${global_source_workspace}`,
+    )[0]
+    .querySelector("div.drawflow")
+    .querySelectorAll('svg[class^="connection"]');
+
+  if (workplace_connections.length) {
+    for (let connection of workplace_connections) {
+      let connection_name = connection.getAttribute("class");
+      let connection_name_segments = connection_name.split(" ");
+
+      let node_in_match = connection_name.match(/node_in_(\w+-\d+)/);
+      let node_in = node_in_match ? node_in_match[1] : null;
+
+      let node_out_match = connection_name.match(/node_out_(\w+-\d+)/);
+      let node_out = node_out_match ? node_out_match[1] : null;
+
+      let node_in_input_receptor =
+        connection_name_segments[connection_name_segments.length - 2];
+      let node_out_output_receptor =
+        connection_name_segments[connection_name_segments.length - 3];
+      // detect nodes and receptor pairs.
+      if (detectable_inputs.has(`${node_in} input ${node_in_input_receptor}`)) {
+        detectable_inputs.delete(`${node_in} input ${node_in_input_receptor}`);
+      }
+
+      if (
+        detectable_outputs.has(`${node_out} output ${node_out_output_receptor}`)
+      ) {
+        detectable_outputs.delete(
+          `${node_out} output ${node_out_output_receptor}`,
+        );
+      } else {
+        // We know that this output is connected to multiple inputs. Therefore, they go into a separate bin.
+        connections_with_repeated_outputs.add(connection_name);
+      }
+    }
+  }
+
+  if (detectable_inputs.size || detectable_outputs.size) {
+    /* E1: Unconnected inputs / outputs */
+    syntax_check_failed = true;
+    errors_returned.add("E1: Unconnected inputs / outputs");
+  }
+
+  connections_with_repeated_outputs.forEach((connection) => {
+    let side_by_side = document
+      .querySelectorAll(
+        `div.drawflow-child#drawflow-${global_source_workspace}`,
+      )[0]
+      .querySelector(`div.side-by-side-div-${connection.replace(/ /g, "-")}`);
+
+    if (side_by_side === null) {
+      /* E2: No condition box specified between connections. */
+      syntax_check_failed = true;
+      errors_returned.add(
+        "E2: No condition box specified between connections.",
+      );
+    }
+  });
+
   let node_module_top_bars = document.querySelectorAll(
     `[id^="module-element-top-bar-${global_source_workspace}"]`,
   );
   let class_name_set = new Set();
-  let early_exit = false;
   node_module_top_bars.forEach((node_module_top_bar) => {
+    variable_name_is_legal_status = checkIllegalInputNames(
+      node_module_top_bar.querySelector(`input`).value,
+    )[0];
+    console.log(variable_name_is_legal_status);
     if (
       class_name_set.has(node_module_top_bar.querySelector("input").value) ||
-      node_module_top_bar.querySelector(`input`).value == ""
+      node_module_top_bar.querySelector(`input`).value == "" ||
+      variable_name_is_legal_status == false
     ) {
-      document.querySelector(
-        `div#${global_source_workspace}-status-circle-lime`,
-      ).style.display = "none";
-      document.querySelector(
-        `div#${global_source_workspace}-status-circle-yellow`,
-      ).style.display = "none";
-      document.querySelector(
-        `div#${global_source_workspace}-status-circle-red`,
-      ).style.display = "inline-block";
-      document.querySelector(
-        `div#${global_source_workspace}-status-circle-blue`,
-      ).style.display = "none";
-      early_exit = true;
+      /* E3: No unnamed, duplicate-named, and illegally named modules. */
+      syntax_check_failed = true;
+      errors_returned.add(
+        "E3: No unnamed, duplicate-named, and illegally named modules.",
+      );
     }
     class_name_set.add(node_module_top_bar.querySelector(`input`).value);
   });
-  if (early_exit) {
-    return;
+
+  if (global_source_workspace == "parser") {
+    for (let node of workplace_nodes) {
+      var text_content_set = new Set();
+      if (node.childNodes.length == 0) {
+        // There are orphaned nodes. It's an oversight that I defintely have no time to fix.
+        continue;
+      }
+      let child_node = node.childNodes[0];
+      let drawflow_content_node = child_node.querySelector(
+        "div.drawflow_content_node",
+      );
+      let content_module_elements =
+        drawflow_content_node.querySelectorAll("div.module-element");
+      if (!content_module_elements) {
+        continue;
+      }
+      content_module_elements.forEach((content_module_element) => {
+        if (content_module_element.id.startsWith("statement")) {
+          if (!text_content_set.has(content_module_element.textContent)) {
+            text_content_set.add(content_module_element.textContent);
+          } else {
+            /* E4: No duplicate dropdown options for state modules. */
+            syntax_check_failed = true;
+            errors_returned.add(
+              "E4: No duplicate dropdown options for state modules.",
+            );
+          }
+
+          dropdown_items = content_module_element.querySelectorAll(
+            "button.dropdown-item",
+          );
+
+          if (
+            Array.from(dropdown_items).some(
+              (item) =>
+                item.textContent.includes("Menu ▾") ||
+                item.textContent.includes("Target ▾"),
+            )
+          ) {
+            /* E5: Dropdown options have to be specified for state modules. */
+            syntax_check_failed = true;
+            errors_returned.add(
+              "E5: Dropdown options have to be specified for state modules.",
+            );
+          }
+        }
+      });
+    }
   }
-  /* TODO: Check for undefined transition conditions */
+
+  if (global_source_workspace !== "parser") {
+    var variable_hub_element = document.querySelector(
+      `div#variable-hub-${global_source_workspace}`,
+    );
+    var variable_hub_variables = variable_hub_element.querySelectorAll(
+      `div.variable-hub-variables`,
+    );
+    var variable_hub_variable_names = new Set();
+    for (let variable of variable_hub_variables) {
+      let variable_name = variable.querySelector(`input`).value;
+      if (variable_name == "") {
+        /* E6: Variable hub variables have to be named. */
+        syntax_check_failed = true;
+        errors_returned.add("E6: Variable hub variables have to be named.");
+      }
+
+      if (!variable_hub_variable_names.has(variable_name)) {
+        variable_hub_variable_names.add(variable_name);
+      } else {
+        /* E7: Variable hub variables have to be unique. */
+        syntax_check_failed = true;
+        errors_returned.add("E7: Variable hub variables have to be unique.");
+      }
+
+      let variable_function_window = variable.querySelector(
+        `div.variable-hub-variable-function-window`,
+      );
+
+      let variable_code =
+        local_variable_code_editor[
+          `${variable_function_window.id}-textarea`
+        ].getValue();
+
+      if (variable_code == "") {
+        /* E8: Variable hub variables have to have implementation. */
+        syntax_check_failed = true;
+        errors_returned.add(
+          "E8: Variable hub variables have to have implementation.",
+        );
+      }
+
+      if (
+        !(
+          /return\s+\S+/.test(variable_code) &&
+          (variable_code.match(/return/g) || []).length === 1
+        )
+      ) {
+        /* E9: Variable hub variables should have exactly one return statement. */
+        syntax_check_failed = true;
+        errors_returned.add(
+          "E9: Variable hub variables should have exactly one return statement.",
+        );
+      }
+    }
+  }
+
+  if (
+    global_source_workspace === "verify-checksum" ||
+    global_source_workspace === "compute-checksum"
+  ) {
+    let unspecified_dropbox = document
+      .querySelectorAll(
+        `div.drawflow-child#drawflow-${global_source_workspace}`,
+      )[0]
+      .querySelectorAll(`div.module_element.dropbox`);
+
+    if (unspecified_dropbox.length) {
+      /* E10: Action input arguments need to be provided. */
+      syntax_check_failed = true;
+      errors_returned.add("E10: Action input arguments need to be provided.");
+    }
+
+    let top_bar_elements = document.querySelectorAll(
+      `[id^="module-element-top-bar-${global_source_workspace}"]`,
+    );
+    for (let top_bar_element of top_bar_elements) {
+      console.log(
+        top_bar_element.getAttribute("data-match-found"),
+        top_bar_element.getAttribute("data-match-found") === "false",
+      );
+      if (top_bar_element.getAttribute("data-match-found") === "false") {
+        /* E11: Specified actions have to exist in action page. */
+        syntax_check_failed = true;
+        errors_returned.add(
+          "E11: Specified actions have to exist in action page.",
+        );
+      }
+    }
+  }
+
+  if (
+    global_source_workspace === "ingress" ||
+    global_source_workspace === "egress"
+  ) {
+    /* E15: At least one action needs to be specified. */
+    /* E16: No duplicate actions. */
+    /* E17: There should be a default action for table. */
+    // 1. Select elements based on the partial ID
+    let elements = document.querySelectorAll(
+      `div[id^="aux-module-element-top-bar-${global_source_workspace}"]`,
+    );
+
+    elements.forEach((element) => {
+      // 2. Loop based on node-name (node-3, for example)
+      let nodeMatches = element.id.match(/node-\d+/);
+      if (nodeMatches) {
+        let nodeValue = nodeMatches[0];
+
+        // 3. Loop on the last word (size, for example)
+        let lastWordMatches = element.id.match(/[^-]+$/); // Match the last word after a hyphen
+        if (lastWordMatches) {
+          let lastWord = lastWordMatches[0];
+          if (lastWord === "size") {
+            // Extract and check the size value
+            let size_input = element.querySelector("input");
+            const sizeValue = parseInt(size_input.value);
+
+            if (
+              !size_input.value ||
+              isNaN(sizeValue) ||
+              sizeValue < 1 ||
+              sizeValue > 1024
+            ) {
+              /* E12: Table size needs to be specified, within range, and parseable. */
+              syntax_check_failed = true;
+              errors_returned.add(
+                "E12: Table size needs to be specified, within range, and parseable.",
+              );
+            }
+          }
+
+          if (lastWord === "keys") {
+            var unique_input_values = new Set();
+            console.log(element, "lalala");
+            element
+              .querySelector(
+                `div#table-key-pad-container-${global_source_workspace}-${nodeValue}`,
+              )
+              .querySelectorAll(`div.table-key`)
+              .forEach((table_key) => {
+                var input = table_key.querySelector("input");
+                if (input.value == "") {
+                  /* E13: Table keys need to have a valid name. */
+                  syntax_check_failed = true;
+                  errors_returned.add(
+                    "E13: Table keys need to have a valid name.",
+                  );
+                }
+
+                const parts = input.value.split(":");
+
+                if (
+                  parts.length !== 2 || // There should be exactly two parts
+                  !parts[0].trim() || // table_key should not be empty after trimming spaces
+                  !keyMatchingConditions.includes(parts[1].trim()) // The trimmed branch condition should be in our list
+                ) {
+                  /* E14: Table keys need to have a valid matching condition. */
+                  syntax_check_failed = true;
+                  errors_returned.add(
+                    "E14: Table keys need to have a valid matching condition.",
+                  );
+                }
+
+                if (unique_input_values.has(input.value)) {
+                  /* E15: Table keys need to be unique. */
+                  syntax_check_failed = true;
+                } else {
+                  unique_input_values.add(input.value);
+                  errors_returned.add("E15: Table keys need to be unique.");
+                }
+              });
+          }
+
+          if (lastWord === "actions") {
+            var unique_input_values = new Set();
+            console.log(element, "lalala");
+            element
+              .querySelector(
+                `div#table-action-pad-container-${global_source_workspace}-${nodeValue}`,
+              )
+              .querySelectorAll(`div.table-key`)
+              .forEach((table_key) => {
+                var input = table_key.querySelector("input");
+                if (input.value == "") {
+                  /* E16: Table actions need to have a valid name. */
+                  syntax_check_failed = true;
+                  errors_returned.add(
+                    "E16: Table actions need to have a valid name.",
+                  );
+                }
+
+                const parts = input.value.split(":");
+
+                if (unique_input_values.has(input.value)) {
+                  /* E17: Table actions need to be unique. */
+                  syntax_check_failed = true;
+                  errors_returned.add("E17: Table actions need to be unique.");
+                } else {
+                  unique_input_values.add(input.value);
+                }
+              });
+
+            if (!element.querySelector("div.default-tab")) {
+              /* E18: Table needs to have a default action. */
+              syntax_check_failed = true;
+              errors_returned.add("E18: Table needs to have a default action.");
+            }
+          }
+        }
+      }
+    });
+  }
+
+  if (syntax_check_failed) {
+    // Report all reasons for failure.
+    updateStatusLight("red");
+    return errors_returned;
+  }
 
   /* Everything passes, update the status light to blue. */
-  document.querySelector(
-    `div#${global_source_workspace}-status-circle-lime`,
-  ).style.display = "none";
-  document.querySelector(
-    `div#${global_source_workspace}-status-circle-yellow`,
-  ).style.display = "none";
-  document.querySelector(
-    `div#${global_source_workspace}-status-circle-red`,
-  ).style.display = "none";
-  document.querySelector(
-    `div#${global_source_workspace}-status-circle-blue`,
-  ).style.display = "inline-block";
-  return;
+  updateStatusLight("blue");
+  return errors_returned;
 }
 
 function adjustWorkspaceWidth() {
@@ -3673,6 +4017,72 @@ function attachSVGDisplayBox(query_id) {
   outerdiv.style.textAlign = "center";
 
   return outerdiv;
+}
+
+function updateStatusLight(status) {
+  document.querySelector(
+    `div#${global_source_workspace}-status-circle-lime`,
+  ).style.display = status === "lime" ? "inline-block" : "none";
+  document.querySelector(
+    `div#${global_source_workspace}-status-circle-yellow`,
+  ).style.display = status === "yellow" ? "inline-block" : "none";
+  document.querySelector(
+    `div#${global_source_workspace}-status-circle-red`,
+  ).style.display = status === "red" ? "inline-block" : "none";
+  document.querySelector(
+    `div#${global_source_workspace}-status-circle-blue`,
+  ).style.display = status === "blue" ? "inline-block" : "none";
+}
+
+function checkIllegalInputNames(name) {
+  // List of JavaScript reserved keywords. You might want to expand this list
+  // based on your specific use case or the programming language in focus.
+  const RESERVED_KEYWORDS = [
+    "break",
+    "case",
+    "catch",
+    "class",
+    "const",
+    "continue",
+    "debugger",
+    "default",
+    "delete",
+    "do",
+    "else",
+    "export",
+    "extends",
+    "finally",
+    "for",
+    "function",
+    "if",
+    "import",
+    "in",
+    "instanceof",
+    "new",
+    "return",
+    "super",
+    "switch",
+    "this",
+    "throw",
+    "try",
+    "typeof",
+    "var",
+    "void",
+    "while",
+    "with",
+    "yield",
+  ];
+
+  // Check if the name is a reserved keyword
+  if (RESERVED_KEYWORDS.includes(name)) {
+    return [false, `${name} is a reserved keyword.`];
+  }
+
+  // Use a regular expression to check the validity based on character rules
+  // Updated to only allow variable names starting with letters
+  const isValid =
+    /^[a-zA-Z][a-zA-Z0-9_]*$/.test(name) && name.trim().split(" ").length == 1;
+  return [isValid, isValid ? `${name} is an invalid variable name.` : "OK"];
 }
 
 function closeIDEHelp() {
