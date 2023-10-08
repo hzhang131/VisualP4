@@ -27,7 +27,6 @@
   z-index: 5;
 }
 
-
 .file-selector-div {
   position: fixed;
   top: 0%;
@@ -48,7 +47,7 @@
 
 .module-element {
   position: relative;
-  font-family: 'Courier New', Courier, monospace;
+  font-family: "Courier New", Courier, monospace;
   margin-bottom: 2px;
   display: flex;
   flex-direction: row;
@@ -71,7 +70,6 @@
   position: relative;
   display: inline-block;
 }
-
 
 .dropdown button {
   background-color: #f9f9f9;
@@ -99,7 +97,6 @@
   z-index: 1;
 }
 
-
 .dropdown:hover .dropdown-content {
   display: block;
   max-height: 200px;
@@ -115,12 +112,12 @@
   display: block;
   transition: background-color 0.3s ease;
   margin-right: 10px;
-  font-family: 'Courier New', Courier, monospace;
+  font-family: "Courier New", Courier, monospace;
 }
 
 .dropdown-item:hover {
   background-color: #f1f1f1;
-  font-family: 'Courier New', Courier, monospace;
+  font-family: "Courier New", Courier, monospace;
 }
 
 .dropdown-container {
@@ -166,12 +163,14 @@ button:hover {
 
 .headers-page {
   display: block;
-  background-color: #EEA47F;
+  background-color: #eea47f;
   position: absolute;
   z-index: 10;
   top: 5%;
   transform: translateX(-100%);
-  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+  transition:
+    transform 0.3s ease-in-out,
+    opacity 0.3s ease-in-out;
   opacity: 0;
   height: 0;
   overflow: auto;
@@ -186,7 +185,9 @@ button:hover {
   z-index: 10;
   top: 5%;
   transform: translateX(-100%);
-  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+  transition:
+    transform 0.3s ease-in-out,
+    opacity 0.3s ease-in-out;
   opacity: 0;
   height: 0;
   overflow: auto;
@@ -200,7 +201,9 @@ button:hover {
   opacity: 1;
   width: 100%;
   height: 100%;
-  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+  transition:
+    transform 0.3s ease-in-out,
+    opacity 0.3s ease-in-out;
 }
 
 /* Actions Page Search Bar Container */
@@ -215,8 +218,8 @@ button:hover {
   /* Subtle shadow for depth */
   overflow: hidden;
   top: 2%;
-  left: 40%
-    /* To ensure any child elements do not overflow the container */
+  left: 40%;
+  /* To ensure any child elements do not overflow the container */
 }
 
 /* Search Input */
@@ -292,7 +295,9 @@ button:hover {
   opacity: 1;
   width: 100%;
   height: 100%;
-  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+  transition:
+    transform 0.3s ease-in-out,
+    opacity 0.3s ease-in-out;
 }
 
 .headers-page-item {
@@ -305,7 +310,8 @@ button:hover {
   font-family: "Courier New", Courier, monospace;
   color: #333;
   transition: transform 0.3s ease;
-  overflow-x: scroll
+  overflow-x: scroll;
+  background-color: beige;
 }
 
 /* Optional: Additional styling for the headers-page-item divs */
@@ -328,7 +334,7 @@ button:hover {
   margin: 0 10px 20px 0;
   transition: box-shadow 0.3s ease;
   cursor: pointer;
-  background-color: #F7F7F7;
+  background-color: #f7f7f7;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   width: 275px;
 }
@@ -341,7 +347,7 @@ button:hover {
   font-size: 16px;
   font-weight: bold;
   padding: 8px 12px;
-  background-color: #D0DAE5;
+  background-color: #d0dae5;
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
   margin-bottom: 10px;
@@ -368,7 +374,7 @@ button:hover {
 }
 
 .data-container .data-field span:first-child {
-  color: #A0A0A0;
+  color: #a0a0a0;
 }
 
 .data-container .data-field span:last-child {
@@ -431,11 +437,10 @@ button:hover {
 }
 
 .action-statement:hover {
-  background-color: #E65A49;
+  background-color: #e65a49;
   /* slightly darker background on hover */
   box-shadow: 0px 6px 10px rgba(0, 0, 0, 0.15);
   /* a deeper shadow for "lifting" effect on hover */
-
 }
 
 #autocompleteBase {
@@ -455,14 +460,14 @@ button:hover {
   /* For better control over child elements */
   border: none;
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-  font-family: 'Courier New', Courier, monospace;
+  font-family: "Courier New", Courier, monospace;
   font-size: 16px;
   font-weight: 500;
   color: #333;
   text-align: center;
   padding: 8px 16px;
   margin: 4px;
-  background-color: #E65A49;
+  background-color: #e65a49;
   border-radius: 4px;
   transition: all 0.3s ease;
   cursor: pointer;
@@ -476,7 +481,7 @@ button:hover {
   outline: none;
   color: black;
   z-index: 2;
-  font-family: 'Courier New', Courier, monospace;
+  font-family: "Courier New", Courier, monospace;
   width: 100%;
   flex: 1;
   resize: none;
@@ -509,8 +514,8 @@ button:hover {
   flex-direction: column;
 }
 
-
-.buttons.left, .buttons.right {
+.buttons.left,
+.buttons.right {
   flex: 1;
 }
 
@@ -519,7 +524,6 @@ button:hover {
   display: flex;
   justify-content: space-between;
 }
-
 
 .circle {
   display: inline-block;
@@ -557,26 +561,26 @@ button:hover {
 .variable-hub {
   position: fixed;
   top: 5%;
-  width: calc(100% - 1%); 
-  min-height: 55px; 
-  background-color: #F0E68C; /* softer golden color */
+  width: calc(100% - 1%);
+  min-height: 55px;
+  background-color: #f0e68c; /* softer golden color */
   overflow: auto;
   margin: 0.5%;
   padding: 5px;
   display: flex;
-  flex-wrap: wrap; 
+  flex-wrap: wrap;
   align-items: flex-start;
-  border-radius: 12px; 
-  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2); /* add some depth */
+  border-radius: 12px;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2); /* add some depth */
   cursor: pointer;
 }
 
 .variable-hub-variables {
-  background-color: #4682B4; /* softer navy blue */
+  background-color: #4682b4; /* softer navy blue */
   align-items: center;
-  border: 1px solid #B0C4DE; /* softer border color */
+  border: 1px solid #b0c4de; /* softer border color */
   border-radius: 12px; /* more rounded corners */
-  min-width: 100px; 
+  min-width: 100px;
   height: 45px;
   margin: 5px 10px; /* more horizontal spacing */
   padding: 5px 10px; /* internal padding for breathing room */
@@ -587,18 +591,18 @@ button:hover {
 }
 
 .variable-hub-variables:hover {
-  background-color: #5A9ACD; /* slightly lighter navy for hover */
+  background-color: #5a9acd; /* slightly lighter navy for hover */
 }
 
 .variable-hub-variable-text-field {
   flex-grow: 1;
   border: none;
   background-color: transparent;
-  color: #F8F8FF;
+  color: #f8f8ff;
   font-size: 20px;
   margin-right: 10px;
   outline: none;
-  font-family: 'Courier New', Courier, monospace;
+  font-family: "Courier New", Courier, monospace;
 }
 
 .variable-hub-variable-text-field:focus {
@@ -613,11 +617,11 @@ button:hover {
 }
 
 .custom-background {
-  background-color: black;
+  background-color: white;
 }
 
 .custom-codemirror-text-color {
-  color: lime;
+  color: black;
 }
 
 #icons-container {
@@ -651,8 +655,8 @@ button:hover {
 }
 
 .module-element.complete-dropbox {
-  background-color: #8a2be2;  
-  border: 5px solid white; 
+  background-color: #8a2be2;
+  border: 5px solid white;
   border-radius: 15px;
   padding: 20px;
   margin: 5px;
@@ -672,12 +676,16 @@ button:hover {
 .size-illustration {
   width: 150px;
   height: 20px;
-  background-color: rgb(126, 111, 130); /* A slightly lighter shade of the background */
+  background-color: rgb(
+    126,
+    111,
+    130
+  ); /* A slightly lighter shade of the background */
   margin: auto;
 }
 
 .size-input {
-  width: 50px;  
+  width: 50px;
   border: 1px solid white;
   background-color: gold;
   color: white;
@@ -688,7 +696,7 @@ button:hover {
 .battery-container {
   width: 150px;
   height: 20px;
-  border: 1px solid #F8F3C6;
+  border: 1px solid #f8f3c6;
   border-radius: 3px;
   position: relative;
   background-color: gold;
@@ -702,14 +710,14 @@ button:hover {
 }
 
 .table-key-pad-container {
-  background-color: #F8F3C6;
+  background-color: #f8f3c6;
   margin: 6px;
   min-height: 40px;
   min-width: 240px;
 }
 
 .table-action-pad-container {
-  background-color: #F8F3C6;
+  background-color: #f8f3c6;
   margin: 6px;
   min-height: 40px;
   min-width: 240px;
@@ -738,36 +746,43 @@ button:hover {
   margin: auto;
   background: transparent;
   font-size: 20px;
-  border: 1px solid #ccc;  /* You can modify this as per your color scheme */
+  border: 1px solid #ccc; /* You can modify this as per your color scheme */
   padding: 4px 8px;
-  border-radius: 4px;     /* Adds a bit of curvature to the input's border */
-  outline: none;          /* Removes the default browser outline */
+  border-radius: 4px; /* Adds a bit of curvature to the input's border */
+  outline: none; /* Removes the default browser outline */
   transition: border-color 0.3s; /* Optional: Smooth transition on focus */
 }
 
 .action-input:focus {
-  border-color: #007BFF;  /* Change color when the input is focused */
+  border-color: #007bff; /* Change color when the input is focused */
 }
 
-.github-logo a:hover img, .p4logo a:hover img {
-  transform: scale(1.1);    /* Scales the image to 110% of its original size */
+.github-logo a:hover img,
+.p4logo a:hover img {
+  transform: scale(1.1); /* Scales the image to 110% of its original size */
   transition: transform 0.3s ease-in-out; /* Smooth transition effect */
 }
 
 /* Ensure the images don't overflow or shift other content while scaling */
-.github-logo, .p4logo {
+.github-logo,
+.p4logo {
   overflow: hidden;
 }
 
 .visualp4-logo {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Sample font */
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; /* Sample font */
   font-size: 24px;
   color: #008080; /* Matching the color you used for buttons */
   text-shadow: 2px 2px 4px #aaa; /* Give it a slight shadow for depth */
   border: 2px solid #008080;
   padding: 5px 15px;
   border-radius: 25px;
-  background-color: rgba(255, 255, 255, 0.1); /* Slight white background for visibility */
+  background-color: rgba(
+    255,
+    255,
+    255,
+    0.1
+  ); /* Slight white background for visibility */
   margin-right: 10px; /* Spacing between the logo and the author's name */
 }
 
@@ -779,8 +794,131 @@ button:hover {
 }
 
 .author-name {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Sample font */
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; /* Sample font */
   font-size: 18px; /* Smaller font size than the logo */
   color: #008080; /* Matching the color you used for buttons */
   align-self: center;
+}
+
+.error-popup {
+  position: fixed;
+  top: 10%;
+  right: 1%;
+  width: auto;
+  min-width: 400px;
+  max-width: 480px;
+  z-index: 1000;
+  transition:
+    transform 0.4s,
+    opacity 0.4s;
+  transform: translateY(-50px);
+  opacity: 0.9;
+  font-family: "Arial", sans-serif; /* Changed font family to sans-serif */
+  color: #f5f5f5;
+}
+
+.popup-content {
+  padding: 20px 30px;
+  background-color: #3c4f65;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  gap: 10px;
+  justify-content: center;
+}
+
+.error-header-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* Distributes child elements evenly */
+  width: 100%;
+}
+
+.error-header {
+  font-size: 20px;
+  font-weight: bold;
+  color: #ecf0f1;
+  margin: 0;
+  flex-grow: 1; /* Allows the header to grow, pushing the "Dismiss" button to the right */
+}
+
+.error-icon {
+  font-size: 24px;
+  color: red;
+  flex-shrink: 0;
+  margin-right: 10px;
+}
+
+.error-count {
+  margin-left: auto; /* Push to the rightmost side */
+  color: #ecf0f1;
+  cursor: pointer;
+}
+
+.error-list {
+  display: none; /* Initially hidden */
+  font-family: "Arial", sans-serif;
+  list-style: none;
+  padding: 0;
+  text-align: left;
+  color: #f5f5f5;
+}
+
+.error-list li {
+  padding: 5px 0;
+}
+
+.error-details {
+  margin-top: 10px; /* Some spacing between the header and the error details */
+  line-height: 1.5; /* Adjust line spacing for readability */
+}
+
+.expand-details {
+  display: block; /* Make this a block element so it goes on a new line */
+  text-decoration: underline;
+  margin-top: 5px; /* Some space between the error count and the expand details text */
+  cursor: pointer;
+}
+
+.close-popup {
+  color: #ecf0f1;
+  font-size: 14px; /* Adjust the size for better visibility */
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 5px; /* Give it a slightly rounded corner */
+  /* border: 1px solid white; This combines border-width and border-color */
+  padding: 5px 5px; /* Increase horizontal padding for better appearance */
+  cursor: pointer;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+}
+
+.close-popup:hover {
+  background-color: rgba(0, 0, 0, 0.2);
+  color: #f5f5f5;
+}
+
+.popup-hidden {
+  display: none;
+}
+
+#searchInput:hover,
+#searchInput:focus {
+  border-color: #42a5f5;
+}
+
+.filterable-button:hover {
+  background-color: #2196f3;
+}
+
+.button-container {
+  max-height: 240px; /* Adjust this based on your button size and margin. For example, if each button has a total height (including margins) of 40px, then 6 buttons would be 240px */
+  min-height: 70px;
+  overflow: hidden;
+  display: flex; /* Flexbox for centering */
+  justify-content: center; /* Center horizontally */
+  align-items: center; /* Center vertically */
 }

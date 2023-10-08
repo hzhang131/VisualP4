@@ -1,233 +1,1089 @@
 {% load static %}
 
-<!DOCTYPE html>
+<!doctype html>
 <html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>VisualP4 IDE</title>
+    <link
+      rel="icon"
+      href="https://avatars.githubusercontent.com/u/10765181?s=200&v=4"
+      type="image/png"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.2/codemirror.min.css"
+    />
+    <link rel="stylesheet" href="{% static 'style.css' %}" />
+    <link rel="stylesheet" href="{% static 'custom.css' %}" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/jerosoler/Drawflow/dist/drawflow.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.7/dist/css/autoComplete.min.css"
+    />
+    <script src="{% static 'drawflow.js' %}"></script>
+    <script src="{% static 'metadata.js' %}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.2/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.2/mode/javascript/javascript.min.js"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://mozilla.github.io/pdf.js/build/pdf.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3/dist/pptxgen.bundle.js"></script>
+    <script src="{% static 'main.js' %}"></script>
+  </head>
 
-<head>
-  <meta charset="UTF-8">
-  <title>VisualP4 IDE</title>
-  <link rel="icon" href="https://avatars.githubusercontent.com/u/10765181?s=200&v=4" type="image/png">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.2/codemirror.min.css">
-  <link rel="stylesheet" href="{% static 'style.css' %}">
-  <link rel="stylesheet" href="{% static 'custom.css' %}">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jerosoler/Drawflow/dist/drawflow.min.css">
-  <link rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/@tarekraafat/autocomplete.js@10.2.7/dist/css/autoComplete.min.css">
-  <script src="{% static 'drawflow.js' %}"></script>
-  <script src="{% static 'metadata.js' %}"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.2/codemirror.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.2/mode/javascript/javascript.min.js"></script>
-  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-  <script src="https://mozilla.github.io/pdf.js/build/pdf.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3/dist/pptxgen.bundle.js"></script>
-  <script src="{% static 'main.js' %}"></script>
-</head>
+  <script>
+    function openGithub() {
+      window.open("https://github.com/hzhang131/VisualP4", "_blank");
+    }
 
-<script>
-function openGithub() {
-  window.open('https://github.com/hzhang131/VisualP4', '_blank');
-}
+    function openP4Forum() {
+      window.open("https://forums.p4.org/", "_blank");
+    }
+  </script>
 
-function openP4Forum() {
-  window.open('https://forums.p4.org/', '_blank');
-}
-</script>
+  <body style="background-color: #7cdedc">
+    <!-- On load, we render the parser page first! -->
+    <div class="drawflow-child" id="drawflow-parser" style="display: block">
+      <div id="error-popup-parser" class="error-popup popup-hidden">
+        <div class="popup-content" id="popup-content-parser">
+          <div class="error-header-container">
+            <span class="error-icon">
+              <i
+                class="fas fa-exclamation-circle"
+                id="fail-icon-parser"
+                style="display: none"
+              ></i>
+              <i
+                class="fas fa-check-circle"
+                id="pass-icon-parser"
+                style="display: none; color: green"
+              ></i>
+            </span>
+            <div class="error-header">Build Status Report</div>
+            <span
+              class="close-popup"
+              id="close-popup-parser"
+              onclick="closePopup()"
+              >Dismiss</span
+            >
+          </div>
+          <div class="error-details" id="error-details-parser">
+            <span class="error-count" id="error-count-parser"></span>
+            <span
+              class="expand-details"
+              id="expand-details-parser"
+              onclick="toggleErrorDetails()"
+              >Please click here to see error details.</span
+            >
+          </div>
+          <ul class="error-list" id="error-list-parser"></ul>
+        </div>
+      </div>
+    </div>
 
+    <div
+      class="drawflow-child"
+      id="drawflow-verify-checksum"
+      style="display: none"
+    >
+      <div id="error-popup-verify-checksum" class="error-popup popup-hidden">
+        <div class="popup-content" id="popup-content-verify-checksum">
+          <div class="error-header-container">
+            <span class="error-icon">
+              <i
+                class="fas fa-exclamation-circle"
+                id="fail-icon-verify-checksum"
+                style="display: none"
+              ></i>
+              <i
+                class="fas fa-check-circle"
+                id="pass-icon-verify-checksum"
+                style="display: none; color: green"
+              ></i>
+            </span>
+            <div class="error-header">Build Status Report</div>
+            <span
+              class="close-popup"
+              id="close-popup-verify-checksum"
+              onclick="closePopup()"
+              >Dismiss</span
+            >
+          </div>
+          <div class="error-details" id="error-details-verify-checksum">
+            <span class="error-count" id="error-count-verify-checksum"></span>
+            <span
+              class="expand-details"
+              id="expand-details-verify-checksum"
+              onclick="toggleErrorDetails()"
+              >Please click here to see error details.</span
+            >
+          </div>
+          <ul class="error-list" id="error-list-verify-checksum"></ul>
+        </div>
+      </div>
+    </div>
 
-<body style="background-color:#7CDEDC;">
-  <!-- On load, we render the parser page first! -->
-  <div class = "drawflow-child" id="drawflow-parser"></div>
-  <div class = "drawflow-child" id="drawflow-verify-checksum" style = "display: none;"></div>
-  <div class = "drawflow-child" id="drawflow-ingress" style = "display: none;"></div>
-  <div class = "drawflow-child" id="drawflow-egress" style = "display: none;"></div>
-  <div class = "drawflow-child" id="drawflow-compute-checksum" style = "display: none;"></div>
-  <div class = "drawflow-child" id="drawflow-deparser" style = "display: none;"></div>
-  <div class="ide-help-page" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #e6f7ff; z-index: 20; display: none; box-sizing: border-box;">
+    <div class="drawflow-child" id="drawflow-ingress" style="display: none">
+      <div id="error-popup-ingress" class="error-popup popup-hidden">
+        <div class="popup-content" id="popup-content-ingress">
+          <div class="error-header-container">
+            <span class="error-icon">
+              <i
+                class="fas fa-exclamation-circle"
+                id="fail-icon-ingress"
+                style="display: none"
+              ></i>
+              <i
+                class="fas fa-check-circle"
+                id="pass-icon-ingress"
+                style="display: none; color: green"
+              ></i>
+            </span>
+            <div class="error-header">Build Status Report</div>
+            <span
+              class="close-popup"
+              id="close-popup-ingress"
+              onclick="closePopup()"
+              >Dismiss</span
+            >
+          </div>
+          <div class="error-details" id="error-details-ingress">
+            <span class="error-count" id="error-count-ingress"></span>
+            <span
+              class="expand-details"
+              id="expand-details-ingress"
+              onclick="toggleErrorDetails()"
+              >Please click here to see error details.</span
+            >
+          </div>
+          <ul class="error-list" id="error-list-ingress"></ul>
+        </div>
+      </div>
+    </div>
 
-    <!-- Back button on the top right -->
-    <div style="position: absolute; top: 10px; left: 10px;">
+    <div class="drawflow-child" id="drawflow-egress" style="display: none">
+      <div id="error-popup-egress" class="error-popup popup-hidden">
+        <div class="popup-content" id="popup-content-egress">
+          <div class="error-header-container">
+            <span class="error-icon">
+              <i
+                class="fas fa-exclamation-circle"
+                id="fail-icon-egress"
+                style="display: none"
+              ></i>
+              <i
+                class="fas fa-check-circle"
+                id="pass-icon-egress"
+                style="display: none; color: green"
+              ></i>
+            </span>
+            <div class="error-header">Build Status Report</div>
+            <span
+              class="close-popup"
+              id="close-popup-egress"
+              onclick="closePopup()"
+              >Dismiss</span
+            >
+          </div>
+          <div class="error-details" id="error-details-egress">
+            <span class="error-count" id="error-count-egress"></span>
+            <span
+              class="expand-details"
+              id="expand-details-egress"
+              onclick="toggleErrorDetails()"
+              >Please click here to see error details.</span
+            >
+          </div>
+          <ul class="error-list" id="error-list-egress"></ul>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="drawflow-child"
+      id="drawflow-compute-checksum"
+      style="display: none"
+    >
+      <div id="error-popup-compute-checksum" class="error-popup popup-hidden">
+        <div class="popup-content" id="popup-content-compute-checksum">
+          <div class="error-header-container">
+            <span class="error-icon">
+              <i
+                class="fas fa-exclamation-circle"
+                id="fail-icon-compute-checksum"
+                style="display: none"
+              ></i>
+              <i
+                class="fas fa-check-circle"
+                id="pass-icon-compute-checksum"
+                style="display: none; color: green"
+              ></i>
+            </span>
+            <div class="error-header">Build Status Report</div>
+            <span
+              class="close-popup"
+              id="close-popup-compute-checksum"
+              onclick="closePopup()"
+              >Dismiss</span
+            >
+          </div>
+          <div class="error-details" id="error-details-compute-checksum">
+            <span class="error-count" id="error-count-compute-checksum"></span>
+            <span
+              class="expand-details"
+              id="expand-details-compute-checksum"
+              onclick="toggleErrorDetails()"
+              >Please click here to see error details.</span
+            >
+          </div>
+          <ul class="error-list" id="error-list-compute-checksum"></ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="drawflow-child" id="drawflow-deparser" style="display: none">
+      <div id="error-popup-deparser" class="error-popup popup-hidden">
+        <div class="popup-content" id="popup-content-deparser">
+          <div class="error-header-container">
+            <span class="error-icon">
+              <i
+                class="fas fa-exclamation-circle"
+                id="fail-icon-deparser"
+                style="display: none"
+              ></i>
+              <i
+                class="fas fa-check-circle"
+                id="pass-icon-deparser"
+                style="display: none; color: green"
+              ></i>
+            </span>
+            <div class="error-header">Build Status Report</div>
+            <span
+              class="close-popup"
+              id="close-popup-deparser"
+              onclick="closePopup()"
+              >Dismiss</span
+            >
+          </div>
+          <div class="error-details" id="error-details-deparser">
+            <span class="error-count" id="error-count-deparser"></span>
+            <span
+              class="expand-details"
+              id="expand-details-deparser"
+              onclick="toggleErrorDetails()"
+              >Please click here to see error details.</span
+            >
+          </div>
+          <ul class="error-list" id="error-list-deparser"></ul>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="ide-help-page"
+      style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #e6f7ff;
+        z-index: 20;
+        display: none;
+        box-sizing: border-box;
+      "
+    >
+      <!-- Back button on the top right -->
+      <div style="position: absolute; top: 10px; left: 10px">
         <!-- Modified color and style for the back button -->
-        <button onclick="closeIDEHelp()" style="font-size: 16px; padding: 10px 15px; background-color: #a2c0d4; border: none; border-radius: 5px; cursor: pointer; box-shadow: 2px 2px 10px rgba(0,0,0,0.1);">
+        <button
+          onclick="closeIDEHelp()"
+          style="
+            font-size: 16px;
+            padding: 10px 15px;
+            background-color: #a2c0d4;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+          "
+        >
           <i class="fa fa-arrow-left" aria-hidden="true"></i> Back
-        </button>    
-    </div>
+        </button>
+      </div>
 
-    <!-- Div to center the iframe -->
-    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; height: 80%;">
-        <iframe src="https://docs.google.com/presentation/d/e/2PACX-1vSycOeJbedk_KWkWKAAXIOz2KWN_FwuvmuwIHwVvLRpnIRDuSE6Go3gRC0qs8IMnQ/embed?start=false&loop=false&delayms=10000" frameborder="0" style="width:100%; height:100%;" allowfullscreen="true" mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
-    </div>
+      <div
+        class="ide-help-onboarding"
+        style="
+          width: 90%;
+          margin: 50px auto 20px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        "
+      >
+        <!-- Search Bar Container -->
+        <div style="width: 40%; text-align: center; margin-bottom: 20px">
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="Search for anything we can help you with..."
+            style="
+              width: 100%;
+              padding: 10px 15px;
+              border: 1px solid #64b5f6;
+              border-radius: 20px;
+              font-size: 16px;
+              display: inline-block;
+              box-sizing: border-box;
+              background-color: #e3f2fd;
+              outline: none;
+              transition: border-color 0.3s;
+            "
+          />
+        </div>
 
-</div>
-  <div class="headers-page">
-    <div class="headers-page-item" id="vars"> </div>
-    <div class="headers-page-item" id="typedefs"> </div>
-    <div class="headers-page-item" id="headers"> </div>
-    <div class="headers-page-item" id="structs"> </div>
-  </div>
-  <div class="actions-page">
-    <div class="actions-page-search-bar">
-      <!-- This search bar is a place holder for now, will add searching functionality later. -->
-      <input type="text" placeholder="Search Actions...">
-      <i class="fas fa-search"></i>
-      <button class="plus-action-module" onclick="addActionModule()">
-        <i class="fa-solid fa-plus"></i>
-      </button>
-    </div>
-    <div class="actions-page-items">
-    </div>
-  </div>
-  <div class="file-selector-div">
-    <div class = "buttons left">
-    <div class="buttons">
-      <button style="float:left; vertical-align: center;" id = "headers-button" onclick="HeaderDisplaySetting()"> 
-        Headers
-      </button>
-    </div>
-    <div class="buttons">
-      <button style="float:left; vertical-align: center;" id = "actions-button" onclick="ActionDisplaySetting()"> Actions </button>
-    </div>
-    </div>
-    <!-- Program Procession Starts Here -->
-    <div class="center-buttons">
-      <div class="buttons">
-        <button style = "display: flex; align-items: center; background: linear-gradient(to bottom, #406a7e, #30505e);"
-              id = "parser"  
-              onclick = "controlSwitch('parser')">
-          <span class="button-text">Parser</span> 
-          <div class="circle lime" id = "parser-status-circle-lime"></div>
-          <div class="circle yellow" id = "parser-status-circle-yellow" style = "display: none"></div>
-          <div class="circle red" id = "parser-status-circle-red" style = "display: none"></div>
-          <div class="circle blue" id = "parser-status-circle-blue" style = "display: none"></div>  
-        </button>
-      </div>
-      <div class="buttons">
-        <button style = "display: flex; align-items: center;" id = "verify-checksum" onclick = "controlSwitch('verify-checksum')">
-          <span class="button-text">VerifyChecksum</span> 
-          <div class="circle lime" id = "verify-checksum-status-circle-lime"></div>
-          <div class="circle yellow" style = "display: none" id = "verify-checksum-status-circle-yellow"></div>
-          <div class="circle red" style = "display: none" id = "verify-checksum-status-circle-red"></div> 
-          <div class="circle blue" id = "verify-checksum-status-circle-blue" style = "display: none"></div> 
-        </button>
-      </div>
-      <div class="buttons">
-        <button style = "display: flex; align-items: center;" id = "ingress" onclick = "controlSwitch('ingress')">
-          <span class="button-text">Ingress</span> 
-          <div class="circle lime" id = "ingress-status-circle-lime"></div>
-          <div class="circle yellow" style = "display: none" id = "ingress-status-circle-yellow"></div>
-          <div class="circle red" style = "display: none" id = "ingress-status-circle-red"></div>
-          <div class="circle blue" id = "ingress-status-circle-blue" style = "display: none"></div>  
-        </button>
-      </div>
-      <div class="buttons">
-        <button style = "display: flex; align-items: center;" id = "egress" onclick = "controlSwitch('egress')">
-          <span class="button-text">Egress</span> 
-          <div class="circle lime" id = "egress-status-circle-lime"></div>
-          <div class="circle yellow" style = "display: none" id = "egress-status-circle-yellow"></div>
-          <div class="circle red" style = "display: none" id = "egress-status-circle-red"></div>  
-          <div class="circle blue" id = "egress-status-circle-blue" style = "display: none"></div>
-        </button>
-      </div>
-      <div class="buttons">
-        <button style = "display: flex; align-items: center;" id = "compute-checksum" onclick = "controlSwitch('compute-checksum')">
-          <span class="button-text">ComputeChecksum</span>
-          <div class="circle lime" id = "compute-checksum-status-circle-lime"></div>
-          <div class="circle yellow" style = "display: none" id = "compute-checksum-status-circle-yellow"></div>
-          <div class="circle red" style = "display: none" id = "compute-checksum-status-circle-red"></div>  
-          <div class="circle blue" id = "compute-checksum-status-circle-blue" style = "display: none"></div>
-        </button>
-      </div>
-      <div class="buttons">
-        <button style = "display: flex; align-items: center;" id = "deparser" onclick = "controlSwitch('deparser')">
-          <span class="button-text">Deparser</span>
-          <div class="circle lime" id = "deparser-status-circle-lime"></div>
-          <div class="circle yellow" style = "display: none" id = "deparser-status-circle-yellow"></div>
-          <div class="circle red" style = "display: none" id = "deparser-status-circle-red"></div>  
-          <div class="circle blue" id = "deparser-status-circle-blue" style = "display: none"></div>
-        </button>
-      </div>
-    </div>
-    <!-- Program Procession Ends Here -->
-    <div class = "buttons right">
-      <div class="buttons">
-        <!-- Disabled for low usage... If there is a need, we can enable it again. -->
-        <!-- <button style="float:right; vertical-align: center;" onclick="CodeDisplaySetting()"> Generate Code </button> -->
-        <button id = "control-variables" style="float: right; vertical-align: center;" onclick="ToggleControlVariables()" style = "display: none;"> Control Variables </button>
-      </div>
-    </div>
-  </div>
-  <div>
-    <!-- The variable hubs default to display none, they are only triggered when we switch to the corresponding page. -->
-    <div class="variable-hub" id="variable-hub-verify-checksum" onclick = "addVariableToVariableHub()" style = "display: none;"> 
-    </div>
-    <div class="variable-hub" id="variable-hub-ingress" onclick = "addVariableToVariableHub()" style = "display: none;">
-    </div>
-    <div class="variable-hub" id="variable-hub-egress" onclick = "addVariableToVariableHub()" style = "display: none;">
-    </div>
-    <div class="variable-hub" id="variable-hub-compute-checksum" onclick = "addVariableToVariableHub()" style = "display: none;">
-    </div>
-    <div class="variable-hub" id="variable-hub-deparser" onclick = "addVariableToVariableHub()" style = "display: none;">
-    </div>
-  </div>
-  <div class="code-block-div">
-    <textarea id="code" rows="40"></textarea>
-  </div>
-
-  <div class="code-action-div" style="display: flex; align-items: center; justify-content: space-between;">
-    <!-- Grouped Icon and Slider -->
-    <div style="display: flex; align-items: center;">
-      <!-- Some icons -->
-      <div class="some-icons" style="height: 60px; display: flex; align-items: center; justify-content: center;">
-          <button onclick="createNewModule()" style="display: inline-flex; align-items: center; padding: 9.5px 10px; border: 1px solid #333; border-radius: 5px; background-color: #008080; text-decoration: none; font-family: Arial, sans-serif; font-size: 14px; cursor: pointer; height: auto;">
-            Add Module
+        <!-- Bordered Window with Buttons -->
+        <div
+          class="button-container"
+          style="
+            text-align: center;
+            border: 1px solid #64b5f6;
+            border-radius: 10px;
+            padding: 15px;
+            width: 40%;
+            box-sizing: border-box;
+            background-color: #e3f2fd;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+          "
+        >
+          <!-- Change the page count after filling in the slides deck! -->
+          <button
+            class="filterable-button"
+            style="
+              padding: 8px 12px;
+              margin: 2px;
+              font-size: 14px;
+              border: none;
+              border-radius: 10px;
+              color: white;
+              font-weight: 600;
+              cursor: pointer;
+              transition: background-color 0.3s;
+            "
+            pageNumber="1"
+            onclick="goToPageNumber(1)"
+          >
+            About
           </button>
+          <button
+            class="filterable-button"
+            style="
+              padding: 8px 12px;
+              margin: 2px;
+              font-size: 14px;
+              border: none;
+              border-radius: 10px;
+              color: white;
+              font-weight: 600;
+              cursor: pointer;
+              transition: background-color 0.3s;
+            "
+            pageNumber="1"
+            onclick="goToPageNumber(1)"
+          >
+            Build Check
+          </button>
+          <button
+            class="filterable-button"
+            style="
+              padding: 8px 12px;
+              margin: 2px;
+              font-size: 14px;
+              border: none;
+              border-radius: 10px;
+              color: white;
+              font-weight: 600;
+              cursor: pointer;
+              transition: background-color 0.3s;
+            "
+            pageNumber="2"
+            onclick="goToPageNumber(2)"
+          >
+            Header Page
+          </button>
+          <button
+            class="filterable-button"
+            style="
+              padding: 8px 12px;
+              margin: 2px;
+              font-size: 14px;
+              border: none;
+              border-radius: 10px;
+              color: white;
+              font-weight: 600;
+              cursor: pointer;
+              transition: background-color 0.3s;
+            "
+            pageNumber="2"
+            onclick="goToPageNumber(2)"
+          >
+            Action Page
+          </button>
+          <button
+            class="filterable-button"
+            style="
+              padding: 8px 12px;
+              margin: 2px;
+              font-size: 14px;
+              border: none;
+              border-radius: 10px;
+              color: white;
+              font-weight: 600;
+              cursor: pointer;
+              transition: background-color 0.3s;
+            "
+            pageNumber="3"
+            onclick="goToPageNumber(3)"
+          >
+            Parser
+          </button>
+          <button
+            class="filterable-button"
+            style="
+              padding: 8px 12px;
+              margin: 2px;
+              font-size: 14px;
+              border: none;
+              border-radius: 10px;
+              color: white;
+              font-weight: 600;
+              cursor: pointer;
+              transition: background-color 0.3s;
+            "
+            pageNumber="3"
+            onclick="goToPageNumber(3)"
+          >
+            VerifyChecksum
+          </button>
+          <button
+            class="filterable-button"
+            style="
+              padding: 8px 12px;
+              margin: 2px;
+              font-size: 14px;
+              border: none;
+              border-radius: 10px;
+              color: white;
+              font-weight: 600;
+              cursor: pointer;
+              transition: background-color 0.3s;
+            "
+            pageNumber="4"
+            onclick="goToPageNumber(4)"
+          >
+            ComputeChecksum
+          </button>
+          <button
+            class="filterable-button"
+            style="
+              padding: 8px 12px;
+              margin: 2px;
+              font-size: 14px;
+              border: none;
+              border-radius: 10px;
+              color: white;
+              font-weight: 600;
+              cursor: pointer;
+              transition: background-color 0.3s;
+            "
+            pageNumber="4"
+            onclick="goToPageNumber(4)"
+          >
+            Egress
+          </button>
+          <button
+            class="filterable-button"
+            style="
+              padding: 8px 12px;
+              margin: 2px;
+              font-size: 14px;
+              border: none;
+              border-radius: 10px;
+              color: white;
+              font-weight: 600;
+              cursor: pointer;
+              transition: background-color 0.3s;
+            "
+            pageNumber="5"
+            onclick="goToPageNumber(5)"
+          >
+            Deparser
+          </button>
+          <button
+            class="filterable-button"
+            style="
+              padding: 8px 12px;
+              margin: 2px;
+              font-size: 14px;
+              border: none;
+              border-radius: 10px;
+              color: white;
+              font-weight: 600;
+              cursor: pointer;
+              transition: background-color 0.3s;
+            "
+            pageNumber="6"
+            onclick="goToPageNumber(6)"
+          >
+            Ingress
+          </button>
+          <button
+            class="filterable-button"
+            style="
+              padding: 8px 12px;
+              margin: 2px;
+              font-size: 14px;
+              border: none;
+              border-radius: 10px;
+              color: white;
+              font-weight: 600;
+              cursor: pointer;
+              transition: background-color 0.3s;
+            "
+            pageNumber="6"
+            onclick="goToPageNumber(6)"
+          >
+            Workspaces
+          </button>
+          <button
+            class="filterable-button"
+            style="
+              padding: 8px 12px;
+              margin: 2px;
+              font-size: 14px;
+              border: none;
+              border-radius: 10px;
+              color: white;
+              font-weight: 600;
+              cursor: pointer;
+              transition: background-color 0.3s;
+            "
+            pageNumber="7"
+            onclick="goToPageNumber(7)"
+          >
+            Conditionals
+          </button>
+          <button
+            class="filterable-button"
+            style="
+              padding: 8px 12px;
+              margin: 2px;
+              font-size: 14px;
+              border: none;
+              border-radius: 10px;
+              color: white;
+              font-weight: 600;
+              cursor: pointer;
+              transition: background-color 0.3s;
+            "
+            pageNumber="7"
+            onclick="goToPageNumber(7)"
+          >
+            Introduction
+          </button>
+          <button
+            class="filterable-button"
+            style="
+              padding: 8px 12px;
+              margin: 2px;
+              font-size: 14px;
+              border: none;
+              border-radius: 10px;
+              color: white;
+              font-weight: 600;
+              cursor: pointer;
+              transition: background-color 0.3s;
+            "
+            pageNumber="8"
+            onclick="goToPageNumber(8)"
+          >
+            Local Variables
+          </button>
+          <button
+            class="filterable-button"
+            style="
+              padding: 8px 12px;
+              margin: 2px;
+              font-size: 14px;
+              border: none;
+              border-radius: 10px;
+              color: white;
+              font-weight: 600;
+              cursor: pointer;
+              transition: background-color 0.3s;
+            "
+            pageNumber="9"
+            onclick="goToPageNumber(9)"
+          >
+            Functions
+          </button>
+          <div class="empty-message" style="display: none"></div>
+          <!-- Empty div for "Such empty..." message -->
+        </div>
       </div>
-  
-      <!-- Range Slider Container -->
-      <div id="icons-container" class="slidecontainer" style="display: flex; align-items: center; margin: 0 20px;">
+
+      <!-- Div to center the iframe -->
+      <div
+        style="
+          position: absolute;
+          top: 57%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 80%;
+          height: 75%;
+        "
+      >
+        <iframe
+          src="https://docs.google.com/presentation/d/e/2PACX-1vSycOeJbedk_KWkWKAAXIOz2KWN_FwuvmuwIHwVvLRpnIRDuSE6Go3gRC0qs8IMnQ/embed?start=false&loop=false&delayms=10000"
+          frameborder="0"
+          style="width: 100%; height: 100%"
+          allowfullscreen="true"
+          mozallowfullscreen="true"
+          webkitallowfullscreen="true"
+        ></iframe>
+      </div>
+    </div>
+    <div class="headers-page">
+      <div class="headers-page-item" id="vars"></div>
+      <div class="headers-page-item" id="typedefs"></div>
+      <div class="headers-page-item" id="headers"></div>
+      <div class="headers-page-item" id="structs"></div>
+    </div>
+    <div class="actions-page">
+      <div class="actions-page-search-bar">
+        <!-- This search bar is a place holder for now, will add searching functionality later. -->
+        <input type="text" placeholder="Search Actions..." />
+        <i class="fas fa-search"></i>
+        <button class="plus-action-module" onclick="addActionModule()">
+          <i class="fa-solid fa-plus"></i>
+        </button>
+      </div>
+      <div class="actions-page-items"></div>
+    </div>
+    <div class="file-selector-div">
+      <div class="buttons left">
+        <div class="buttons">
+          <button
+            style="float: left; vertical-align: center"
+            id="headers-button"
+            onclick="HeaderDisplaySetting()"
+          >
+            Metadata
+          </button>
+        </div>
+        <div class="buttons">
+          <button
+            style="float: left; vertical-align: center"
+            id="actions-button"
+            onclick="ActionDisplaySetting()"
+          >
+            Actions
+          </button>
+        </div>
+      </div>
+      <!-- Program Procession Starts Here -->
+      <div class="center-buttons">
+        <div class="buttons">
+          <button
+            style="
+              display: flex;
+              align-items: center;
+              background: linear-gradient(to bottom, #406a7e, #30505e);
+            "
+            id="parser"
+            onclick="controlSwitch('parser')"
+          >
+            <span class="button-text">Parser</span>
+            <div class="circle lime" id="parser-status-circle-lime"></div>
+            <div
+              class="circle yellow"
+              id="parser-status-circle-yellow"
+              style="display: none"
+            ></div>
+            <div
+              class="circle red"
+              id="parser-status-circle-red"
+              style="display: none"
+            ></div>
+            <div
+              class="circle blue"
+              id="parser-status-circle-blue"
+              style="display: none"
+            ></div>
+          </button>
+        </div>
+        <div class="buttons">
+          <button
+            style="display: flex; align-items: center"
+            id="verify-checksum"
+            onclick="controlSwitch('verify-checksum')"
+          >
+            <span class="button-text">VerifyChecksum</span>
+            <div
+              class="circle lime"
+              id="verify-checksum-status-circle-lime"
+            ></div>
+            <div
+              class="circle yellow"
+              style="display: none"
+              id="verify-checksum-status-circle-yellow"
+            ></div>
+            <div
+              class="circle red"
+              style="display: none"
+              id="verify-checksum-status-circle-red"
+            ></div>
+            <div
+              class="circle blue"
+              id="verify-checksum-status-circle-blue"
+              style="display: none"
+            ></div>
+          </button>
+        </div>
+        <div class="buttons">
+          <button
+            style="display: flex; align-items: center"
+            id="ingress"
+            onclick="controlSwitch('ingress')"
+          >
+            <span class="button-text">Ingress</span>
+            <div class="circle lime" id="ingress-status-circle-lime"></div>
+            <div
+              class="circle yellow"
+              style="display: none"
+              id="ingress-status-circle-yellow"
+            ></div>
+            <div
+              class="circle red"
+              style="display: none"
+              id="ingress-status-circle-red"
+            ></div>
+            <div
+              class="circle blue"
+              id="ingress-status-circle-blue"
+              style="display: none"
+            ></div>
+          </button>
+        </div>
+        <div class="buttons">
+          <button
+            style="display: flex; align-items: center"
+            id="egress"
+            onclick="controlSwitch('egress')"
+          >
+            <span class="button-text">Egress</span>
+            <div class="circle lime" id="egress-status-circle-lime"></div>
+            <div
+              class="circle yellow"
+              style="display: none"
+              id="egress-status-circle-yellow"
+            ></div>
+            <div
+              class="circle red"
+              style="display: none"
+              id="egress-status-circle-red"
+            ></div>
+            <div
+              class="circle blue"
+              id="egress-status-circle-blue"
+              style="display: none"
+            ></div>
+          </button>
+        </div>
+        <div class="buttons">
+          <button
+            style="display: flex; align-items: center"
+            id="compute-checksum"
+            onclick="controlSwitch('compute-checksum')"
+          >
+            <span class="button-text">ComputeChecksum</span>
+            <div
+              class="circle lime"
+              id="compute-checksum-status-circle-lime"
+            ></div>
+            <div
+              class="circle yellow"
+              style="display: none"
+              id="compute-checksum-status-circle-yellow"
+            ></div>
+            <div
+              class="circle red"
+              style="display: none"
+              id="compute-checksum-status-circle-red"
+            ></div>
+            <div
+              class="circle blue"
+              id="compute-checksum-status-circle-blue"
+              style="display: none"
+            ></div>
+          </button>
+        </div>
+        <div class="buttons">
+          <button
+            style="display: flex; align-items: center"
+            id="deparser"
+            onclick="controlSwitch('deparser')"
+          >
+            <span class="button-text">Deparser</span>
+            <div class="circle lime" id="deparser-status-circle-lime"></div>
+            <div
+              class="circle yellow"
+              style="display: none"
+              id="deparser-status-circle-yellow"
+            ></div>
+            <div
+              class="circle red"
+              style="display: none"
+              id="deparser-status-circle-red"
+            ></div>
+            <div
+              class="circle blue"
+              id="deparser-status-circle-blue"
+              style="display: none"
+            ></div>
+          </button>
+        </div>
+      </div>
+      <!-- Program Procession Ends Here -->
+      <div class="buttons right">
+        <div class="buttons">
+          <!-- Disabled for low usage... If there is a need, we can enable it again. -->
+          <!-- <button style="float:right; vertical-align: center;" onclick="CodeDisplaySetting()"> Generate Code </button> -->
+          <button
+            id="control-variables"
+            style="float: right; vertical-align: center"
+            onclick="ToggleControlVariables()"
+            style="display: none"
+          >
+            Control Variables
+          </button>
+        </div>
+      </div>
+    </div>
+    <div>
+      <!-- The variable hubs default to display none, they are only triggered when we switch to the corresponding page. -->
+      <div
+        class="variable-hub"
+        id="variable-hub-verify-checksum"
+        onclick="addVariableToVariableHub()"
+        style="display: none"
+      ></div>
+      <div
+        class="variable-hub"
+        id="variable-hub-ingress"
+        onclick="addVariableToVariableHub()"
+        style="display: none"
+      ></div>
+      <div
+        class="variable-hub"
+        id="variable-hub-egress"
+        onclick="addVariableToVariableHub()"
+        style="display: none"
+      ></div>
+      <div
+        class="variable-hub"
+        id="variable-hub-compute-checksum"
+        onclick="addVariableToVariableHub()"
+        style="display: none"
+      ></div>
+      <div
+        class="variable-hub"
+        id="variable-hub-deparser"
+        onclick="addVariableToVariableHub()"
+        style="display: none"
+      ></div>
+    </div>
+    <div class="code-block-div">
+      <textarea id="code" rows="40"></textarea>
+    </div>
+
+    <div
+      class="code-action-div"
+      style="display: flex; align-items: center; justify-content: space-between"
+    >
+      <!-- Grouped Icon and Slider -->
+      <div style="display: flex; align-items: center">
+        <!-- Some icons -->
+        <div
+          class="some-icons"
+          style="
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          "
+        >
+          <button
+            onclick="createNewModule()"
+            style="
+              display: inline-flex;
+              align-items: center;
+              padding: 9.5px 10px;
+              border: 1px solid #333;
+              border-radius: 5px;
+              background-color: #008080;
+              text-decoration: none;
+              font-family: Arial, sans-serif;
+              font-size: 14px;
+              cursor: pointer;
+              height: auto;
+            "
+          >
+            <span class="add-module-text"></span>
+          </button>
+        </div>
+
+        <!-- Range Slider Container -->
+        <div
+          id="icons-container"
+          class="slidecontainer"
+          style="display: flex; align-items: center; margin: 0 20px"
+        >
           <!-- Magnifying glass minus to the left of the slider -->
-          <i class="fas fa-search-minus" style="margin-right: 3px; background-color: transparent;"></i>
-  
+          <i
+            class="fas fa-search-minus"
+            style="margin-right: 3px; background-color: transparent"
+          ></i>
+
           <!-- Range Slider -->
-          <input type="range" min="0.5" max="1.6" value="1" step="0.1" class="slider" id="myRange" style="margin: 0 10px;">
-  
+          <input
+            type="range"
+            min="0.5"
+            max="1.6"
+            value="1"
+            step="0.1"
+            class="slider"
+            id="myRange"
+            style="margin: 0 10px"
+          />
+
           <!-- Magnifying glass plus to the right of the slider -->
-          <i class="fas fa-search-plus" style="margin-right: 3px; background-color: transparent;"></i>
+          <i
+            class="fas fa-search-plus"
+            style="margin-right: 3px; background-color: transparent"
+          ></i>
+        </div>
+      </div>
+
+      <!-- Center Logo -->
+      <div
+        class="logo-container"
+        style="
+          flex-grow: 1;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        "
+      >
+        <span class="author-name">This is the </span>
+        <img
+          src="VisualP4_logo.png"
+          alt="VisualP4 IDE Logo"
+          class="visualp4-img"
+        />
+        <span class="author-name">by Hongshuo Zhang</span>
+      </div>
+
+      <!-- Grouped P4 Logos -->
+      <div style="display: flex; align-items: center">
+        <!-- IDE Help Button -->
+        <div class="ide-help" style="margin-right: 10px">
+          <button
+            onclick="openIDEHelp()"
+            style="
+              display: inline-flex;
+              align-items: center;
+              padding: 9.5px 10px;
+              border: 1px solid #333;
+              border-radius: 5px;
+              background-color: #008080;
+              text-decoration: none;
+              font-family: Arial, sans-serif;
+              font-size: 14px;
+              cursor: pointer;
+              height: auto;
+            "
+          >
+            IDE Help?
+          </button>
+        </div>
+        <!-- GitHub Logo Button -->
+        <div class="github-logo" style="margin-right: 10px">
+          <button
+            onclick="openGithub()"
+            style="
+              display: inline-flex;
+              align-items: center;
+              padding: 5px 10px;
+              border: 1px solid #333;
+              border-radius: 5px;
+              background-color: #008080;
+              text-decoration: none;
+              font-family: Arial, sans-serif;
+              font-size: 14px;
+              cursor: pointer;
+              height: auto;
+            "
+          >
+            Go to
+            <img
+              width="25"
+              height="25"
+              alt="GitHub Logomark"
+              src="https://upload.wikimedia.org/wikipedia/commons/c/c2/GitHub_Invertocat_Logo.svg"
+              style="margin-left: 5px; margin-right: 5px"
+            />
+            Repo
+          </button>
+        </div>
+        <!-- P4 Logo Button -->
+        <div class="p4logo" style="margin-right: 10px">
+          <button
+            onclick="openP4Forum()"
+            style="
+              display: inline-flex;
+              align-items: center;
+              padding: 5px 10px;
+              border: 1px solid #333;
+              border-radius: 5px;
+              background-color: #008080;
+              text-decoration: none;
+              font-family: Arial, sans-serif;
+              font-size: 14px;
+              cursor: pointer;
+              height: auto;
+            "
+          >
+            Go to
+            <img
+              src="https://avatars.githubusercontent.com/u/10765181?s=200&v=4"
+              width="25"
+              height="25"
+              alt="P4 Forum"
+              style="margin-left: 5px; margin-right: 5px"
+            />
+            Forum
+          </button>
+        </div>
       </div>
     </div>
-
-    <!-- Center Logo -->
-    <div class="logo-container" style="flex-grow: 1; display: flex; justify-content: center; align-items: center;">
-      <span class="author-name">This is the </span>
-      <img src="VisualP4_logo.png" alt="VisualP4 IDE Logo" class="visualp4-img" />
-      <span class="author-name">by Hongshuo Zhang</span>
-    </div>
-
-
-    <!-- Grouped P4 Logos -->
-    <div style="display: flex; align-items: center;">
-      <!-- IDE Help Button -->
-      <div class="ide-help" style="margin-right: 10px;">
-          <button onclick="openIDEHelp()" style="display: inline-flex; align-items: center; padding: 9.5px 10px; border: 1px solid #333; border-radius: 5px; background-color: #008080; text-decoration: none; font-family: Arial, sans-serif; font-size: 14px; cursor: pointer; height: auto;">
-              IDE Help?
-          </button>
-      </div>
-      <!-- GitHub Logo Button -->
-      <div class="github-logo" style="margin-right: 10px;">
-          <button onclick="openGithub()" style="display: inline-flex; align-items: center; padding: 5px 10px; border: 1px solid #333; border-radius: 5px; background-color: #008080; text-decoration: none; font-family: Arial, sans-serif; font-size: 14px; cursor: pointer; height: auto;">
-              Go to <img width="25" height="25" alt="GitHub Logomark" src="https://upload.wikimedia.org/wikipedia/commons/c/c2/GitHub_Invertocat_Logo.svg" style="margin-left: 5px; margin-right: 5px;"> Repo
-          </button>
-      </div>
-      <!-- P4 Logo Button -->
-      <div class="p4logo" style="margin-right: 10px;">
-          <button onclick="openP4Forum()" style="display: inline-flex; align-items: center; padding: 5px 10px; border: 1px solid #333; border-radius: 5px; background-color: #008080; text-decoration: none; font-family: Arial, sans-serif; font-size: 14px; cursor: pointer; height: auto;">
-              Go to <img src="https://avatars.githubusercontent.com/u/10765181?s=200&v=4" width="25" height="25" alt="P4 Forum" style="margin-left: 5px; margin-right: 5px;"> Forum
-          </button>
-      </div>
-  </div>
-  </div>
-  
-</div>
-</div>
-</body>
+  </body>
 </html>

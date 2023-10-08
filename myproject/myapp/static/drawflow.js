@@ -452,6 +452,15 @@ class Drawflow {
               .getElementsByClassName("condition-selector")[0]
               .remove();
           }
+          if (
+            this.precanvas.getElementsByClassName(
+              "condition-selector-branching",
+            ).length
+          ) {
+            this.precanvas
+              .getElementsByClassName("condition-selector-branching")[0]
+              .remove();
+          }
         }
         this.editor_selected = true;
         break;
@@ -869,10 +878,9 @@ class Drawflow {
                                     </div>`;
         } else {
           // Outputs nothing... Let's do drag and drop.
-          conditionbox.classList.add("condition-selector");
+          conditionbox.classList.add("condition-selector-branching");
           conditionbox.innerHTML =
             "Please select branching conditions from the control variables tab.";
-          console.log("Outputs nothing, let's do drag and drop!!!");
         }
 
         // Position the condition box right above the deletebox. */
@@ -900,6 +908,14 @@ class Drawflow {
             .getElementsByClassName("condition-selector")[0]
             .remove();
         }
+        if (
+          this.precanvas.getElementsByClassName("condition-selector-branching")
+            .length
+        ) {
+          this.precanvas
+            .getElementsByClassName("condition-selector-branching")[0]
+            .remove();
+        }
         if (this.connection_selected) {
           this.precanvas.appendChild(conditionbox);
         }
@@ -917,6 +933,14 @@ class Drawflow {
     }
     if (this.precanvas.getElementsByClassName("condition-selector").length) {
       this.precanvas.getElementsByClassName("condition-selector")[0].remove();
+    }
+    if (
+      this.precanvas.getElementsByClassName("condition-selector-branching")
+        .length
+    ) {
+      this.precanvas
+        .getElementsByClassName("condition-selector-branching")[0]
+        .remove();
     }
   }
 

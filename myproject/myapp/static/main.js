@@ -262,7 +262,7 @@ window.addEventListener("DOMContentLoaded", function () {
   height = window.innerHeight;
   var minLines = Math.trunc((height * 0.8) / 15) + 3;
   var startingValue =
-    "/**\nWelcome to the VisualP4 IDE!\nDevelopment Version: 2023.09.15\n**/";
+    "/**\nWelcome to the VisualP4 IDE!\nDevelopment Version: 2023.10.08\n**/";
   for (var i = 0; i < minLines; i++) {
     startingValue += "\n";
   }
@@ -277,6 +277,10 @@ window.addEventListener("DOMContentLoaded", function () {
 
   // Killswitch display_code
   adjustWorkspaceWidth();
+
+  let add_module_button_text = document.querySelector(`span.add-module-text`);
+  add_module_button_text.innerHTML = "Add State Module";
+
   // This part initializes the flowchart canvas.
   var example = document.getElementById("drawflow-parser");
   global_flow_editor = new Drawflow(example);
@@ -707,6 +711,47 @@ window.addEventListener("DOMContentLoaded", function () {
   };
 
   observer.observe(document.body, config);
+
+  const buttons = document.querySelectorAll(".filterable-button");
+  const maxButtons = 5;
+
+  for (let i = 0; i < buttons.length; i++) {
+    if (i >= maxButtons) {
+      buttons[i].style.display = "none"; // Hide buttons beyond the sixth one
+    }
+  }
+
+  document
+    .getElementById("searchInput")
+    .addEventListener("input", function (e) {
+      let searchValue = e.target.value.toLowerCase();
+      let buttons = document.querySelectorAll(".filterable-button");
+      let buttonCount = 0;
+      buttons.forEach((button) => {
+        if (
+          button.innerText.toLowerCase().includes(searchValue) &&
+          buttonCount < maxButtons
+        ) {
+          button.style.display = ""; // Show button
+          buttonCount++;
+        } else {
+          button.style.display = "none"; // Hide button
+        }
+
+        // If no buttons are visible, display the "Such empty..." message
+        const emptyMessageContainer = document.querySelector(".empty-message");
+
+        if (buttonCount === 0) {
+          emptyMessageContainer.innerHTML = `
+                <div style="text-align: center; border: 2px dashed #aaa; padding: 10px 20px; border-radius: 10px;">
+                    <p style="color: #999; font-weight: bold; font-size: 18px; margin: 0; padding: 0;">Such empty...</p>
+                </div>`;
+          emptyMessageContainer.style.display = "block"; // Display the message
+        } else {
+          emptyMessageContainer.style.display = "none"; // Hide the message
+        }
+      });
+    });
 });
 
 function reportWindowSize() {
@@ -1145,11 +1190,14 @@ function extractValues(obj, arr = []) {
  *           <button class="btn" style="float:right; padding:0px; margin-right: 2px; top: -3px; position: relative;" onclick="changeDataContainerState('modify', '')"> <i class="fa-solid fa-pen fa-lg" style="color: #1f2551;"></i> </button>
  */
 function InjectVars(html_block, vars) {
-  var tempHTML = `<div style="position: relative; top: 0; left: 0; width: 100%; height: 40px; background-color: transparent; margin-bottom: 10px; border-radius: 5px;">
-                      <span style="position: absolute; top: 15px; left: 8px; z-index: 15"><i class="fa-solid fa-magnifying-glass fa-lg" style="color: #1f2551;"></i></span>
-                      <input type="text" style="position: absolute; top: 0; left: 0; width: 200px; height: 40px; border-radius: 5px; padding: 0px; padding-right: 45px;">
-                      <div class="add-icon" onclick="addHeaderPageItem('vars')">Add New Variables</div>
-                  </div>`;
+  var tempHTML = ` <div style="position: relative; top: 0; left: 0; width: 100%; height: 40px; background-color: #B0A392; margin: 5px 0; border-radius: 5px; display: flex; align-items: center; justify-content: space-between; border: 2px solid #D5CABD;">
+                      <!-- Variables text div -->
+                      <div style="font-size: 18px; font-weight: 600; color: #333; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); margin-left: 10px;">Variables</div>
+                      
+                      <!-- Add New Variables div -->
+                      <div class="add-icon" onclick="addHeaderPageItem('vars')" style="cursor: pointer; margin-right: 0px;">Add New Variables</div>
+                    </div>`;
+
   for (let i = 0; i < vars.length; i++) {
     var item = vars[i];
     if (item.const) {
@@ -1199,11 +1247,14 @@ function InjectVars(html_block, vars) {
 }
 
 function InjectHeaders(html_block, headers) {
-  var tempHTML = `<div style="position: relative; top: 0; left: 0; width: 100%; height: 40px; background-color: transparent; margin-bottom: 10px; border-radius: 5px;">
-                    <span style="position: absolute; top: 15px; left: 8px; z-index: 15"><i class="fa-solid fa-magnifying-glass fa-lg" style="color: #1f2551;"></i></span>
-                    <input type="text" style="position: absolute; top: 0; left: 0; width: 200px; height: 30px; border-radius: 5px; padding: 5px; padding-right: 45px;">
-                    <div class="add-icon" onclick="addHeaderPageItem('headers')">Add New Headers</div>
+  var tempHTML = `<div style="position: relative; top: 0; left: 0; width: 100%; height: 40px; background-color: #B0A392; margin: 5px 0; border-radius: 5px; display: flex; align-items: center; justify-content: space-between; border: 2px solid #D5CABD;">
+                    <!-- Variables text div -->
+                    <div style="font-size: 18px; font-weight: 600; color: #333; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); margin-left: 10px;">Headers</div>
+                    
+                    <!-- Add New Variables div -->
+                    <div class="add-icon" onclick="addHeaderPageItem('headers')" style="cursor: pointer; margin-right: 0px;">Add New Headers</div>
                   </div>`;
+
   for (let i = 0; i < headers.length; i++) {
     var item = headers[i];
 
@@ -1251,11 +1302,13 @@ function InjectHeaders(html_block, headers) {
 }
 
 function InjectStructs(html_block, structs) {
-  var tempHTML = `<div style="position: relative; top: 0; left: 0; width: 100%; height: 40px; background-color: transparent; margin-bottom: 10px; border-radius: 5px;">
-                    <span style="position: absolute; top: 15px; left: 8px; z-index: 15"><i class="fa-solid fa-magnifying-glass fa-lg" style="color: #1f2551;"></i></span>
-                    <input type="text" style="position: absolute; top: 0; left: 0; width: 200px; height: 30px; border-radius: 5px; padding: 5px; padding-right: 45px;">
-                    <div class="add-icon" onclick="addHeaderPageItem('structs')">Add New Structs</div>
-                  </div>`;
+  var tempHTML = ` <div style="position: relative; top: 0; left: 0; width: 100%; height: 40px; background-color: #B0A392; margin: 5px 0; border-radius: 5px; display: flex; align-items: center; justify-content: space-between; border: 2px solid #D5CABD;">
+                      <!-- Variables text div -->
+                      <div style="font-size: 18px; font-weight: 600; color: #333; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); margin-left: 10px;">Structs</div>
+                      
+                      <!-- Add New Variables div -->
+                      <div class="add-icon" onclick="addHeaderPageItem('structs')" style="cursor: pointer; margin-right: 0px;">Add New Structs</div>
+                    </div>`;
   for (let i = 0; i < structs.length; i++) {
     var item = structs[i];
     tempHTML += `
@@ -1301,11 +1354,14 @@ function InjectStructs(html_block, structs) {
 }
 
 function InjectTypedefs(html_block, typedefs) {
-  var tempHTML = `<div style="position: relative; top: 0; left: 0; width: 100%; height: 40px; background-color: transparent; margin-bottom: 10px; border-radius: 5px;">
-                    <span style="position: absolute; top: 15px; left: 8px; z-index: 15"><i class="fa-solid fa-magnifying-glass fa-lg" style="color: #1f2551;"></i></span>
-                    <input type="text" style="position: absolute; top: 0; left: 0; width: 200px; height: 30px; border-radius: 5px; padding: 5px; padding-right: 45px;">
-                    <div class="add-icon" onclick="addHeaderPageItem('typedefs')">Add New Typedefs</div>
+  var tempHTML = `<div style="position: relative; top: 0; left: 0; width: 100%; height: 40px; background-color: #B0A392; margin: 5px 0; border-radius: 5px; display: flex; align-items: center; justify-content: space-between; border: 2px solid #D5CABD;">
+                    <!-- Variables text div -->
+                    <div style="font-size: 18px; font-weight: 600; color: #333; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); margin-left: 10px;">Typedefs</div>
+                    
+                    <!-- Add New Variables div -->
+                    <div class="add-icon" onclick="addHeaderPageItem('typedefs')" style="cursor: pointer; margin-right: 0px;">Add New Typedefs</div>
                   </div>`;
+
   for (let i = 0; i < typedefs.length; i++) {
     var item = typedefs[i];
     tempHTML += `
@@ -1340,7 +1396,7 @@ function addHeaderPageItem(type) {
       selector.innerHTML += `
                                           <div class="data-container" id = "${highest_headers_page_variable_sequence}">
                                             <div class="data-name">
-                                                ${random_name_for_testing_only}
+                                                new header ${random_name_for_testing_only}
                                                 <button class="btn" style="float:right; padding:0px; margin-right: 0px; top: -3px; position: relative;"> <i class="fa-solid fa-circle-xmark fa-lg" style="color: #1f2551;" onclick="changeDataContainerState('delete', '${highest_headers_page_variable_sequence}', 'headers', '${random_name_for_testing_only}')"></i> </button>
                                                 <button class="btn" style="float:right; padding:0px; margin-right: 2px; top: -3px; position: relative;"> <i class="fa-solid fa-circle-plus fa-lg" style="color: #1f2551;" onclick="changeDataContainerState('add', '${highest_headers_page_variable_sequence}', 'headers', '${random_name_for_testing_only}', 'Subfield Placeholder')"></i> </button>
                                                 <button class="btn" style="float:right; padding:0px; margin-right: 2px; top: -3px; position: relative;" onclick="changeDataContainerState('edit', '${highest_headers_page_variable_sequence}', 'headers', '${random_name_for_testing_only}')"> <i class="fa-solid fa-pen-to-square fa-lg" style="color: #1f2551;"></i> </button>
@@ -1351,7 +1407,7 @@ function addHeaderPageItem(type) {
       selector.innerHTML += `
                                             <div class="data-container" id = "${highest_headers_page_variable_sequence}">
                                               <div class="data-name">
-                                                  ${random_name_for_testing_only}
+                                                  new typedef ${random_name_for_testing_only}
                                                   <button class="btn" style="float:right; padding:0px; margin-right: 0px; top: -3px; position: relative;"> <i class="fa-solid fa-circle-xmark fa-lg" style="color: #1f2551;" onclick="changeDataContainerState('delete', '${highest_headers_page_variable_sequence}', 'typedefs', '${random_name_for_testing_only}')"></i> </button>
                                                   <button class="btn" style="float:right; padding:0px; margin-right: 2px; top: -3px; position: relative;"> <i class="fa-solid fa-circle-plus fa-lg" style="color: #1f2551;" onclick="changeDataContainerState('add', '${highest_headers_page_variable_sequence}', 'typedefs', '${random_name_for_testing_only}', 'Subfield Placeholder')"></i> </button>
                                                   <button class="btn" style="float:right; padding:0px; margin-right: 2px; top: -3px; position: relative;" onclick="changeDataContainerState('edit', '${highest_headers_page_variable_sequence}', 'typedefs', '${random_name_for_testing_only}')"> <i class="fa-solid fa-pen-to-square fa-lg" style="color: #1f2551;"></i> </button>
@@ -1362,7 +1418,7 @@ function addHeaderPageItem(type) {
       selector.innerHTML += ` 
                                             <div class="data-container" id = "${highest_headers_page_variable_sequence}">
                                             <div class="data-name">
-                                                ${random_name_for_testing_only}
+                                                new struct ${random_name_for_testing_only}
                                                 <button class="btn" style="float:right; padding:0px; margin-right: 0px; top: -3px; position: relative;"> <i class="fa-solid fa-circle-xmark fa-lg" style="color: #1f2551;" onclick="changeDataContainerState('delete', '${highest_headers_page_variable_sequence}', 'structs', '${random_name_for_testing_only}')"></i> </button>
                                                 <button class="btn" style="float:right; padding:0px; margin-right: 2px; top: -3px; position: relative;"> <i class="fa-solid fa-circle-plus fa-lg" style="color: #1f2551;" onclick="changeDataContainerState('add', '${highest_headers_page_variable_sequence}', 'structs', '${random_name_for_testing_only}', 'Subfield Placeholder')"></i> </button>
                                                 <button class="btn" style="float:right; padding:0px; margin-right: 2px; top: -3px; position: relative;" onclick="changeDataContainerState('edit', '${highest_headers_page_variable_sequence}', 'structs', '${random_name_for_testing_only}')"> <i class="fa-solid fa-pen-to-square fa-lg" style="color: #1f2551;"></i> </button>
@@ -1373,7 +1429,7 @@ function addHeaderPageItem(type) {
       selector.innerHTML += ` 
                                           <div class="data-container" id = "${highest_headers_page_variable_sequence}">
                                           <div class="data-name">
-                                              ${random_name_for_testing_only}
+                                              new variable ${random_name_for_testing_only}
                                               <button class="btn" style="float:right; padding:0px; margin-right: 0px; top: -3px; position: relative;"> <i class="fa-solid fa-circle-xmark fa-lg" style="color: #1f2551;" onclick="changeDataContainerState('delete', '${highest_headers_page_variable_sequence}', 'vars', '${random_name_for_testing_only}')"></i> </button>
                                               <button class="btn" style="float:right; padding:0px; margin-right: 2px; top: -3px; position: relative;"> <i class="fa-solid fa-circle-plus fa-lg" style="color: #1f2551;" onclick="changeDataContainerState('add', '${highest_headers_page_variable_sequence}', 'vars', '${random_name_for_testing_only}', 'Subfield Placeholder')"></i> </button>
                                               <button class="btn" style="float:right; padding:0px; margin-right: 2px; top: -3px; position: relative;" onclick="changeDataContainerState('edit', '${highest_headers_page_variable_sequence}', 'vars', '${random_name_for_testing_only}')"> <i class="fa-solid fa-pen-to-square fa-lg" style="color: #1f2551;"></i> </button>
@@ -2422,6 +2478,7 @@ window.addEventListener("keydown", function (event) {
     console.log("Hey! Ctrl+S or Command+S event captured!");
     event.preventDefault();
     let errors_returned = checkWorkspaceSyntaxStatus();
+    displayErrors(errors_returned);
   }
   if ((event.ctrlKey || event.metaKey) && event.key === "f") {
     console.log("Hey! Ctrl+F or Command+F event captured!");
@@ -2693,7 +2750,7 @@ function populateActionPage(INIT_ACTION_PAGE_DATA) {
     textarea = document
       .querySelector(`div#statement-${assigned_node_id}-0-action-only`)
       .querySelector(`textarea`);
-    textarea.value = "User should supply the value in some way, shape, or form";
+    textarea.value = "To be specified.";
     // Inputs
     addActionModuleStatements(assigned_node_id);
     // TODO: Modify this to be dynamic.
@@ -3023,6 +3080,18 @@ function controlSwitch(target_workspace) {
   }
   /* Update global source workspace to the target workspace. */
   global_source_workspace = target_workspace;
+  /* Update the add module button text. */
+  let add_module_button_text = document.querySelector(`span.add-module-text`);
+  if (global_source_workspace === "parser") {
+    add_module_button_text.innerHTML = "Add State Module";
+  } else if (
+    global_source_workspace === "ingress" ||
+    global_source_workspace === "egress"
+  ) {
+    add_module_button_text.innerHTML = "Add Table Module";
+  } else {
+    add_module_button_text.innerHTML = "Add Action Module";
+  }
   // Refresh the code display settings as well if needed.
   adjustWorkspaceWidth();
   return;
@@ -3133,7 +3202,7 @@ function checkWorkspaceSyntaxStatus() {
   if (detectable_inputs.size || detectable_outputs.size) {
     /* E1: Unconnected inputs / outputs */
     syntax_check_failed = true;
-    errors_returned.add("E1: Unconnected inputs / outputs");
+    errors_returned.add("E1: Unconnected inputs / outputs.");
   }
 
   connections_with_repeated_outputs.forEach((connection) => {
@@ -3306,11 +3375,9 @@ function checkWorkspaceSyntaxStatus() {
         top_bar_element.getAttribute("data-match-found") === "false",
       );
       if (top_bar_element.getAttribute("data-match-found") === "false") {
-        /* E11: Specified actions have to exist in action page. */
+        /* E11: Action name has to exist in action page. */
         syntax_check_failed = true;
-        errors_returned.add(
-          "E11: Specified actions have to exist in action page.",
-        );
+        errors_returned.add("E11: Action name has to exist in action page.");
       }
     }
   }
@@ -4093,4 +4160,97 @@ function closeIDEHelp() {
 function openIDEHelp() {
   var element = document.querySelector("div.ide-help-page");
   element.style.display = "block";
+}
+
+function displayErrors(errors) {
+  const popup = document.getElementById(
+    `error-popup-${global_source_workspace}`,
+  );
+  const errorList = document.getElementById(
+    `error-list-${global_source_workspace}`,
+  );
+  const errorDetails = document.getElementById(
+    `error-details-${global_source_workspace}`,
+  );
+  if (errorDetails) errorDetails.style.display = "block";
+  if (errorList) errorList.style.display = "none";
+
+  const errorCount = errorDetails.querySelector(
+    `#error-count-${global_source_workspace}`,
+  );
+  const expandDetails = errorDetails.querySelector(
+    `#expand-details-${global_source_workspace}`,
+  );
+
+  if (errors.size > 0) {
+    errorCount.innerHTML =
+      errors.size > 1
+        ? `${errors.size} errors reported.`
+        : `${errors.size} error reported.`;
+    expandDetails.style.display = "block";
+    popup.querySelector(`#fail-icon-${global_source_workspace}`).style.display =
+      "block";
+    popup.querySelector(`#pass-icon-${global_source_workspace}`).style.display =
+      "none";
+  } else {
+    errorCount.innerHTML = "No errors reported.";
+    expandDetails.style.display = "none";
+    popup.querySelector(`#pass-icon-${global_source_workspace}`).style.display =
+      "block";
+    popup.querySelector(`#fail-icon-${global_source_workspace}`).style.display =
+      "none";
+  }
+
+  // Populate the error list
+  errorList.innerHTML = ""; // Clear any previous errors
+  errors.forEach((error) => {
+    let li = document.createElement("li");
+    li.textContent = error;
+    errorList.appendChild(li);
+  });
+
+  // Show the popup
+  popup.classList.remove("popup-hidden");
+
+  // Set a timeout to hide the popup after X seconds (e.g., 5 seconds)
+  // Deprecate timeout for now.
+  if (errors.size === 0) {
+    setTimeout(closePopup, 2000);
+  }
+
+  // Expand errors on click
+  popup.onclick = () => {
+    // Add your expand logic here, for simplicity, I'm just toggling a 'large' class
+    popup.classList.toggle("large");
+  };
+}
+
+function closePopup() {
+  document
+    .getElementById(`error-popup-${global_source_workspace}`)
+    .classList.add("popup-hidden");
+}
+
+/* One time function to expand the error list. 
+   In other words, this function self-destructs after it is called once. */
+function toggleErrorDetails() {
+  const errorList = document.getElementById(
+    `error-list-${global_source_workspace}`,
+  );
+  const errorDetails = document.getElementById(
+    `error-details-${global_source_workspace}`,
+  );
+
+  if (errorList.style.display === "none" || errorList.style.display === "") {
+    errorList.style.display = "block";
+    if (errorDetails) errorDetails.style.display = "none";
+  }
+}
+
+function goToPageNumber(page_number) {
+  const iframe = document.querySelector("iframe"); // Adjust selector if needed
+  const baseUrl =
+    "https://docs.google.com/presentation/d/e/2PACX-1vSycOeJbedk_KWkWKAAXIOz2KWN_FwuvmuwIHwVvLRpnIRDuSE6Go3gRC0qs8IMnQ/embed?";
+  const params = "start=false&loop=false&delayms=10000";
+  iframe.src = `${baseUrl}${params}&slide=id.p${page_number}`;
 }
